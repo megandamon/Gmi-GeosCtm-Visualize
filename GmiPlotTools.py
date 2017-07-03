@@ -73,19 +73,30 @@ class GmiPlotTools (GenericModelPlotTools):
 
 
 
-   def returnField (self, fieldName):
+   def returnField (self, fieldName, timeRecord):
 
-      #print ""
-      #print "Extracting field from GMI: ", fieldName, " from const"
-      #print ""
+      print ""
+      print "Extracting field from GMI: ", fieldName, " from const"
+      print ""
       
+#      speciesArray = self.hdfData.variables["const_freq1"]
       speciesArray = self.hdfData.variables["const"]
       
       indexLocation = self.speciesNames.index(fieldName)
-      
-      returnArray = speciesArray[:,indexLocation,:,:,:]
+
+      print "num time recs of speciesArray: ", speciesArray.shape[0], timeRecord
+
+      if speciesArray.shape[0] - 1 < timeRecord: 
+         print ""
+         print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+             " Using rec dim 0"
+         print ""
+         returnArray = speciesArray[0,indexLocation,:,:,:]
+      else:
+         returnArray = speciesArray[timeRecord,indexLocation,:,:,:]
       
       return returnArray
+
 
 
 

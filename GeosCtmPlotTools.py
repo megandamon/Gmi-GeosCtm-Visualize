@@ -68,5 +68,19 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
 
 
-   def returnField (self, fieldName):
-      return self.hdfData.variables[fieldName]
+   def returnField (self, fieldName, timeRecord):
+
+      print "Return time record: ", timeRecord
+      fieldAllTime = self.hdfData.variables[fieldName]
+
+      if fieldAllTime.shape[0] - 1 < timeRecord:
+         print ""
+         print "WARNING: time record: ", timeRecord, " is not avail. in GEOS-CTM. ", \
+             " Using rec dim 0"
+         print ""
+
+         return fieldAllTime[0, :, :, :]
+      else:
+         return fieldAllTime[timeRecord, :, :, :]
+
+
