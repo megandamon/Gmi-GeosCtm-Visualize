@@ -278,7 +278,8 @@ for field in fieldsToCompare[:]:
 
         levCount = levCount + 1
 
-        z_GeosCtm = geosCtmFieldArray[(geosCtmObject.levelSize-1) - modelLevsToPlotGmi[modelLev], :, :]
+        z_GeosCtm = geosCtmFieldArray[(geosCtmObject.levelSize-1) \
+                                          - modelLevsToPlotGmi[modelLev], :, :]
         z_Gmi = newGmiArray[:, :]
         z_Diff = z_GeosCtm / z_Gmi
 
@@ -314,14 +315,9 @@ for field in fieldsToCompare[:]:
 
         print z_Diff.min(), z_Diff.max()
 
-        zDiffMax = z_Diff.max()
-        if z_Diff.max() > 1.5:
-            zDiffMax = 1.5
-            
-
 
         create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                           [z_Diff.min(), zDiffMax], \
+                           [0, 1.5], \
                            [minGeosCtmLat,maxGeosCtmLat], \
                            [minGeosCtmLong, maxGeosCtmLong], 313, \
                            "Model ratio " + field + " @ " + str(modelLev) + \
@@ -340,7 +336,7 @@ for field in fieldsToCompare[:]:
             plt.show()
 
     fieldCount = fieldCount + 1
-        
+
 
     
 
