@@ -237,10 +237,9 @@ gmiZonalArray = numpy.zeros ((gmiObject.levelSize, \
 geosCtmZonalArray = numpy.zeros ((geosCtmObject.levelSize, \
                                       geosCtmObject.latSize), numpy.float32)
 
-fieldCount = 9
+fieldCount = 0 
 for field in fieldsToCompare[:]:
     
-    field = fieldsToCompare[fieldCount]
     print ""
     print "Processing: ", field
 
