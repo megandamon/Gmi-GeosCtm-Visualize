@@ -92,11 +92,14 @@ class GenericModelPlotTools:
       else:
          scanList = list2 # GMI has more fields
 
-      print "Scanning GEOS-CTM fields for items starting with \"Var_\""
+      print "Scanning GEOS-CTM fields- "
       count = 0
       for item in scanList[:]:
-         if item[0:4] == "Var_":
-            scanList[count] = item[4:]
+         if item[0:4] != "Var_" and \
+                item[0:3] != "EM_" and \
+                item[0:7] != "Var_EM_":
+            scanList[count] = item
+
          count = count + 1
 
       if order == "GEOS-CTM": 
@@ -112,7 +115,6 @@ class GenericModelPlotTools:
 
          if item in list2[:]:
             fieldsToCompare.append(item)
-
 
          count = count + 1
 

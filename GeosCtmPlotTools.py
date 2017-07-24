@@ -70,8 +70,10 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
    def returnField (self, fieldName, timeRecord):
 
-      print "Return time record: ", timeRecord
+      #print "Return time record: ", timeRecord, " for : ", fieldName
       fieldAllTime = self.hdfData.variables[fieldName]
+
+      #print fieldAllTime
 
       if fieldAllTime.shape[0] - 1 < timeRecord:
          print ""

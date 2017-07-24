@@ -36,15 +36,19 @@ class GmiPlotTools (GenericModelPlotTools):
    #---------------------------------------------------------------------------  
 
    def __init__(self, fileName, latDim, lonDim, levDim, timeDim, \
-                   latVar, lonVar, levVar, timeVar, speciesVar):
+                   latVar, lonVar, levVar, timeVar):
 
       GenericModelPlotTools.__init__(self, fileName,  
                                      latDim, lonDim, levDim, timeDim, 
                                      latVar, lonVar, levVar, timeVar)
 
+      self.gmiConstString = 'const_labels'
+      if fileName.find('idaily') != -1:
+         self.gmiConstString = 'freq1_labels'
       self.MODEL_NAME = "GMI"
 
-      self.addSpeciesToFieldList (speciesVar)
+      self.addSpeciesToFieldList (self.gmiConstString)
+
 
 
    #---------------------------------------------------------------------------  
@@ -75,16 +79,22 @@ class GmiPlotTools (GenericModelPlotTools):
 
    def returnField (self, fieldName, timeRecord):
 
-      print ""
-      print "Extracting field from GMI: ", fieldName, " from const"
-      print ""
       
-#      speciesArray = self.hdfData.variables["const_freq1"]
-      speciesArray = self.hdfData.variables["const"]
+#      print self.gmiConstString
+      if self.gmiConstString == "const_labels":
+         self.constVarName = "const"
+      else:
+         self.constVarName = "const_freq1"
+
+#      print ""
+#      print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
+#      print ""
+
+      speciesArray = self.hdfData.variables[self.constVarName]
       
       indexLocation = self.speciesNames.index(fieldName)
 
-      print "num time recs of speciesArray: ", speciesArray.shape[0], timeRecord
+ #     print "num time recs of speciesArray: ", speciesArray.shape[0], timeRecord
 
       if speciesArray.shape[0] - 1 < timeRecord: 
          print ""

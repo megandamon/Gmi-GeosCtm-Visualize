@@ -50,7 +50,7 @@ def create2dSlice (baseMap, X_model, Y_model, z, \
                        colorMap, \
                        normalize=False):
 
-    print "min/max field vals in create2dSlice: ", minMaxVals[:]
+#    print "min/max field vals in create2dSlice: ", minMaxVals[:]
 
     plt.subplot(subplotNum)
 
@@ -140,11 +140,10 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
+
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', \
-#                              'freq1_labels')
-                             'const_labels')
+                             'longitude_dim', 'eta_dim', 'hdr')
 print ""
 
 
@@ -159,6 +158,8 @@ if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
 
 # Does not matter which object to use - this is weird code. :/
 fieldsToCompare = gmiObject.returnFieldsInCommon (list1, list2, order)
+
+
 
 print "Fields to compare: ", fieldsToCompare[:]
 
@@ -217,15 +218,13 @@ X_GeosCtm, Y_GeosCtm = baseMapGeosCtm(gridLonsGeosCtm,gridLatsGeosCtm)
 fieldCount = 0
 for field in fieldsToCompare[:]:
     
-    print ""
-    print "Processing: ", field
+#    print ""
+#    print "Processing: ", field
 
 
 
     geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
     gmiFieldArray = gmiObject.returnField (field, timeRecord)
-
-    print "shapes of arrays: ", geosCtmFieldArray.shape, gmiFieldArray.shape
 
 
     # put GMI on -180 to 0 to 180
@@ -252,10 +251,10 @@ for field in fieldsToCompare[:]:
         
         plt.figure(figsize=(20,20))
 
-        print ""
-        print "GMI : ", modelLev, " mb at index: ", modelLevsToPlotGmi[modelLev], \
-            " GEOS-CTM index: ", (geosCtmObject.levelSize - 1) - modelLevsToPlotGmi[modelLev]
-        print ""
+#        print ""
+#        print "GMI : ", modelLev, " mb at index: ", modelLevsToPlotGmi[modelLev], \
+#            " GEOS-CTM index: ", (geosCtmObject.levelSize - 1) - modelLevsToPlotGmi[modelLev]
+#        print ""
 
         if gmiFieldArray.shape != geosCtmFieldArray.shape:
             print "Array shapes are different. Interpolation needed!"
@@ -295,13 +294,25 @@ for field in fieldsToCompare[:]:
 
         #-----------------------------------------------------#
         # GEOS-CTM
+
+        print ""
+        print "Min/max ", field, " values at level: ", modelLev
+        print ""
+
+
+        print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
+
         create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
                            [minValueOfBoth,maxValueOfBoth], \
                            [minGeosCtmLat,maxGeosCtmLat], \
                            [minGeosCtmLong, maxGeosCtmLong], 311, \
                            "GEOS-CTM " + geosCtmSimName + " " + \
                            field + " @ " + str(modelLev) + \
-                           "mb " + dateYearMonth, "jet")
+                            "mb " + dateYearMonth, "jet")
+
+
+        print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
+        print "" 
 
         # GMI lev0 is surface
         create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
@@ -312,12 +323,9 @@ for field in fieldsToCompare[:]:
                            field + " @ " + str(modelLev) + \
                            " mb " + dateYearMonth, "jet")
 
-
-        print z_Diff.min(), z_Diff.max()
-
-
         create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                           [0, 1.5], \
+                           [z_Diff.min(), z_Diff.max()], \
+#                           [0, 1.5], \
                            [minGeosCtmLat,maxGeosCtmLat], \
                            [minGeosCtmLong, maxGeosCtmLong], 313, \
                            "Model ratio " + field + " @ " + str(modelLev) + \

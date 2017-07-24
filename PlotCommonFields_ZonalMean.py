@@ -92,7 +92,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     # map contour values to colors
     norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
-    print "data min/ max: ", dataMin,  " / " , dataMax
+    #print "data min/ max: ", dataMin,  " / " , dataMax
 
     # draw the (filled) contours
     contour = ax1.contourf(x, y, pdata, levels=clevs, norm=norm, cmap=colorMap, \
@@ -124,7 +124,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     ax1.set_yscale('log')
     ax1.set_ylim(y.max(), y.min())
     subs = [1,2,5]
-    print "y_max/y_min = ", y.max()/y.min()
+    #print "y_max/y_min = ", y.max()/y.min()
     if y.max()/y.min() < 30.:
         subs = [1,2,3,4,5,6,7,8,9]
     loc = ticker.LogLocator(base=10., subs=subs)
@@ -194,11 +194,10 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
+
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', \
-#                              'freq1_labels')
-                             'const_labels')
+                             'longitude_dim', 'eta_dim', 'hdr')
 print ""
 
 
@@ -240,6 +239,7 @@ geosCtmZonalArray = numpy.zeros ((geosCtmObject.levelSize, \
 fieldCount = 0 
 for field in fieldsToCompare[:]:
     
+
     print ""
     print "Processing: ", field
 
@@ -248,7 +248,7 @@ for field in fieldsToCompare[:]:
     geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
     gmiFieldArray = gmiObject.returnField (field, timeRecord)
 
-    print "shapes of arrays: ", geosCtmFieldArray.shape, gmiFieldArray.shape
+#    print "shapes of arrays: ", geosCtmFieldArray.shape, gmiFieldArray.shape
 
     # put GMI on -180 to 0 to 180
     lenGmiLong = len(gmiObject.long[:])
@@ -291,27 +291,27 @@ for field in fieldsToCompare[:]:
         
 
     # Now we should have arrays of the same size on the same long coordinate system
-    print ""
-    print "Length of new GMI array: ", newGmiArray.shape
-    print "Length of GEOS-CTM array: ", geosCtmFieldArray.shape
-    print ""
+#    print ""
+#    print "Length of new GMI array: ", newGmiArray.shape
+#    print "Length of GEOS-CTM array: ", geosCtmFieldArray.shape
+#    print ""
 
     # now we can create zonal means
 
-    print "Geos-CTM levs: ", geosCtmObject.lev[:]
-    print "GMI levs: ", gmiObject.lev[:]
+#    print "Geos-CTM levs: ", geosCtmObject.lev[:]
+#    print "GMI levs: ", gmiObject.lev[:]
 
     # Need to find tropMaxLev and tropMinLev from GMI
     tropMinLev = findLevelFromArray (gmiObject.lev, 100.00)
 
-    print ""
-    print gmiObject.lev[:]
-    print ""
+#    print ""
+#    print gmiObject.lev[:]
+#    print ""
 
-    print ""
-    print"Trop levels: ",  gmiObject.lev[0:tropMinLev+1]
-    print "Strat levels: '", gmiObject.lev[tropMinLev+1::]
-    print ""
+#    print ""
+#    print"Trop levels: ",  gmiObject.lev[0:tropMinLev+1]
+#    print "Strat levels: '", gmiObject.lev[tropMinLev+1::]
+#    print ""
 
 
     # lev, lat, long
@@ -321,10 +321,10 @@ for field in fieldsToCompare[:]:
     geosCtmTropPause = (geosCtmObject.levelSize-1) - tropMinLev
 
 
-    print ""
-    print "GMI trop 0 : ", tropMinLev
-    print "GEOS-CTM trop ", geosCtmTropPause, " : ", geosCtmSurface
-    print ""
+#    print ""
+#    print "GMI trop 0 : ", tropMinLev
+#    print "GEOS-CTM trop ", geosCtmTropPause, " : ", geosCtmSurface
+#    print ""
 
 
     zmGeosCtmTrop = numpy.mean (geosCtmFieldArray[geosCtmTropPause:geosCtmSurface+1, :, :], \
@@ -333,8 +333,8 @@ for field in fieldsToCompare[:]:
     # flip the array to the same orientation as GMI 
     zmGeosCtmTropRev = zmGeosCtmTrop[::-1, :]
 
-    print "Size of zm GEOS: ", zmGeosCtmTrop.shape
-    print "Size of zm GMI: ", zmGmiTrop.shape
+#    print "Size of zm GEOS: ", zmGeosCtmTrop.shape
+#    print "Size of zm GMI: ", zmGmiTrop.shape
 
     minValueOfBoth = zmGeosCtmTropRev.min()
     maxValueOfBoth = zmGeosCtmTropRev.max()
@@ -353,10 +353,12 @@ for field in fieldsToCompare[:]:
     plotZM (zmGeosCtmTropRev, geosCtmObject.lat[:], \
                 gmiObject.lev[0:tropMinLev+1], fig, ax1, 'jet', minValueOfBoth, \
                 maxValueOfBoth, plotOpt)
+
     ax2 = fig.add_subplot(312)
     plotOpt['title'] = "GMI " + gmiSimName + " " + field + " ZM " + dateYearMonth
     plotZM (zmGmiTrop, gmiObject.lat[:], gmiObject.lev[0:tropMinLev+1], \
                 fig, ax2, 'jet', minValueOfBoth, maxValueOfBoth, plotOpt)
+
     ax3 = fig.add_subplot(313)    
     plotOpt['title'] = "Model ratio " + field + " " + " ZM " + dateYearMonth
     plotZM (zmGeosCtmTropRev/zmGmiTrop, gmiObject.lat[:], \
@@ -365,6 +367,7 @@ for field in fieldsToCompare[:]:
 
 
 
+    FILE = "f"
     if FILE == "f":
         plt.savefig ("plots/" + field + ".GEOS-CTM.GMI."
                      + "trop.", bbox_inches='tight')
@@ -399,25 +402,36 @@ for field in fieldsToCompare[:]:
         maxValueOfBoth = zmGmiStrat.max()
 
 
+    print "Min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth
+    print "Min / max of GMI ", field, zmGmiStrat.min(), " / ", zmGmiStrat.max()
+    print "Min / max of GEOS-CTM ", field, zmGeosCtmStratRev.min(), " / ", zmGeosCtmStratRev.max()
 
     fig = plt.figure(figsize=(20,20))
     plotOpt = {}
     ax1 = fig.add_subplot(311)
     plotOpt['title'] = "GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
     plotZM (zmGeosCtmStratRev, geosCtmObject.lat[:], \
-                gmiObject.lev[tropMinLev::], fig, ax1, 'jet', minValueOfBoth, \
-                maxValueOfBoth, plotOpt)
+                gmiObject.lev[tropMinLev::], fig, ax1, 'jet', \
+    #        minValueOfBoth, maxValueOfBoth, plotOpt)
+            zmGeosCtmStratRev.min(), zmGeosCtmStratRev.max(), plotOpt)
+    
     ax2 = fig.add_subplot(312)
     plotOpt['title'] = "GMI " + gmiSimName + " " + field + " ZM " + dateYearMonth
     plotZM (zmGmiStrat, gmiObject.lat[:], gmiObject.lev[tropMinLev::], \
-                fig, ax2, 'jet', minValueOfBoth, maxValueOfBoth, plotOpt)
+                fig, ax2, 'jet', \
+                #minValueOfBoth, maxValueOfBoth, plotOpt)
+            zmGmiStrat.min(), zmGmiStrat.max(), plotOpt)
     ax3 = fig.add_subplot(313)    
     plotOpt['title'] = "Model ratio " + field + " " + " ZM " + dateYearMonth
-    plotZM (zmGeosCtmStratRev/zmGmiStrat, gmiObject.lat[:], \
+
+    zmStratRatio = zmGeosCtmStratRev/zmGmiStrat
+    print "Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max()
+    plotZM (zmStratRatio, gmiObject.lat[:], \
                 gmiObject.lev[tropMinLev::], fig, ax3, 'nipy_spectral', \
-                0.0, 1.5, plotOpt)
+                #                0.0, 1.5, plotOpt)
+            zmStratRatio.min(), zmStratRatio.max(), plotOpt)
 
-
+    FILE = "f"
     if FILE == "f":
         plt.savefig ("plots/" + field + ".GEOS-CTM.GMI."
                      + "strat.", bbox_inches='tight')
