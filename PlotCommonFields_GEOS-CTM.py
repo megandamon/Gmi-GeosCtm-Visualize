@@ -3,10 +3,10 @@
 #------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
-# DATE:         June 21st 2017
+# DATE:         July 31st 2017
 #
 # DESCRIPTION:
-# Driver to plot differences between GMI and GEOS-CTM species
+# Driver to plot differences between two sets of  GEOS-CTM species
 #------------------------------------------------------------------------------
 
 import re
@@ -36,7 +36,7 @@ sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 
 from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import GenericModelPlotTools
-from GmiPlotTools import GmiPlotTools
+
 
 
 
@@ -74,9 +74,9 @@ def create2dSlice (baseMap, X_model, Y_model, z, \
 NUM_ARGS = 4
 def usage ():
     print ""
-    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d]"
-    print "-c GEOS CTM restart file"
-    print "-g GMI restart file"
+    print "usage: PlotCommonFields_GEOS-CTM.py [-c] [-g] [-r] [-d]"
+    print "-c GEOS CTM file 1"
+    print "-g GEOS CTM file 2"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
     print ""
@@ -93,8 +93,8 @@ if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
 
-geosCtmFile = optList[0][1]
-gmiFile = optList[1][1]
+geosCtmFile1 = optList[0][1]
+geosCtmFile2 = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 
@@ -103,12 +103,12 @@ print ""
 print "Checking command line options... "
 print""
 #---------------------------------------------------------------
-if not os.path.exists (geosCtmFile):
-    print "The file you provided does not exist: ", geosCtmFile
+if not os.path.exists (geosCtmFile1):
+    print "The file you provided does not exist: ", geosCtmFile1
     sys.exit(0)
 
-if not os.path.exists (gmiFile):
-    print "The file you provided does not exist: ", gmiFile
+if not os.path.exists (geosCtmFile2):
+    print "The file you provided does not exist: ", geosCtmFile2
     sys.exit(0)
 
 
@@ -124,11 +124,21 @@ if len(dateYearMonth) != 6:
     sys.exit(0)
 
 
-print geosCtmFile
-print gmiFile
+print ""
+print geosCtmFile1
+print geosCtmFile2
+print ""
 
-geosCtmSimName = geosCtmFile.split(".")[0]
-gmiSimName = gmiFile.split("_")[1]
+geosCtmSimName1 = geosCtmFile1.split(".")[0]
+geosCtmSimName2 = geosCtmFile2.split(".")[0]
+
+
+print ""
+print "Sim names: "
+print geosCtmSimName1
+print geosCtmSimName2
+print ""
+
 
 
 #---------------------------------------------------------------
@@ -136,59 +146,68 @@ print ""
 print "Command line options look good."
 print""
 #--------------------------------------------------------------
-geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
+geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
 
-gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
-                             'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr')
+geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
+                                      'lev','time', 'lat', \
+                                      'lon', 'lev', 'time' )
+
+
 print ""
 
 
-order = "GMI"
-list1 = gmiObject.fieldList
-list2 = geosCtmObject.fieldList
+order = "GEOS-CTM"
+list1 = geosCtmObject1.fieldList
+list2 = geosCtmObject2.fieldList
 
-if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
-    list1 = geosCtmObject.fieldList
-    list2 = gmiObject.fieldList
+if len(geosCtmObject1.fieldList) >= len(geosCtmObject2.fieldList):
+    list1 = geosCtmObject2.fieldList
+    list2 = geosCtmObject1.fieldList
     order = "GEOS-CTM"
 
 # Does not matter which object to use - this is weird code. :/
-fieldsToCompare = gmiObject.returnFieldsInCommon (list1, list2, order)
+fieldsToCompareAll = geosCtmObject1.returnFieldsInCommon (list1, list2, order)
+
+fieldsToCompare = []
+for field in fieldsToCompareAll[:]:
+    if field[0:4] != "Var_" and field[0:2] != "EM" and \
+            field[0:3] != "GMI":
+        fieldsToCompare.append(field)
 
 
-
+print ""
 print "Fields to compare: ", fieldsToCompare[:]
+print "GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:]
+print ""
 
 
-print "GMI model levels: ", gmiObject.lev[:]
-modelLevsToPlotGmi = {}
-levCount = 0
-for lev in gmiObject.lev[:]:
-    if int(lev) == 992 or int(lev) == 506 or int(lev) == 192:
-        modelLevsToPlotGmi [int(lev)] = levCount
-    levCount = levCount + 1
+
+sys.exit(0)
+
+
+modelLevsToPlot = []
+modelLevsToPlot.append(71)
+modelLevsToPlot.append(49)
+modelLevsToPlot.append(41)
+
+
+print ""
+print "Model levs to plot: ", modelLevsToPlot[:]
+print ""
 
 
 
 # Arrays (one time record, one species)
-longRecords = numpy.zeros(gmiObject.longSize, numpy.float32)
-
-remappedGmiArray = numpy.zeros((gmiObject.levelSize, \
-                                    gmiObject.latSize, \
-                                    gmiObject.longSize), numpy.float32)
-
-newGmiArray = numpy.zeros((gmiObject.latSize, \
-                               geosCtmObject.longSize), numpy.float32)
+longRecords = numpy.zeros(geosCtmObject1.longSize, numpy.float32)
 
 
-minGeosCtmLat = geosCtmObject.lat[:].min()
-maxGeosCtmLat = geosCtmObject.lat[:].max()
-minGeosCtmLong = geosCtmObject.long[:].min()
-maxGeosCtmLong = geosCtmObject.long[:].max()
+minGeosCtmLat = geosCtmObject1.lat[:].min()
+maxGeosCtmLat = geosCtmObject1.lat[:].max()
+minGeosCtmLong = geosCtmObject1.long[:].min()
+maxGeosCtmLong = geosCtmObject1.long[:].max()
 
 cenGeosCtmLat = (minGeosCtmLat + maxGeosCtmLat)/2.
 cenGeosCtmLong =  (minGeosCtmLong + maxGeosCtmLong)/2.
@@ -198,8 +217,6 @@ baseMapGeosCtm = Basemap(llcrnrlon=minGeosCtmLong,llcrnrlat=minGeosCtmLat,\
                              urcrnrlon=maxGeosCtmLong,urcrnrlat=maxGeosCtmLat,\
                              projection='cyl', \
                              lat_0=cenGeosCtmLat,lon_0=cenGeosCtmLong)
-
-cenGmiLong = (gmiObject.long[:].min() + gmiObject.long[:].max()) / 2.0
 
 print ""
 print "Basemap info: "
@@ -211,124 +228,96 @@ print "centers lat/long: ", cenGeosCtmLat, cenGeosCtmLong
 print ""
 
 
-gridLonsGeosCtm,gridLatsGeosCtm = baseMapGeosCtm.makegrid(geosCtmObject.longSize, geosCtmObject.latSize)
+
+gridLonsGeosCtm,gridLatsGeosCtm = baseMapGeosCtm.makegrid(geosCtmObject1.longSize, \
+                                                              geosCtmObject1.latSize)
 X_GeosCtm, Y_GeosCtm = baseMapGeosCtm(gridLonsGeosCtm,gridLatsGeosCtm)
 
 
-fieldCount = 0
+fieldCount = 26
 for field in fieldsToCompare[:]:
     
-#    print ""
-#    print "Processing: ", field
+    field = fieldsToCompare[fieldCount]
+    print ""
+    print "Processing: ", field
+    print ""
+    
 
 
 
-    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
-    gmiFieldArray = gmiObject.returnField (field, timeRecord)
+    geosCtmFieldArray1 = geosCtmObject1.returnField (field, timeRecord)
+    geosCtmFieldArray2 = geosCtmObject2.returnField (field, timeRecord)
 
 
-    # put GMI on -180 to 0 to 180
-    lenGmiLong = len(gmiObject.long[:])
-        
-    remappedGmiArray [:,:,0:lenGmiLong/2] = gmiFieldArray[:,:,lenGmiLong/2:lenGmiLong]
-    remappedGmiArray [:,:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,:,0:lenGmiLong/2]
-    remappedLong = numpy.zeros(lenGmiLong, float32)
-    remappedLong [0:lenGmiLong/2] = gmiObject.long[lenGmiLong/2:lenGmiLong] - 360.0
-    remappedLong [lenGmiLong/2:lenGmiLong] = gmiObject.long[0:lenGmiLong/2]
-        
-
-    remappedLongPlus180 = numpy.zeros(lenGmiLong, float32)
-    remappedLongPlus180[:] = remappedLong[:] + 180.0
-
-    geosCtmLongPlus180 = numpy.zeros(geosCtmObject.longSize, float32)
-    geosCtmLongPlus180 [:] = geosCtmObject.long[:] + 180.0
-
-
-
-
-    levCount = 0
-    for modelLev in modelLevsToPlotGmi:
+    for modelLev in modelLevsToPlot:
         
         plt.figure(figsize=(20,20))
 
-#        print ""
-#        print "GMI : ", modelLev, " mb at index: ", modelLevsToPlotGmi[modelLev], \
-#            " GEOS-CTM index: ", (geosCtmObject.levelSize - 1) - modelLevsToPlotGmi[modelLev]
-#        print ""
+        print ""
+        print "GEOS-CTM level : ", modelLev
+        print ""
 
-        if gmiFieldArray.shape != geosCtmFieldArray.shape:
+
+
+        if geosCtmFieldArray1.shape != geosCtmFieldArray2.shape:
             print "Array shapes are different. Interpolation needed!"
-
-            latCount = 0
-            for lat in gmiObject.lat[:]:
-
-                longRecords[:] = remappedGmiArray [modelLevsToPlotGmi[modelLev], latCount,:]
-            
-                yinterp =  numpy.interp(geosCtmLongPlus180, remappedLongPlus180, longRecords)
-                
-                newGmiArray[latCount, :] = yinterp [:]
-
-                latCount = latCount + 1
-
+            print "This feature is currently not supported for inter GEOS-CTM runs"
+            sys.exit(0)
 
         else:
-            newGmiArray[:,:] = remappedGmiArray[modelLevsToPlotGmi[modelLev],:,:]
+            print "Array shapes are the same, will continue with plotting..."
 
 
-        levCount = levCount + 1
-
-        print "Extracting GeosCtm level: ", (geosCtmObject.levelSize-1) - \
-            modelLevsToPlotGmi[modelLev]
-
-        z_GeosCtm = geosCtmFieldArray[(geosCtmObject.levelSize-1) \
-                                          - modelLevsToPlotGmi[modelLev], :, :]
-        z_Gmi = newGmiArray[:, :]
-        z_Diff = z_GeosCtm / z_Gmi
 
 
-        minValueOfBoth = z_GeosCtm.min()
-        maxValueOfBoth = z_GeosCtm.max()
+        z_GeosCtm1 = geosCtmFieldArray1[modelLev, :, :]
+        z_GeosCtm2 = geosCtmFieldArray2[modelLev, :, :]
 
-        if z_Gmi.min() < minValueOfBoth:
-            minValueOfBoth = z_Gmi.min()
-        if z_Gmi.max() > maxValueOfBoth:
-            maxValueOfBoth = z_Gmi.max()
+        z_Diff = z_GeosCtm1 / z_GeosCtm2
+
+
+        minValueOfBoth = z_GeosCtm1.min()
+        maxValueOfBoth = z_GeosCtm1.max()
+
+        if z_GeosCtm2.min() < minValueOfBoth:
+            minValueOfBoth = z_GeosCtm2.min()
+        if z_GeosCtm2.max() > maxValueOfBoth:
+            maxValueOfBoth = z_GeosCtm2.max()
+
+
 
 
         #-----------------------------------------------------#
-        # GEOS-CTM
+        # GEOS-CTM 1
 
         print ""
         print "Min/max ", field, " values at level: ", modelLev
         print ""
 
 
-        print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
+        print "GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max()
 
-        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
+        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
                            [minValueOfBoth,maxValueOfBoth], \
                            [minGeosCtmLat,maxGeosCtmLat], \
                            [minGeosCtmLong, maxGeosCtmLong], 311, \
-                           "GEOS-CTM " + geosCtmSimName + " " + \
+                           "GEOS-CTM " + geosCtmSimName1 + " " + \
                            field + " @ " + str(modelLev) + \
                             "mb " + dateYearMonth, "jet")
 
+        print "GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
 
-        print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
-        print "" 
-
-        # GMI lev0 is surface
-        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
+        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
                            [minValueOfBoth,maxValueOfBoth], \
                            [minGeosCtmLat,maxGeosCtmLat], \
                            [minGeosCtmLong, maxGeosCtmLong], 312, \
-                           "GMI " + gmiSimName + " " + \
+                           "GEOS-CTM " + geosCtmSimName2 + " " + \
                            field + " @ " + str(modelLev) + \
-                           " mb " + dateYearMonth, "jet")
+                            "mb " + dateYearMonth, "jet")
 
         create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                           [z_Diff.min(), z_Diff.max()], \
-#                           [0, 1.5], \
+#                           [z_Diff.min(), z_Diff.max()], \
+                           [0, 1.5], \
                            [minGeosCtmLat,maxGeosCtmLat], \
                            [minGeosCtmLong, maxGeosCtmLong], 313, \
                            "Model ratio " + field + " @ " + str(modelLev) + \
@@ -341,7 +330,7 @@ for field in fieldsToCompare[:]:
 
         file = "f"
         if file == "f":
-            plt.savefig("plots/" + field + ".GEOS-CTM.GMI."
+            plt.savefig("plots/" + field + ".inter.GEOS-CTM."
                         + str(modelLev) + "." , bbox_inches='tight')
         elif file == "s":
             plt.show()
