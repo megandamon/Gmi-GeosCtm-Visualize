@@ -185,8 +185,6 @@ print ""
 
 
 
-sys.exit(0)
-
 
 modelLevsToPlot = []
 modelLevsToPlot.append(71)
@@ -234,10 +232,10 @@ gridLonsGeosCtm,gridLatsGeosCtm = baseMapGeosCtm.makegrid(geosCtmObject1.longSiz
 X_GeosCtm, Y_GeosCtm = baseMapGeosCtm(gridLonsGeosCtm,gridLatsGeosCtm)
 
 
-fieldCount = 26
+fieldCount = 0
 for field in fieldsToCompare[:]:
     
-    field = fieldsToCompare[fieldCount]
+
     print ""
     print "Processing: ", field
     print ""
