@@ -52,28 +52,6 @@ from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import GenericModelPlotTools
 
 
-def readNodesIntoArray (nodeFile):
-
-    nodesRead = []
-
-    myFile = open (nodeFile, "r")
-
-    count = 0
-    line = myFile.readline().rstrip()
-    while line != '':
-        nodesRead.append(line)
-
-        if count == 10000: break
-        count = count + 1
-        line = myFile.readline().rstrip()
-
-    myFile.close()
-
-    nodesToReturn = []
-    for node in nodesRead:
-         if node not in nodesToReturn: nodesToReturn.append(node)
-      
-    return nodesToReturn
 
 def worker (command):
     print "I will execute: ", command
@@ -210,7 +188,7 @@ print "Fields to compare: ", fieldsToCompare[:]
 print "GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:]
 print ""
 
-nodes = readNodesIntoArray (pbsNodeFile)
+nodes = geosCtmObject1.readNodesIntoArray (pbsNodeFile)
 print "nodes: ", nodes
 
 # print ""

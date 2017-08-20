@@ -81,8 +81,10 @@ class GmiPlotTools (GenericModelPlotTools):
 
    def returnField (self, fieldName, timeRecord):
 
-      
+      print ""
       print self.gmiConstString
+      print ""
+
       if self.gmiConstString == "const_labels":
          self.constVarName = "const"
       elif self.gmiConstString == 'wetdep_spc_labels':
@@ -93,7 +95,6 @@ class GmiPlotTools (GenericModelPlotTools):
       print ""
       print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
       print ""
-
 
 
       speciesArray = self.hdfData.variables[self.constVarName]

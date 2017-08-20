@@ -44,50 +44,27 @@ from mpl_toolkits.basemap import Basemap
 sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 
 from GeosCtmPlotTools import GeosCtmPlotTools
-from GenericModelPlotTools import GenericModelPlotTools
+from GenericModelPlotTools import *
+
 from GmiPlotTools import GmiPlotTools
 
 
-def readNodesIntoArray (nodeFile):
-
-    nodesRead = []
-
-    myFile = open (nodeFile, "r")
-
-    count = 0
-    line = myFile.readline().rstrip()
-    while line != '':
-        nodesRead.append(line)
-
-        if count == 10000: break
-        count = count + 1
-        line = myFile.readline().rstrip()
-
-    myFile.close()
-
-    nodesToReturn = []
-    for node in nodesRead:
-         if node not in nodesToReturn: nodesToReturn.append(node)
-      
-    return nodesToReturn
-
-def worker (command):
+def workerLocal (command):
     print "I will execute: ", command
     return os.system(command)
 
 
-
-
-NUM_ARGS = 6
+NUM_ARGS = 7
 def usage ():
     print ""
-    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d] [-n] [-p]"
+    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d] [-n] [-p] [-s]"
     print "-c GEOS CTM restart file"
     print "-g GMI restart file"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
     print "-n PBS_NODEFILE"
     print "-p number of processes to use per node"
+    print "-s string defining the GMI array with species/fields names (const_labels, etc.)"
     print ""
     sys.exit (0)
 
@@ -97,7 +74,7 @@ print "Start plotting restart field differences"
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:s:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -108,6 +85,7 @@ timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 pbsNodeFile = optList[4][1]
 numProcesses = int(optList[5][1])
+fieldNameArrayGMI = optList[6][1]
 
 #---------------------------------------------------------------
 print ""
@@ -143,8 +121,13 @@ if numProcesses <= 0:
     print "Given: ", numProcesses
     sys.exit(0)
 
+print ""
+print "Will be looking at GMI fields in: ", fieldNameArrayGMI
+print ""
+
 print geosCtmFile
 print gmiFile
+print ""
 
 geosCtmSimName = geosCtmFile.split(".")[0]
 gmiSimName = gmiFile.split("_")[1]
@@ -164,8 +147,9 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
 
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr')
+                             'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
 print ""
+
 
 
 order = "GMI"
@@ -185,7 +169,8 @@ print ""
 print "Fields to compare: ", fieldsToCompare[:]
 print ""
 
-nodes = readNodesIntoArray (pbsNodeFile)
+
+nodes = gmiObject.readNodesIntoArray (pbsNodeFile)
 print "nodes: ", nodes
 
 # print ""
@@ -282,7 +267,7 @@ pool = multiprocessing.Pool(processes=len(commands))
 
 print ""
 print "Calling pool.map"
-pool.map(worker, commands)
+pool.map(workerLocal, commands)
 print ""
 
 print ""

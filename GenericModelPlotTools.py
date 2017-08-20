@@ -71,6 +71,30 @@ class GenericModelPlotTools:
       self.hdfData.close()
       pass
 
+   def readNodesIntoArray (self, nodeFile):
+
+      nodesRead = []
+
+      myFile = open (nodeFile, "r")
+
+      count = 0
+      line = myFile.readline().rstrip()
+      while line != '':
+         nodesRead.append(line)
+
+         if count == 10000: break
+         count = count + 1
+         line = myFile.readline().rstrip()
+
+      myFile.close()
+
+      nodesToReturn = []
+      for node in nodesRead:
+         if node not in nodesToReturn: nodesToReturn.append(node)
+      
+      return nodesToReturn
+
+
    def populateFieldList (self):
 
       print "Generic populateFieldList"
