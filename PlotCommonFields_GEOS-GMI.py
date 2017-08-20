@@ -3,13 +3,11 @@
 #------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
-# DATE:         July 31st 2017
+# DATE:         June 21st 2017
 #
 # DESCRIPTION:
-# Driver to plot differences between two sets of  GEOS-CTM species
+# Driver to plot differences between GMI and GEOS-CTM species
 #------------------------------------------------------------------------------
-
-
 
 import re
 import os
@@ -20,20 +18,19 @@ import calendar
 import getopt
 import numpy
 from numpy import *
+from netCDF4 import Dataset
 
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-
 import multiprocessing
 from time import sleep
 from multiprocessing import Pool
 
-from netCDF4 import Dataset
 
 import math
-
+import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm
 import matplotlib.colors as colors
 from matplotlib.ticker import MaxNLocator
@@ -44,12 +41,11 @@ from mpl_toolkits.basemap import Basemap
 
 
 
-
 sys.path.append('/discover/nobackup/mrdamon/MERRA2')
-
 
 from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import GenericModelPlotTools
+from GmiPlotTools import GmiPlotTools
 
 
 def readNodesIntoArray (nodeFile):
@@ -81,12 +77,13 @@ def worker (command):
 
 
 
+
 NUM_ARGS = 6
 def usage ():
     print ""
-    print "usage: PlotCommonFields_GEOS-CTM.py [-c] [-g] [-r] [-d] [-n] [-p]"
-    print "-c GEOS CTM file 1"
-    print "-g GEOS CTM file 2"
+    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d] [-n] [-p]"
+    print "-c GEOS CTM restart file"
+    print "-g GMI restart file"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
     print "-n PBS_NODEFILE"
@@ -95,7 +92,7 @@ def usage ():
     sys.exit (0)
 
 
-print "Start plotting field differences"
+print "Start plotting restart field differences"
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -105,26 +102,24 @@ if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
 
-geosCtmFile1 = optList[0][1]
-geosCtmFile2 = optList[1][1]
+geosCtmFile = optList[0][1]
+gmiFile = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 pbsNodeFile = optList[4][1]
 numProcesses = int(optList[5][1])
-
-
 
 #---------------------------------------------------------------
 print ""
 print "Checking command line options... "
 print""
 #---------------------------------------------------------------
-if not os.path.exists (geosCtmFile1):
-    print "The file you provided does not exist: ", geosCtmFile1
+if not os.path.exists (geosCtmFile):
+    print "The file you provided does not exist: ", geosCtmFile
     sys.exit(0)
 
-if not os.path.exists (geosCtmFile2):
-    print "The file you provided does not exist: ", geosCtmFile2
+if not os.path.exists (gmiFile):
+    print "The file you provided does not exist: ", gmiFile
     sys.exit(0)
 
 
@@ -148,24 +143,11 @@ if numProcesses <= 0:
     print "Given: ", numProcesses
     sys.exit(0)
 
+print geosCtmFile
+print gmiFile
 
-
-
-print ""
-print geosCtmFile1
-print geosCtmFile2
-print ""
-
-geosCtmSimName1 = geosCtmFile1.split(".")[0]
-geosCtmSimName2 = geosCtmFile2.split(".")[0]
-
-
-print ""
-print "Sim names: "
-print geosCtmSimName1
-print geosCtmSimName2
-print ""
-
+geosCtmSimName = geosCtmFile.split(".")[0]
+gmiSimName = gmiFile.split("_")[1]
 
 
 #---------------------------------------------------------------
@@ -173,41 +155,34 @@ print ""
 print "Command line options look good."
 print""
 #--------------------------------------------------------------
-geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
+
+
+geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
 
-geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
-                                      'lev','time', 'lat', \
-                                      'lon', 'lev', 'time' )
-
-
+gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
+                             'eta_dim', 'rec_dim', 'latitude_dim', \
+                             'longitude_dim', 'eta_dim', 'hdr')
 print ""
 
 
-order = "GEOS-CTM"
-list1 = geosCtmObject1.fieldList
-list2 = geosCtmObject2.fieldList
+order = "GMI"
+list1 = gmiObject.fieldList
+list2 = geosCtmObject.fieldList
 
-if len(geosCtmObject1.fieldList) >= len(geosCtmObject2.fieldList):
-    list1 = geosCtmObject2.fieldList
-    list2 = geosCtmObject1.fieldList
+if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
+    list1 = geosCtmObject.fieldList
+    list2 = gmiObject.fieldList
     order = "GEOS-CTM"
 
 # Does not matter which object to use - this is weird code. :/
-fieldsToCompareAll = geosCtmObject1.returnFieldsInCommon (list1, list2, order)
-
-fieldsToCompare = []
-for field in fieldsToCompareAll[:]:
-    if field[0:4] != "Var_" and field[0:2] != "EM" and \
-            field[0:3] != "GMI":
-        fieldsToCompare.append(field)
+fieldsToCompare = gmiObject.returnFieldsInCommon (list1, list2, order)
 
 
 print ""
 print "Fields to compare: ", fieldsToCompare[:]
-print "GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:]
 print ""
 
 nodes = readNodesIntoArray (pbsNodeFile)
@@ -233,14 +208,17 @@ print "nodes: ", nodes
 cwd = os.getcwd()
 print "current working directory: ", cwd
 
+
 commands = []
-fieldCount = 0 
+fieldCount = 0
 procCount = 0
 nodeCount = 0
 
-#geosCtmFile1, geosCtmFile2, timeRecord, dateYearMonth
-pythonCommand = "PlotField_GEOS-CTM.py -c  " + geosCtmFile1 \
-    + " -g " + geosCtmFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth + " -f "
+#geosCtmFile gmiFile, timeRecord, dateYearMonth
+pythonCommand1 = "PlotField_GEOS-GMI.py -c  " + geosCtmFile \
+    + " -g " + gmiFile + " -r " + str(timeRecord) + " -d " + dateYearMonth + " -f "
+pythonCommand2= "PlotField_ZonalMean.py -c " + geosCtmFile \
+    + " -g " + gmiFile + " -r " + str(timeRecord) + " -d " + dateYearMonth + " -f"
 
 for field in fieldsToCompare[:]:
 
@@ -258,31 +236,45 @@ for field in fieldsToCompare[:]:
             print ""
             sys.exit(-1)
 
+    
     field = fieldsToCompare[fieldCount]
 
+
     print ""
-    print "Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount
+    print "Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount, \
+        " and " , procCount+1
     print ""
-    
 
     sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
         " \'. " + cwd + "/setup_env ; " + \
         " cd " + cwd + " ; " + \
         " python " + cwd + "/" + \
-        pythonCommand + " " + field + \
+        pythonCommand1 + " " + field + \
+        " \' "
+    commands.append(sysCommand)
+
+    sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
+        " \'. " + cwd + "/setup_env ; " + \
+        " cd " + cwd + " ; " + \
+        " python " + cwd + "/" + \
+        pythonCommand2 + " " + field + \
         " \' "
     commands.append(sysCommand)
 
 
 
-    procCount = procCount + 1
+    procCount = procCount + 2
     fieldCount = fieldCount + 1
 
 
+    
 print ""
-#for command in commands[:]:
-#    print command
+for command in commands[:]:
+    print command
+print "len of commands: ", len(commands)
 print ""
+
+
 
 
 

@@ -36,15 +36,17 @@ class GmiPlotTools (GenericModelPlotTools):
    #---------------------------------------------------------------------------  
 
    def __init__(self, fileName, latDim, lonDim, levDim, timeDim, \
-                   latVar, lonVar, levVar, timeVar):
+                   latVar, lonVar, levVar, timeVar, constString):
 
       GenericModelPlotTools.__init__(self, fileName,  
                                      latDim, lonDim, levDim, timeDim, 
                                      latVar, lonVar, levVar, timeVar)
 
-      self.gmiConstString = 'const_labels'
+      self.gmiConstString = constString
+
       if fileName.find('idaily') != -1:
          self.gmiConstString = 'freq1_labels'
+
       self.MODEL_NAME = "GMI"
 
       self.addSpeciesToFieldList (self.gmiConstString)
@@ -80,19 +82,32 @@ class GmiPlotTools (GenericModelPlotTools):
    def returnField (self, fieldName, timeRecord):
 
       
-#      print self.gmiConstString
+      print self.gmiConstString
       if self.gmiConstString == "const_labels":
          self.constVarName = "const"
+      elif self.gmiConstString == 'wetdep_spc_labels':
+         self.constVarName = "wet_depos"
       else:
          self.constVarName = "const_freq1"
 
-#      print ""
-#      print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
-#      print ""
+      print ""
+      print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
+      print ""
+
+
 
       speciesArray = self.hdfData.variables[self.constVarName]
-      
-      indexLocation = self.speciesNames.index(fieldName)
+
+
+      print self.speciesNames[:]
+
+      indexLocation = 0
+      for speciesName in self.speciesNames[:]:
+         if speciesName.lower() == fieldName.lower():
+            break
+         indexLocation = indexLocation + 1
+
+#      indexLocation = self.speciesNames.index(fieldName)
 
  #     print "num time recs of speciesArray: ", speciesArray.shape[0], timeRecord
 
@@ -101,10 +116,20 @@ class GmiPlotTools (GenericModelPlotTools):
          print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
              " Using rec dim 0"
          print ""
-         returnArray = speciesArray[0,indexLocation,:,:,:]
+         returnTime = 0
       else:
-         returnArray = speciesArray[timeRecord,indexLocation,:,:,:]
+         returnTime = timeRecord
       
+      print speciesArray.shape[:]
+      print "index loc: ", indexLocation
+
+      
+      if len(speciesArray.shape[:]) == 5:
+         returnArray = speciesArray[returnTime,indexLocation,:,:,:]    
+      if len(speciesArray.shape[:]) == 4:
+         returnArray = speciesArray[returnTime, indexLocation,:,:]
+
+
       return returnArray
 
 

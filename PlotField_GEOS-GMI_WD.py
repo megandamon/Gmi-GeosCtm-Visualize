@@ -3,10 +3,10 @@
 #------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
-# DATE:         June 21st 2017
+# DATE:         August 18 2017
 #
 # DESCRIPTION:
-# Driver to plot differences between GMI and GEOS-CTM species
+# Driver to plot differences in wet deposition of species.
 #------------------------------------------------------------------------------
 
 import re
@@ -19,6 +19,11 @@ import getopt
 import numpy
 from numpy import *
 from netCDF4 import Dataset
+
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+
 
 import math
 import matplotlib.pyplot as plt
@@ -71,24 +76,26 @@ def create2dSlice (baseMap, X_model, Y_model, z, \
     baseMap.drawstates()
 
 
-NUM_ARGS = 4
+NUM_ARGS = 5
 def usage ():
     print ""
-    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d]"
+    print "usage: PlotField_GEOS-GMI_WD.py [-c] [-g] [-r] [-d] [-f]"
     print "-c GEOS CTM restart file"
     print "-g GMI restart file"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
+    print "-f field to compare"
     print ""
     sys.exit (0)
 
 
-print "Start plotting restart species differences"
+print "Start plotting field differences."
+
 
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -97,6 +104,7 @@ geosCtmFile = optList[0][1]
 gmiFile = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
+fieldToCompare = optList[4][1]
 
 #---------------------------------------------------------------
 print ""
@@ -124,6 +132,7 @@ if len(dateYearMonth) != 6:
     sys.exit(0)
 
 
+
 print geosCtmFile
 print gmiFile
 
@@ -143,8 +152,10 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
 
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr')
+                             'longitude_dim', 'eta_dim', 'hdr', \
+                              'wetdep_spc_labels')
 print ""
+
 
 
 order = "GMI"
@@ -157,29 +168,36 @@ if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
     order = "GEOS-CTM"
 
 # Does not matter which object to use - this is weird code. :/
-fieldsToCompare = gmiObject.returnFieldsInCommon (list1, list2, order)
+fieldsToCompareAll = gmiObject.returnFieldsInCommon (list1, list2, order)
 
+fieldsToCompare = []
+for field in fieldsToCompareAll[:]:
+    if field[0:4] != "Var_" and field[0:2] != "EM" and \
+            field[0:3] != "GMI":
+        fieldsToCompare.append(field)
 
-
+print ""
 print "Fields to compare: ", fieldsToCompare[:]
+print ""
 
+foundField = False
+print ""
+for fieldInList in fieldsToCompare[:]:
 
-print "GMI model levels: ", gmiObject.lev[:]
-modelLevsToPlotGmi = {}
-levCount = 0
-for lev in gmiObject.lev[:]:
-    if int(lev) == 992 or int(lev) == 506 or int(lev) == 192:
-        modelLevsToPlotGmi [int(lev)] = levCount
-    levCount = levCount + 1
+    if fieldToCompare.lower() == fieldInList.lower():
+        print "Success: ", fieldToCompare, " can be compared!"
+        foundField = True
 
+if foundField == False:
+    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    sys.exit(-1)
 
 
 # Arrays (one time record, one species)
 longRecords = numpy.zeros(gmiObject.longSize, numpy.float32)
 
-remappedGmiArray = numpy.zeros((gmiObject.levelSize, \
-                                    gmiObject.latSize, \
-                                    gmiObject.longSize), numpy.float32)
+remappedGmiArray = numpy.zeros(( gmiObject.latSize, \
+                                     gmiObject.longSize), numpy.float32)
 
 newGmiArray = numpy.zeros((gmiObject.latSize, \
                                geosCtmObject.longSize), numpy.float32)
@@ -215,139 +233,134 @@ gridLonsGeosCtm,gridLatsGeosCtm = baseMapGeosCtm.makegrid(geosCtmObject.longSize
 X_GeosCtm, Y_GeosCtm = baseMapGeosCtm(gridLonsGeosCtm,gridLatsGeosCtm)
 
 
-fieldCount = 0
-for field in fieldsToCompare[:]:
-    
-#    print ""
-#    print "Processing: ", field
+plt.figure(figsize=(20,20))
+
+print ""
+print "Processing: ", fieldToCompare
+print ""
+
+field = fieldToCompare
+
+geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
+
+gmiFieldArray = gmiObject.returnField (field, timeRecord)
+
+print ""
+print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
+print "Shape of GMI field: ", gmiFieldArray.shape[:]
+print ""
 
 
 
-    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
-    gmiFieldArray = gmiObject.returnField (field, timeRecord)
-
-
-    # put GMI on -180 to 0 to 180
-    lenGmiLong = len(gmiObject.long[:])
+# put GMI on -180 to 0 to 180
+lenGmiLong = len(gmiObject.long[:])
         
-    remappedGmiArray [:,:,0:lenGmiLong/2] = gmiFieldArray[:,:,lenGmiLong/2:lenGmiLong]
-    remappedGmiArray [:,:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,:,0:lenGmiLong/2]
-    remappedLong = numpy.zeros(lenGmiLong, float32)
-    remappedLong [0:lenGmiLong/2] = gmiObject.long[lenGmiLong/2:lenGmiLong] - 360.0
-    remappedLong [lenGmiLong/2:lenGmiLong] = gmiObject.long[0:lenGmiLong/2]
+remappedGmiArray [:,0:lenGmiLong/2] = gmiFieldArray[:,lenGmiLong/2:lenGmiLong]
+remappedGmiArray [:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,0:lenGmiLong/2]
+remappedLong = numpy.zeros(lenGmiLong, float32)
+remappedLong [0:lenGmiLong/2] = gmiObject.long[lenGmiLong/2:lenGmiLong] - 360.0
+remappedLong [lenGmiLong/2:lenGmiLong] = gmiObject.long[0:lenGmiLong/2]
         
 
-    remappedLongPlus180 = numpy.zeros(lenGmiLong, float32)
-    remappedLongPlus180[:] = remappedLong[:] + 180.0
+remappedLongPlus180 = numpy.zeros(lenGmiLong, float32)
+remappedLongPlus180[:] = remappedLong[:] + 180.0
 
-    geosCtmLongPlus180 = numpy.zeros(geosCtmObject.longSize, float32)
-    geosCtmLongPlus180 [:] = geosCtmObject.long[:] + 180.0
-
-
+geosCtmLongPlus180 = numpy.zeros(geosCtmObject.longSize, float32)
+geosCtmLongPlus180 [:] = geosCtmObject.long[:] + 180.0
 
 
-    levCount = 0
-    for modelLev in modelLevsToPlotGmi:
-        
-        plt.figure(figsize=(20,20))
 
-#        print ""
-#        print "GMI : ", modelLev, " mb at index: ", modelLevsToPlotGmi[modelLev], \
-#            " GEOS-CTM index: ", (geosCtmObject.levelSize - 1) - modelLevsToPlotGmi[modelLev]
-#        print ""
+if gmiFieldArray.shape != geosCtmFieldArray.shape:
+    print "Array shapes are different. Interpolation needed!"
 
-        if gmiFieldArray.shape != geosCtmFieldArray.shape:
-            print "Array shapes are different. Interpolation needed!"
+    latCount = 0
+    for lat in gmiObject.lat[:]:
 
-            latCount = 0
-            for lat in gmiObject.lat[:]:
-
-                longRecords[:] = remappedGmiArray [modelLevsToPlotGmi[modelLev], latCount,:]
+        longRecords[:] = remappedGmiArray [latCount,:]
             
-                yinterp =  numpy.interp(geosCtmLongPlus180, remappedLongPlus180, longRecords)
+        yinterp =  numpy.interp(geosCtmLongPlus180, remappedLongPlus180, longRecords)
                 
-                newGmiArray[latCount, :] = yinterp [:]
+        newGmiArray[latCount, :] = yinterp [:]
 
-                latCount = latCount + 1
-
-
-        else:
-            newGmiArray[:,:] = remappedGmiArray[modelLevsToPlotGmi[modelLev],:,:]
+        latCount = latCount + 1
 
 
-        levCount = levCount + 1
-
-        print "Extracting GeosCtm level: ", (geosCtmObject.levelSize-1) - \
-            modelLevsToPlotGmi[modelLev]
-
-        z_GeosCtm = geosCtmFieldArray[(geosCtmObject.levelSize-1) \
-                                          - modelLevsToPlotGmi[modelLev], :, :]
-        z_Gmi = newGmiArray[:, :]
-        z_Diff = z_GeosCtm / z_Gmi
-
-
-        minValueOfBoth = z_GeosCtm.min()
-        maxValueOfBoth = z_GeosCtm.max()
-
-        if z_Gmi.min() < minValueOfBoth:
-            minValueOfBoth = z_Gmi.min()
-        if z_Gmi.max() > maxValueOfBoth:
-            maxValueOfBoth = z_Gmi.max()
-
-
-        #-----------------------------------------------------#
-        # GEOS-CTM
-
-        print ""
-        print "Min/max ", field, " values at level: ", modelLev
-        print ""
-
-
-        print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
-
-        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
-                           [minValueOfBoth,maxValueOfBoth], \
-                           [minGeosCtmLat,maxGeosCtmLat], \
-                           [minGeosCtmLong, maxGeosCtmLong], 311, \
-                           "GEOS-CTM " + geosCtmSimName + " " + \
-                           field + " @ " + str(modelLev) + \
-                            "mb " + dateYearMonth, "jet")
-
-
-        print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
-        print "" 
-
-        # GMI lev0 is surface
-        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
-                           [minValueOfBoth,maxValueOfBoth], \
-                           [minGeosCtmLat,maxGeosCtmLat], \
-                           [minGeosCtmLong, maxGeosCtmLong], 312, \
-                           "GMI " + gmiSimName + " " + \
-                           field + " @ " + str(modelLev) + \
-                           " mb " + dateYearMonth, "jet")
-
-        create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                           [z_Diff.min(), z_Diff.max()], \
-#                           [0, 1.5], \
-                           [minGeosCtmLat,maxGeosCtmLat], \
-                           [minGeosCtmLong, maxGeosCtmLong], 313, \
-                           "Model ratio " + field + " @ " + str(modelLev) + \
-                           " mb " + dateYearMonth, \
-                           "nipy_spectral", \
-                           normalize=True)
-        #-----------------------------------------------------#
+else:
+    newGmiArray[:,:] = remappedGmiArray[:,:]
 
 
 
-        file = "f"
-        if file == "f":
-            plt.savefig("plots/" + field + ".GEOS-CTM.GMI."
-                        + str(modelLev) + "." , bbox_inches='tight')
-        elif file == "s":
-            plt.show()
-
-    fieldCount = fieldCount + 1
+z_GeosCtm = geosCtmFieldArray[:, :] * 2678400
+z_Gmi = newGmiArray[:, :] 
+z_Diff = z_GeosCtm / z_Gmi
 
 
+minValueOfBoth = z_GeosCtm.min()
+maxValueOfBoth = z_GeosCtm.max()
+        
+if z_Gmi.min() < minValueOfBoth:
+    minValueOfBoth = z_Gmi.min()
+if z_Gmi.max() > maxValueOfBoth:
+    maxValueOfBoth = z_Gmi.max()
+
+
+#-----------------------------------------------------#
+# GEOS-CTM
+
+print ""
+print "Min/max ", field, " " 
+print ""
+
+
+
+print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
+
+
+create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
+#                   [minValueOfBoth,maxValueOfBoth], \
+                   [z_GeosCtm.min(), z_GeosCtm.max()], \
+                   [minGeosCtmLat,maxGeosCtmLat], \
+                   [minGeosCtmLong, maxGeosCtmLong], 311, \
+                   "GEOS-CTM " + geosCtmSimName + " " + \
+                   "Wet Dep of "+ field + " @ " + \
+                   dateYearMonth, "jet")
+
+
+print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
+print "" 
+
+# GMI lev0 is surface
+create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
+#                   [minValueOfBoth,maxValueOfBoth], \
+                   [z_Gmi.min(), z_Gmi.max()], \
+                   [minGeosCtmLat,maxGeosCtmLat], \
+                   [minGeosCtmLong, maxGeosCtmLong], 312, \
+                   "GMI " + gmiSimName + " " + \
+                   "Wet Dep of " + field + " @ " + \
+                   dateYearMonth, "jet")
+
+create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
+                   [z_Diff.min(), z_Diff.max()], \
+#                   [0, 1.5], \
+                   [minGeosCtmLat,maxGeosCtmLat], \
+                   [minGeosCtmLong, maxGeosCtmLong], 313, \
+                   "Model ratio of Wet Dep of " + field + " @ " \
+                   + dateYearMonth, \
+                   "nipy_spectral", \
+                   normalize=True)
+#-----------------------------------------------------#
+
+
+
+file = "f"
+if file == "f":
+    fileName = "plots/WetDep_" + field + ".GEOS-CTM.GMI." + str(dateYearMonth) + '.'
+    plt.savefig(fileName, bbox_inches='tight')
+elif file == "s":
+    plt.show()
     
+plt.clf()
 
+
+print ""
+print "Plotted wet dep of : ", fieldToCompare, " to plots/directory"

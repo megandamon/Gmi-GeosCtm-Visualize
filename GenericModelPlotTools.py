@@ -113,8 +113,15 @@ class GenericModelPlotTools:
       fieldsToCompare = []
       for item in list1[:]:
 
-         if item in list2[:]:
-            fieldsToCompare.append(item)
+         # need to take out case insensitivity 
+         for item2 in list2[:]:
+            if item.lower() == item2.lower():
+#               print "lower match: ", item2.lower()
+               fieldsToCompare.append(item)
+            
+#         if item in list2[:]:
+#            print "Appending: ", item
+#            fieldsToCompare.append(item)
 
          count = count + 1
 
