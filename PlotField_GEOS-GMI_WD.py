@@ -158,41 +158,6 @@ print ""
 
 
 
-order = "GMI"
-list1 = gmiObject.fieldList
-list2 = geosCtmObject.fieldList
-
-if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
-    list1 = geosCtmObject.fieldList
-    list2 = gmiObject.fieldList
-    order = "GEOS-CTM"
-
-# Does not matter which object to use - this is weird code. :/
-fieldsToCompareAll = gmiObject.returnFieldsInCommon (list1, list2, order)
-
-fieldsToCompare = []
-for field in fieldsToCompareAll[:]:
-    if field[0:4] != "Var_" and field[0:2] != "EM" and \
-            field[0:3] != "GMI":
-        fieldsToCompare.append(field)
-
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
-
-foundField = False
-print ""
-for fieldInList in fieldsToCompare[:]:
-
-    if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
-        foundField = True
-
-if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
-    sys.exit(-1)
-
-
 # Arrays (one time record, one species)
 longRecords = numpy.zeros(gmiObject.longSize, numpy.float32)
 
@@ -241,7 +206,7 @@ print ""
 
 field = fieldToCompare
 
-geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
+geosCtmFieldArray = geosCtmObject.returnField ("WD_" + field, timeRecord)
 
 gmiFieldArray = gmiObject.returnField (field, timeRecord)
 
@@ -249,7 +214,6 @@ print ""
 print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
 print "Shape of GMI field: ", gmiFieldArray.shape[:]
 print ""
-
 
 
 # put GMI on -180 to 0 to 180
@@ -302,6 +266,14 @@ if z_Gmi.min() < minValueOfBoth:
     minValueOfBoth = z_Gmi.min()
 if z_Gmi.max() > maxValueOfBoth:
     maxValueOfBoth = z_Gmi.max()
+
+
+for lat in range(0, size(geosCtmObject.lat)):
+    for long in range(0, size(geosCtmObject.long)):
+
+        if z_Gmi[lat, long] == 0 and z_GeosCtm[lat, long] == 0:
+            #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+            z_Diff[lat, long] = 1.0
 
 
 #-----------------------------------------------------#

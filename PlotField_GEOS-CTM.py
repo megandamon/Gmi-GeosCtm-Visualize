@@ -301,6 +301,24 @@ for modelLev in modelLevsToPlot:
 
 
 
+    print range(0, size(geosCtmObject1.long))
+    print range(0, size(geosCtmObject1.lat))
+
+    print shape(z_GeosCtm1)
+    print shape(z_GeosCtm2)
+    print shape(z_Diff)
+
+
+    for lat in range(0, size(geosCtmObject1.lat)):
+        for long in range(0, size(geosCtmObject1.long)):
+
+            if z_GeosCtm1[lat, long] == 0 and z_GeosCtm2[lat, long] == 0:
+                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+                z_Diff[lat, long] = 1.0
+
+
+
+
 
     #-----------------------------------------------------#
     # GEOS-CTM 1
@@ -329,6 +347,8 @@ for modelLev in modelLevsToPlot:
                        "GEOS-CTM " + geosCtmSimName2 + " " + \
                        fieldToCompare + " @ " + str(modelLev) + \
                        "lev " + dateYearMonth, "jet")
+    
+
 
     create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
                        #                           [z_Diff.min(), z_Diff.max()], \

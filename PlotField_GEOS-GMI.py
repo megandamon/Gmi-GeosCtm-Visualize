@@ -329,6 +329,14 @@ for modelLev in modelLevsToPlotGmi:
     if z_Gmi.max() > maxValueOfBoth:
         maxValueOfBoth = z_Gmi.max()
 
+    for lat in range(0, size(geosCtmObject.lat)):
+        for long in range(0, size(geosCtmObject.long)):
+
+            if z_Gmi[lat, long] == 0 and z_GeosCtm[lat, long] == 0:
+                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+                z_Diff[lat, long] = 1.0
+
+
 
     #-----------------------------------------------------#
     # GEOS-CTM
