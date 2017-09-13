@@ -89,6 +89,8 @@ class GmiPlotTools (GenericModelPlotTools):
          self.constVarName = "const"
       elif self.gmiConstString == 'wetdep_spc_labels':
          self.constVarName = "wet_depos"
+      elif self.gmiConstString == 'drydep_spc_labels':
+         self.constVarName = "dry_depos"
       else:
          self.constVarName = "const_freq1"
 

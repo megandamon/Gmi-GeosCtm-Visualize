@@ -76,14 +76,15 @@ def create2dSlice (baseMap, X_model, Y_model, z, \
     baseMap.drawstates()
 
 
-NUM_ARGS = 5
+NUM_ARGS = 6
 def usage ():
     print ""
-    print "usage: PlotField_GEOS-GMI_WD.py [-c] [-g] [-r] [-d] [-f]"
+    print "usage: PlotField_GEOS-GMI_Dep.py [-c] [-g] [-r] [-d] [-p] [-f]"
     print "-c GEOS CTM restart file"
     print "-g GMI restart file"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
+    print "-p field prefix"
     print "-f field to compare"
     print ""
     sys.exit (0)
@@ -95,7 +96,7 @@ print "Start plotting field differences."
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:p:f:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -104,7 +105,8 @@ geosCtmFile = optList[0][1]
 gmiFile = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
-fieldToCompare = optList[4][1]
+fieldPrefix = optList[4][1]
+fieldToCompare = optList[5][1]
 
 #---------------------------------------------------------------
 print ""
@@ -131,10 +133,24 @@ if len(dateYearMonth) != 6:
     print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
     sys.exit(0)
 
+if fieldPrefix == "WD_":
+    gmiCharString = 'wetdep_spc_labels'
+    titleString = "Wet dep of "
+elif fieldPrefix == "DD_":
+    gmiCharString = 'drydep_spc_labels'
+    titleString = "Dry dep of "
+else:
+    print "Field prefix: ", fieldPrefix, " not supported!"
+    sys.exit(0)
+
 
 
 print geosCtmFile
 print gmiFile
+print ""
+print fieldPrefix + fieldToCompare
+print ""
+
 
 geosCtmSimName = geosCtmFile.split(".")[0]
 gmiSimName = gmiFile.split("_")[1]
@@ -150,11 +166,13 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 
 
+
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', \
-                              'wetdep_spc_labels')
+                              gmiCharString)
 print ""
+
 
 
 
@@ -206,7 +224,7 @@ print ""
 
 field = fieldToCompare
 
-geosCtmFieldArray = geosCtmObject.returnField ("WD_" + field, timeRecord)
+geosCtmFieldArray = geosCtmObject.returnField (fieldPrefix + field, timeRecord)
 
 gmiFieldArray = gmiObject.returnField (field, timeRecord)
 
@@ -214,6 +232,7 @@ print ""
 print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
 print "Shape of GMI field: ", gmiFieldArray.shape[:]
 print ""
+
 
 
 # put GMI on -180 to 0 to 180
@@ -288,13 +307,14 @@ print ""
 print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
 
 
+
 create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
 #                   [minValueOfBoth,maxValueOfBoth], \
                    [z_GeosCtm.min(), z_GeosCtm.max()], \
                    [minGeosCtmLat,maxGeosCtmLat], \
                    [minGeosCtmLong, maxGeosCtmLong], 311, \
                    "GEOS-CTM " + geosCtmSimName + " " + \
-                   "Wet Dep of "+ field + " @ " + \
+                   titleString + field + " @ " + \
                    dateYearMonth, "jet")
 
 
@@ -308,7 +328,7 @@ create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
                    [minGeosCtmLat,maxGeosCtmLat], \
                    [minGeosCtmLong, maxGeosCtmLong], 312, \
                    "GMI " + gmiSimName + " " + \
-                   "Wet Dep of " + field + " @ " + \
+                   titleString + field + " @ " + \
                    dateYearMonth, "jet")
 
 create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
@@ -316,7 +336,7 @@ create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
 #                   [0, 1.5], \
                    [minGeosCtmLat,maxGeosCtmLat], \
                    [minGeosCtmLong, maxGeosCtmLong], 313, \
-                   "Model ratio of Wet Dep of " + field + " @ " \
+                   "Model ratio for dep of " + field + " @ " \
                    + dateYearMonth, \
                    "nipy_spectral", \
                    normalize=True)
@@ -326,7 +346,7 @@ create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
 
 file = "f"
 if file == "f":
-    fileName = "plots/WetDep_" + field + ".GEOS-CTM.GMI." + str(dateYearMonth) + '.'
+    fileName = "plots/" + fieldPrefix + field + ".GEOS-CTM.GMI." + str(dateYearMonth) + '.'
     plt.savefig(fileName, bbox_inches='tight')
 elif file == "s":
     plt.show()
@@ -335,4 +355,4 @@ plt.clf()
 
 
 print ""
-print "Plotted wet dep of : ", fieldToCompare, " to plots/directory"
+print "Plotted dep of : ", fieldToCompare, " to plots/directory"
