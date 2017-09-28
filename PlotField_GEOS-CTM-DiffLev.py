@@ -51,38 +51,6 @@ from GenericModelPlotTools import GenericModelPlotTools
 
 
 
-
-
-# This routine can go into the Generic class
-# and X_model, Y_model, and min/maxes 
-# can be members of the class
-def create2dSlice (baseMap, X_model, Y_model, z, \
-                       minMaxVals, minMaxLat, \
-                       minMaxLong, subplotNum, plotTitle, \
-                       colorMap, \
-                       normalize=False):
-
-    print "min/max field vals in create2dSlice: ", minMaxVals[:]
-
-    plt.subplot(subplotNum)
-
-
-
-    imSlice = baseMap.pcolor(X_model, Y_model, z, \
-                                 cmap=colorMap, \
-                                 vmin = minMaxVals[0], \
-                                 vmax = minMaxVals[1])
-    plt.colorbar()
-        
-    plt.title(plotTitle)
-    plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])
-
-    baseMap.drawparallels(numpy.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0])
-    baseMap.drawmeridians(numpy.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1])
-    baseMap.drawcoastlines()
-    baseMap.drawstates()
-
-
 NUM_ARGS = 6
 def usage ():
     print ""
@@ -337,37 +305,37 @@ for modelLev in ['top','surface','middle']:
 
     print "GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max()
 
-    create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
-                       [z_GeosCtm1.min(), z_GeosCtm1.max()], \
-#                       [minValueOfBoth,maxValueOfBoth], \
-                       [minGeosCtmLat,maxGeosCtmLat], \
-                       [minGeosCtmLong, maxGeosCtmLong], 311, \
-                       "GEOS-CTM " + geosCtmSimName1 + " " + \
-                       fieldToCompare + " @ " + str(lev1) + \
-                       "lev " + dateYearMonth, "jet")
+    geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
+                                      [z_GeosCtm1.min(), z_GeosCtm1.max()], \
+                                      #[minValueOfBoth,maxValueOfBoth], \
+                                      [minGeosCtmLat,maxGeosCtmLat], \
+                                      [minGeosCtmLong, maxGeosCtmLong], 311, \
+                                      "GEOS-CTM " + geosCtmSimName1 + " " + \
+                                      fieldToCompare + " @ " + str(lev1) + \
+                                      "lev " + dateYearMonth, "jet")
 
     print "GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
 
-    create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
-                       [z_GeosCtm2.min(), z_GeosCtm2.max()], \
-#                       [minValueOfBoth,maxValueOfBoth], \
-                       [minGeosCtmLat,maxGeosCtmLat], \
-                       [minGeosCtmLong, maxGeosCtmLong], 312, \
-                       "GEOS-CTM " + geosCtmSimName2 + " " + \
-                       otherFieldToCompare + " @ " + str(lev2) + \
-                       "lev " + dateYearMonth, "jet")
+    geosCtmObject2.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
+                                      [z_GeosCtm2.min(), z_GeosCtm2.max()], \
+                                      #[minValueOfBoth,maxValueOfBoth], \
+                                      [minGeosCtmLat,maxGeosCtmLat], \
+                                      [minGeosCtmLong, maxGeosCtmLong], 312, \
+                                      "GEOS-CTM " + geosCtmSimName2 + " " + \
+                                      otherFieldToCompare + " @ " + str(lev2) + \
+                                      "lev " + dateYearMonth, "jet")
     
 
 
-    create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                       [z_Diff.min(), z_Diff.max()], \
-#                       [0, 1.5], \
-                       [minGeosCtmLat,maxGeosCtmLat], \
-                       [minGeosCtmLong, maxGeosCtmLong], 313, \
-                       "Model ratio " + fieldToCompare + " @ " + str(modelLev) + \
-                       " lev " + dateYearMonth, \
-                       "nipy_spectral", \
-                       normalize=True)
+    geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
+                                      [z_Diff.min(), z_Diff.max()], \
+                                      #[0, 1.5], \
+                                      [minGeosCtmLat,maxGeosCtmLat], \
+                                      [minGeosCtmLong, maxGeosCtmLong], 313, \
+                                      "Model ratio " + fieldToCompare + " @ " + str(modelLev) + \
+                                      " lev " + dateYearMonth, \
+                                      "nipy_spectral", \
+                                      normalize=True)
     #-----------------------------------------------------#
 
 

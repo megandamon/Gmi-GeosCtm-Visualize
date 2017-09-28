@@ -17,8 +17,20 @@ import sys
 import random
 import datetime
 import calendar
+import numpy
 from numpy import *
 from netCDF4 import Dataset
+
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+
+import math
+import matplotlib.pyplot as plt
+from matplotlib.colors import BoundaryNorm
+import matplotlib.colors as colors
+from matplotlib.ticker import MaxNLocator
+from mpl_toolkits.basemap import Basemap
 
 
 
@@ -59,7 +71,30 @@ class GenericModelPlotTools:
       self.levVarName = levVar
       self.timeVarName = timeVar
 
+      self.minLat = self.lat[:].min()
+      self.maxLat = self.lat[:].max()
+      self.minLong = self.long[:].min()
+      self.maxLong = self.long[:].max()
+
+      self.cenLat = (self.minLat + self.maxLat)/2.
+      self.cenLong =  (self.minLong + self.maxLong)/2.
+
+
       self.populateFieldList ()
+
+
+   def createPlotObjects (self):
+
+      self.baseMap = Basemap(llcrnrlon=self.minLong, \
+                                llcrnrlat=self.minLat, \
+                                urcrnrlon=self.maxLong, \
+                                urcrnrlat=self.maxLat, \
+                                projection='cyl', \
+                                lat_0=self.cenLat,lon_0=self.cenLong)
+
+      self.gridLons,self.gridLats = self.baseMap.makegrid \
+          (self.longSize, self.latSize)
+      self.X_grid, self.Y_grid = self.baseMap(self.gridLons,self.gridLats)
 
 
    #---------------------------------------------------------------------------  
@@ -72,6 +107,67 @@ class GenericModelPlotTools:
    def __del__(self):
       self.hdfData.close()
       pass
+
+
+   def create2dSlice2 (self,  z, minMaxVals, subplotNum, plotTitle, \
+                          colorMap, normalize=False):
+
+      print "min/max field vals in create2dSlice: ", minMaxVals[:]
+
+      plt.subplot(subplotNum)
+
+
+
+      imSlice = self.baseMap.pcolor(self.X_grid, self.Y_grid, z, \
+                                       cmap=colorMap, \
+                                       vmin = minMaxVals[0], \
+                                       vmax = minMaxVals[1])
+      plt.colorbar()
+        
+      plt.title(plotTitle)
+      plt.axis([self.X_grid.min(), self.X_grid.max(), self.Y_grid.min(), self.Y_grid.max()])
+
+#      baseMap.drawparallels(numpy.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0])
+      self.baseMap.drawparallels(numpy.arange(self.minLat,self.maxLat, 40),labels=[1,0,0,0])
+
+#      baseMap.drawmeridians(numpy.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1])
+      self.baseMap.drawmeridians(numpy.arange(self.minLong, self.maxLong,80),labels=[0,1,0,1])
+ 
+      self.baseMap.drawcoastlines()
+      self.baseMap.drawstates()
+
+
+
+   # X_model, Y_model, and min/maxes 
+   # can be members of the class
+   def create2dSlice (self, baseMap, X_model, Y_model, z, \
+                         minMaxVals, minMaxLat, \
+                         minMaxLong, subplotNum, plotTitle, \
+                         colorMap, \
+                         normalize=False):
+
+      #    print "min/max field vals in create2dSlice: ", minMaxVals[:]
+
+      plt.subplot(subplotNum)
+
+
+
+      imSlice = baseMap.pcolor(X_model, Y_model, z, \
+                                  cmap=colorMap, \
+                                  vmin = minMaxVals[0], \
+                                  vmax = minMaxVals[1])
+      plt.colorbar()
+        
+      plt.title(plotTitle)
+      plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])
+
+      baseMap.drawparallels(numpy.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0])
+      baseMap.drawmeridians(numpy.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1])
+      baseMap.drawcoastlines()
+      baseMap.drawstates()
+
+
+
 
    def readNodesIntoArray (self, nodeFile):
 

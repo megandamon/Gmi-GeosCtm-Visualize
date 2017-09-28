@@ -44,38 +44,6 @@ from GenericModelPlotTools import GenericModelPlotTools
 from GmiPlotTools import GmiPlotTools
 
 
-
-
-# This routine can go into the Generic class
-# and X_model, Y_model, and min/maxes 
-# can be members of the class
-def create2dSlice (baseMap, X_model, Y_model, z, \
-                       minMaxVals, minMaxLat, \
-                       minMaxLong, subplotNum, plotTitle, \
-                       colorMap, \
-                       normalize=False):
-
-#    print "min/max field vals in create2dSlice: ", minMaxVals[:]
-
-    plt.subplot(subplotNum)
-
-
-
-    imSlice = baseMap.pcolor(X_model, Y_model, z, \
-                                 cmap=colorMap, \
-                                 vmin = minMaxVals[0], \
-                                 vmax = minMaxVals[1])
-    plt.colorbar()
-        
-    plt.title(plotTitle)
-    plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])
-
-    baseMap.drawparallels(numpy.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0])
-    baseMap.drawmeridians(numpy.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1])
-    baseMap.drawcoastlines()
-    baseMap.drawstates()
-
-
 NUM_ARGS = 5
 def usage ():
     print ""
@@ -150,16 +118,23 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 
 
+
+
+
+
+
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
-print ""
+
+
 
 
 order = "GMI"
 list1 = gmiObject.fieldList
 list2 = geosCtmObject.fieldList
 
+print ""
 print "Geos CTM field list: ", list2
 print ""
 print "GMI field list: ", list1
@@ -170,7 +145,7 @@ if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
     list2 = gmiObject.fieldList
     order = "GEOS-CTM"
 
-# Does not matter which object to use - this is weird code. :/
+# Does not matter which object to use - this is weird code. 
 fieldsToCompareAll = gmiObject.returnFieldsInCommon (list1, list2, order)
 
 fieldsToCompare = []
@@ -222,35 +197,7 @@ remappedGmiArray = numpy.zeros((gmiObject.levelSize, \
 newGmiArray = numpy.zeros((gmiObject.latSize, \
                                geosCtmObject.longSize), numpy.float32)
 
-
-minGeosCtmLat = geosCtmObject.lat[:].min()
-maxGeosCtmLat = geosCtmObject.lat[:].max()
-minGeosCtmLong = geosCtmObject.long[:].min()
-maxGeosCtmLong = geosCtmObject.long[:].max()
-
-cenGeosCtmLat = (minGeosCtmLat + maxGeosCtmLat)/2.
-cenGeosCtmLong =  (minGeosCtmLong + maxGeosCtmLong)/2.
-
-
-baseMapGeosCtm = Basemap(llcrnrlon=minGeosCtmLong,llcrnrlat=minGeosCtmLat,\
-                             urcrnrlon=maxGeosCtmLong,urcrnrlat=maxGeosCtmLat,\
-                             projection='cyl', \
-                             lat_0=cenGeosCtmLat,lon_0=cenGeosCtmLong)
-
-cenGmiLong = (gmiObject.long[:].min() + gmiObject.long[:].max()) / 2.0
-
-print ""
-print "Basemap info: "
-print "llcr lon: ", minGeosCtmLong
-print "llcr lat: ", minGeosCtmLat
-print "urc lon: ", maxGeosCtmLong
-print "urc lat: ", maxGeosCtmLat
-print "centers lat/long: ", cenGeosCtmLat, cenGeosCtmLong
-print ""
-
-
-gridLonsGeosCtm,gridLatsGeosCtm = baseMapGeosCtm.makegrid(geosCtmObject.longSize, geosCtmObject.latSize)
-X_GeosCtm, Y_GeosCtm = baseMapGeosCtm(gridLonsGeosCtm,gridLatsGeosCtm)
+                             
 
 
 plt.figure(figsize=(20,20))
@@ -285,6 +232,16 @@ remappedLongPlus180[:] = remappedLong[:] + 180.0
 
 geosCtmLongPlus180 = numpy.zeros(geosCtmObject.longSize, float32)
 geosCtmLongPlus180 [:] = geosCtmObject.long[:] + 180.0
+
+
+
+# Prepares basemap objects for plotting
+print ""
+print "Creating GEOS-CTM plot objects..."
+geosCtmObject.createPlotObjects()
+print "Creating GMI plot objects..."
+gmiObject.createPlotObjects()
+print ""
 
 
 levCount = 0
@@ -352,40 +309,41 @@ for modelLev in modelLevsToPlotGmi:
     print ""
 
 
+    print ""
     print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
+    print ""
 
-    create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
-                       [minValueOfBoth,maxValueOfBoth], \
-#                       [z_GeosCtm.min(),z_GeosCtm.max()], \
-                       [minGeosCtmLat,maxGeosCtmLat], \
-                       [minGeosCtmLong, maxGeosCtmLong], 311, \
-                       "GEOS-CTM " + geosCtmSimName + " " + \
-                       field + " @ " + str(modelLev) + \
-                       "mb " + dateYearMonth, "jet")
+    geosCtmObject.create2dSlice2 (z_GeosCtm, \
+                                      [minValueOfBoth,maxValueOfBoth], \
+                                      #[z_GeosCtm.min(),z_GeosCtm.max()], \
+                                      311, "GEOS-CTM " + geosCtmSimName + " " + \
+                                      field + " @ " + str(modelLev) + \
+                                      "mb " + dateYearMonth, "jet")
 
 
+    print ""
     print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
     print "" 
 
-    # GMI lev0 is surface
-    create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
-                       [minValueOfBoth,maxValueOfBoth], \
-#                       [z_Gmi.min(), z_Gmi.max()], \
-                       [minGeosCtmLat,maxGeosCtmLat], \
-                       [minGeosCtmLong, maxGeosCtmLong], 312, \
-                       "GMI " + gmiSimName + " " + \
-                       field + " @ " + str(modelLev) + \
-                       " mb " + dateYearMonth, "jet")
 
-    create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                      #                           [z_Diff.min(), z_Diff.max()], \
-                       [0, 1.5], \
-                       [minGeosCtmLat,maxGeosCtmLat], \
-                       [minGeosCtmLong, maxGeosCtmLong], 313, \
-                       "Model ratio " + field + " @ " + str(modelLev) + \
-                       " mb " + dateYearMonth, \
-                       "nipy_spectral", \
-                       normalize=True)
+    # GMI lev0 is surface
+    # using geosCtmObject because GMI should now be on lat/long system of GEOS-CTM
+    geosCtmObject.create2dSlice2 (z_Gmi, \
+                                      [minValueOfBoth,maxValueOfBoth], \
+                                      #[z_Gmi.min(), z_Gmi.max()], \
+                                      312, "GMI " + gmiSimName + " " + \
+                                      field + " @ " + str(modelLev) + \
+                                      " mb " + dateYearMonth, "jet")
+
+
+    geosCtmObject.create2dSlice2 (z_Diff, \
+                                     #[z_Diff.min(), z_Diff.max()], \
+                                     [0, 1.5], \
+                                     313, "Model ratio " + field + " @ " + str(modelLev) + \
+                                     " mb " + dateYearMonth, \
+                                     "nipy_spectral", \
+                                     normalize=True)
+
     #-----------------------------------------------------#
 
 
@@ -402,3 +360,4 @@ for modelLev in modelLevsToPlotGmi:
 
 print ""
 print "Plotted : ", fieldToCompare, " to plots/directory"
+print ""
