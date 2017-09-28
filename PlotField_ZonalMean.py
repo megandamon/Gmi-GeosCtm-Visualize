@@ -3,10 +3,12 @@
 #------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
-# DATE:         August 15 2017
+# DATE:         September 20 2017
 #
 # DESCRIPTION:
-# Driver to plot zonal mean differences for one field between GMI and GEOS-CTM
+# Driver to plot zonal mean differences for one field between:
+# 1. A GEOS-CTM file
+# 2. A GEOS-CTM file or GMI file
 #------------------------------------------------------------------------------
 
 import re
@@ -51,8 +53,8 @@ NUM_ARGS = 5
 def usage ():
     print ""
     print "usage: PlotRestartSpecies_ZonalMean.py [-c] [-g] [-r] [-d] [-f]"
-    print "-c GEOS CTM file"
-    print "-g GMI  file"
+    print "-c File1 (GEOS-CTM)"
+    print "-g File2 (GMI  or GEOS-CTM) [if GMI format is gmi*.nc]"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
     print "-f field to compare"
@@ -130,7 +132,8 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     ax1.set_yscale('log')
     ax1.set_ylim(y.max(), y.min())
     subs = [1,2,5]
-    #print "y_max/y_min = ", y.max()/y.min()
+    
+    print "y_max, y_min = ", y.max(), y.min()
     if y.max()/y.min() < 30.:
         subs = [1,2,3,4,5,6,7,8,9]
     loc = ticker.LogLocator(base=10., subs=subs)
@@ -154,7 +157,7 @@ if len (optList) != NUM_ARGS:
    sys.exit (0)
 
 geosCtmFile = optList[0][1]
-gmiFile = optList[1][1]
+file2 = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 fieldToCompare = optList[4][1]
@@ -165,13 +168,13 @@ print "Checking command line options... "
 print""
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile):
-    print "The file you provided does not exist: ", geosCtmFile
+    print "The GEOS-CTM file you provided does not exist: ", geosCtmFile
     sys.exit(0)
 
-if not os.path.exists (gmiFile):
-    print "The file you provided does not exist: ", gmiFile
+if not os.path.exists (file2):
+    print "The GEOS-CTM or GMI file you provided does not exist: ", file2
+    print "GMI format must be in gmi*.nc"
     sys.exit(0)
-
 
 if int(timeRecord) > 30: 
     print "WARNING: time record is more than a typical daily file!"
@@ -186,10 +189,36 @@ if len(dateYearMonth) != 6:
 
 
 print geosCtmFile
-print gmiFile
+print file2
+
+file2Flag = "GMI"
+
+if file2[0:3] == "gmi" and file2[-3:] == ".nc":
+    print "File2 is GMI"
+else:
+    print "File2 is GEOS-CTM"
+    file2Flag = "GEOS"
+
 
 geosCtmSimName = geosCtmFile.split(".")[0]
-gmiSimName = gmiFile.split("_")[1]
+
+if file2Flag == "GMI": 
+    sim2Name = file2.split("_")[1]
+    plotTitleFile2 = "GMI " + sim2Name
+    fileTitle = ".GEOS-CTM.GMI."
+else :
+    sim2Name = file2.split(".")[0]
+    plotTitleFile2 = "GEOS-CTM " + sim2Name
+    fileTitle = ".GEOS-CTM.inter."
+
+
+
+
+print ""
+print "geosCtmSimName: ", geosCtmSimName
+print "sim2Name: ", sim2Name
+print ""
+
 
 
 #---------------------------------------------------------------
@@ -202,23 +231,31 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 
 
-gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
-                             'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
-print ""
 
 
-order = "GMI"
-list1 = gmiObject.fieldList
+if file2Flag == "GMI":
+    file2Object = GmiPlotTools (file2, 'latitude_dim', 'longitude_dim', \
+                                  'eta_dim', 'rec_dim', 'latitude_dim', \
+                                  'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
+
+else:
+    file2Object = GeosCtmPlotTools (file2, 'lat','lon',\
+                                        'lev','time', 'lat', \
+                                        'lon', 'lev', 'time' )
+
+
+
+
+list1 = file2Object.fieldList
 list2 = geosCtmObject.fieldList
 
-if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
+if len(geosCtmObject.fieldList) >= len(file2Object.fieldList):
     list1 = geosCtmObject.fieldList
-    list2 = gmiObject.fieldList
-    order = "GEOS-CTM"
+    list2 = file2Object.fieldList
 
-# Does not matter which object to use - this is weird code. :/
-fieldsToCompareAll = gmiObject.returnFieldsInCommon (list1, list2, order)
+
+fieldsToCompareAll = file2Object.returnFieldsInCommonNew (list1, list2)
+
 
 fieldsToCompare = []
 for field in fieldsToCompareAll[:]:
@@ -229,6 +266,8 @@ for field in fieldsToCompareAll[:]:
 print ""
 print "Fields to compare: ", fieldsToCompare[:]
 print ""
+
+
 
 foundField = False
 print ""
@@ -246,53 +285,101 @@ if foundField == False:
 
 print ""
 print "Fields to compare: ", fieldsToCompare[:]
-print "GMI model levels: ", gmiObject.lev[:]
 print ""
 
 
-# Arrays (one time record, one species)
-longRecords = numpy.zeros(gmiObject.longSize, numpy.float32)
 
-remappedGmiArray = numpy.zeros((gmiObject.levelSize, \
-                                    gmiObject.latSize, \
-                                    gmiObject.longSize), numpy.float32)
 
-newGmiArray = numpy.zeros((gmiObject.levelSize, \
-                               gmiObject.latSize, \
+# Arrays (one time record, one species or field)
+
+# file2 has the potential to have a different lognitude system and length 
+# This is because GMI is on a 0-360 system
+# And GEOS-CTM is very flexible about resolution
+longRecords = numpy.zeros(file2Object.longSize, numpy.float32)
+
+remappedFile2Array = numpy.zeros((file2Object.levelSize, \
+                                    file2Object.latSize, \
+                                    file2Object.longSize), numpy.float32)
+
+newFile2Array = numpy.zeros((file2Object.levelSize, \
+                               file2Object.latSize, \
                                geosCtmObject.longSize), numpy.float32)
 
-gmiZonalArray = numpy.zeros ((gmiObject.levelSize, \
-                                  gmiObject.latSize), numpy.float32)
+file2ZonalArray = numpy.zeros ((file2Object.levelSize, \
+                                  file2Object.latSize), numpy.float32)
 
 geosCtmZonalArray = numpy.zeros ((geosCtmObject.levelSize, \
                                       geosCtmObject.latSize), numpy.float32)
+
+
+
 
 print ""
 print "Processing: ", fieldToCompare
 print ""
 
 
+
+
 field = fieldToCompare
 
 geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
-gmiFieldArray = gmiObject.returnField (field, timeRecord)
+file2FieldArray = file2Object.returnField (field, timeRecord)
 
-#    print "shapes of arrays: ", geosCtmFieldArray.shape, gmiFieldArray.shape
+print "shapes of arrays: ", geosCtmFieldArray.shape, file2FieldArray.shape
+
+
+
+lenFile2Long = len(file2Object.long[:])
+remappedLong = numpy.zeros(lenFile2Long, float32)
+
+
+print ""
+print sim2Name
+print ""
+
 
 # put GMI on -180 to 0 to 180
-lenGmiLong = len(gmiObject.long[:])
+if file2Flag == "GMI" or sim2Name == "MERRA2_300":
+
+    print ""
+    print "File2 appears to be in GMI format. Remapping longitude coordinate"
+    print ""
+
         
-remappedGmiArray [:,:,0:lenGmiLong/2] = gmiFieldArray[:,:,lenGmiLong/2:lenGmiLong]
-remappedGmiArray [:,:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,:,0:lenGmiLong/2]
-remappedLong = numpy.zeros(lenGmiLong, float32)
-remappedLong [0:lenGmiLong/2] = gmiObject.long[lenGmiLong/2:lenGmiLong] - 360.0
-remappedLong [lenGmiLong/2:lenGmiLong] = gmiObject.long[0:lenGmiLong/2]
-        
-remappedLongPlus180 = numpy.zeros(lenGmiLong, float32)
-remappedLongPlus180[:] = remappedLong[:] + 180.0
+    remappedFile2Array [:,:,0:lenFile2Long/2] = \
+        file2FieldArray[:,:,lenFile2Long/2:lenFile2Long]
+
+    remappedFile2Array [:,:,lenFile2Long/2:lenFile2Long] = \
+        file2FieldArray[:,:,0:lenFile2Long/2]
 
 
-if gmiFieldArray.shape != geosCtmFieldArray.shape:
+
+    remappedLong [0:lenFile2Long/2] = file2Object.long[lenFile2Long/2:lenFile2Long] - 360.0
+
+    remappedLong [lenFile2Long/2:lenFile2Long] = file2Object.long[0:lenFile2Long/2]
+        
+    remappedLongPlus180 = numpy.zeros(lenFile2Long, float32)
+    remappedLongPlus180[:] = remappedLong[:] + 180.0
+
+else: 
+
+    print ""
+    print "File2 appears to be in GEOS-CTM format. Will not remap longitude coordinate"
+    print ""
+    
+    remappedFile2Array [:,:,:] = file2FieldArray[:,:,:]
+    remappedLong [:] = file2Object.long[:]
+
+
+
+
+print ""
+print "Remapped long: ", remappedLong[:]
+print ""
+
+
+if file2FieldArray.shape != geosCtmFieldArray.shape:
     print "Array shapes are different. Interpolation needed!"
     
     modelLevCount = 0
@@ -300,13 +387,13 @@ if gmiFieldArray.shape != geosCtmFieldArray.shape:
     for modelLev in geosCtmObject.lev[:]:
 
         latCount = 0
-        for lat in gmiObject.lat[:]:
+        for lat in file2Object.lat[:]:
 
-            longRecords[:] = remappedGmiArray [modelLevCount, latCount,:]
+            longRecords[:] = remappedFile2Array [modelLevCount, latCount,:]
                         
             yinterp =  numpy.interp(geosCtmObject.long[:], remappedLong[:], longRecords)
             
-            newGmiArray[modelLevCount, latCount, :] = yinterp [:]
+            newFile2Array[modelLevCount, latCount, :] = yinterp [:]
             
             latCount = latCount + 1
 
@@ -315,142 +402,241 @@ if gmiFieldArray.shape != geosCtmFieldArray.shape:
 
 
 else:
-    newGmiArray[:,:, :] = remappedGmiArray[:,:,:]
+    newFile2Array[:,:, :] = remappedFile2Array[:,:,:]
 
-        
 
-# Need to find tropMaxLev and tropMinLev from GMI
-tropMinLev = findLevelFromArray (gmiObject.lev, 100.00)
 
-#    print ""
-#    print gmiObject.lev[:]
-#    print ""
+if file2Flag == "GMI":
+    # find tropMaxLev and tropMinLev from GMI
+    tropMinLev = findLevelFromArray (file2Object.lev, 100.00)
 
-#    print ""
-#    print"Trop levels: ",  gmiObject.lev[0:tropMinLev+1]
-#    print "Strat levels: '", gmiObject.lev[tropMinLev+1::]
-#    print ""
+    print ""
+    print "Trop min level: ", tropMinLev
+    print ""
 
-# lev, lat, long
-zmGmiTrop = numpy.mean (newGmiArray[0:tropMinLev+1, :, :], axis=2)
+    print ""
+    print"Trop levels: ",  file2Object.lev[0:tropMinLev+1]
+    print "Strat levels: '", file2Object.lev[tropMinLev+1::]
+    print ""
+
+
+else:
+
+    tropMinLev = 34
+    print ""
+    print "WARNING: Default tropophere min level being used : ", tropMinLev
+    print ""
+
+
 
 geosCtmSurface = geosCtmObject.levelSize-1
 geosCtmTropPause = (geosCtmObject.levelSize-1) - tropMinLev
 
 
-#    print ""
-#    print "GMI trop 0 : ", tropMinLev
-#    print "GEOS-CTM trop ", geosCtmTropPause, " : ", geosCtmSurface
-#    print ""
+if file2Flag == "GMI": 
+    # lev, lat, long
+    tropFile2 = newFile2Array[0:tropMinLev+1, :, :]
+    zmFile2Trop = numpy.mean (newFile2Array[0:tropMinLev+1, :, :], axis=2)
+else:
+    tropFile2 = newFile2Array[geosCtmTropPause:geosCtmSurface+1, :, :]
+    zmFile2Trop = numpy.mean(newFile2Array[geosCtmTropPause:geosCtmSurface+1, :, :], \
+                                 axis=2)
+
 
 
 zmGeosCtmTrop = numpy.mean (geosCtmFieldArray[geosCtmTropPause:geosCtmSurface+1, :, :], \
                                 axis=2)
+tropGeosCtm = geosCtmFieldArray[geosCtmTropPause:geosCtmSurface+1, :,:]
 
-# flip the array to the same orientation as GMI 
-zmGeosCtmTropRev = zmGeosCtmTrop[::-1, :]
 
-#    print "Size of zm GEOS: ", zmGeosCtmTrop.shape
-#    print "Size of zm GMI: ", zmGmiTrop.shape
+# flip the array to the same orientation as FILE2
+if file2Flag == "GMI":
+    zmGeosCtmTropRev = zmGeosCtmTrop[::-1, :]
+else:
+    zmGeosCtmTropRev = zmGeosCtmTrop[:,:]
+
+print "Size of Trop ZM GEOS: ", zmGeosCtmTrop.shape
+print "Size of Top ZM file2: ", zmFile2Trop.shape
 
 minValueOfBoth = zmGeosCtmTropRev.min()
 maxValueOfBoth = zmGeosCtmTropRev.max()
 
-if zmGmiTrop.min() < minValueOfBoth:
-    minValueOfBoth = zmGmiTrop.min()
-if zmGmiTrop.max() > maxValueOfBoth:
-    maxValueOfBoth = zmGmiTrop.max()
+if zmFile2Trop.min() < minValueOfBoth:
+    minValueOfBoth = zmFile2Trop.min()
+if zmFile2Trop.max() > maxValueOfBoth:
+    maxValueOfBoth = zmFile2Trop.max()
 
 
 fig = plt.figure(figsize=(20,20))
 plotOpt = {}
 
 ax1 = fig.add_subplot(311)
-plotOpt['title'] = "GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
+plotOpt['title'] = "Trop GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
+
+
+if file2Object.lev[0] == 0:
+    useLevels = file2Object.lev[:] + 1
+else:
+    useLevels = file2Object.lev[:]
+
+
 plotZM (zmGeosCtmTropRev, geosCtmObject.lat[:], \
-            gmiObject.lev[0:tropMinLev+1], fig, ax1, 'jet', minValueOfBoth, \
-            maxValueOfBoth, plotOpt)
+            useLevels[0:tropMinLev+1], \
+            #file2Object.lev[0:tropMinLev+1], \
+            fig, ax1, 'jet', \
+            minValueOfBoth, maxValueOfBoth, \
+#            zmGeosCtmTropRev.min(), zmGeosCtmTropRev.max(), \
+            plotOpt)
+
 
 ax2 = fig.add_subplot(312)
-plotOpt['title'] = "GMI " + gmiSimName + " " + field + " ZM " + dateYearMonth
-plotZM (zmGmiTrop, gmiObject.lat[:], gmiObject.lev[0:tropMinLev+1], \
-            fig, ax2, 'jet', minValueOfBoth, maxValueOfBoth, plotOpt)
+plotOpt['title'] = "Trop " + plotTitleFile2 + " " + field + " ZM " + dateYearMonth
+plotZM (zmFile2Trop, file2Object.lat[:], \
+            useLevels[0:tropMinLev+1], \
+            #file2Object.lev[0:tropMinLev+1], \
+            fig, ax2, 'jet', \
+            minValueOfBoth, maxValueOfBoth, \
+#            zmFile2Trop.min(), zmFile2Trop.max(), \
+            plotOpt)
 
 ax3 = fig.add_subplot(313)    
-plotOpt['title'] = "Model ratio " + field + " " + " ZM " + dateYearMonth
-plotZM (zmGeosCtmTropRev/zmGmiTrop, gmiObject.lat[:], \
-            gmiObject.lev[0:tropMinLev+1], fig, ax3, 'nipy_spectral', \
+plotOpt['title'] = "Trop model ratio " + field + " " + " ZM " + dateYearMonth
+plotZM (zmGeosCtmTropRev/zmFile2Trop, file2Object.lat[:], \
+            #file2Object.lev[0:tropMinLev+1], \
+            useLevels[0:tropMinLev+1], \
+            fig, ax3, 'nipy_spectral', \
             0.0, 1.5, plotOpt)
 
 
 
 FILE = "f"
 if FILE == "f":
-    plt.savefig ("plots/" + field + ".GEOS-CTM.GMI."
-                 + "trop.", bbox_inches='tight')
+    plt.savefig ("plots/" + field + fileTitle \
+                     + "trop.", bbox_inches='tight')
 else:
     plt.show()
 plt.clf
 
-zmGmiStrat = numpy.mean (newGmiArray[tropMinLev::], axis=2)
-zmGeosCtmStrat = numpy.mean (geosCtmFieldArray[0:geosCtmTropPause+1, :, :] ,\
+
+
+if file2Flag == "GMI": 
+    # lev, lat, long
+    zmFile2Strat = numpy.mean (newFile2Array[tropMinLev::,:,:], axis=2)
+#Before    zmFile2Strat = numpy.mean (newFile2Array[tropMinLev::], axis=2)
+    stratFile2 = newFile2Array[tropMinLev::,:,:]
+else:
+    zmFile2Strat = numpy.mean (newFile2Array[0:geosCtmTropPause+1, :, :] ,\
                                      axis=2)
+    stratFile2 = newFile2Array[0:geosCtmTropPause+1, :, :]
 
-print ""
-print "size of gmi strat: ", zmGmiStrat.shape
-print "size of geosctm strat: ", zmGeosCtmStrat.shape
-print ""
-    
-print ""
-print "gmi strat: ", tropMinLev, " : ", len(newGmiArray) -1 
-print "geos ctm strat: 0 : ", geosCtmTropPause
-print ""
+zmGeosCtmStrat = numpy.mean (geosCtmFieldArray[0:geosCtmTropPause+1, :, :], \
+                                 axis=2)
+stratGeosCtm = geosCtmFieldArray[0:geosCtmTropPause+1, :, :]
 
 
-# flip the array to the same orientation as GMI 
-zmGeosCtmStratRev = zmGeosCtmStrat[::-1, :]
+
+print ""
+print ""
+#######
+# tropColGEosCtm and tropColFile2 to be compared
+#GEOS-CTM
+print ""
+print "Shape of GEOS-CTM troposphere: ", shape(tropGeosCtm)
+tropColGeosCtm = numpy.sum(tropGeosCtm[:,:,:], axis=0)
+print "Shape of tropCol GEOS-CTM troposphere: ", shape (tropColGeosCtm)
+print "" 
+
+#UKNOWN FORMAT - Can toogle with GMI / GEOS-CTM
+print ""
+print "Shape of File2 troposphere: ", shape(tropFile2)
+tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
+print "Shape of tropCol file2 : ", shape(tropColFile2)
+print ""
+
+print ""
+#######
+# stratColGEosCtm and stratColFile2 to be compared
+#GEOS-CTM
+print ""
+print "Shape of GEOS-CTM stratosphere: ", shape(stratGeosCtm)
+stratColGeosCtm = numpy.sum(stratGeosCtm[:,:,:], axis=0)
+print "Shape of stratCol GEOS-CTM stratosphere: ", shape(stratColGeosCtm)
+print ""
+
+#UKNOWN FORMAT - Can toogle with GMI / GEOS-CTM
+print ""
+print "Shape of File2 stratesphere: ", shape(stratFile2)
+stratColFile2 = numpy.sum(stratFile2)
+print "Shape of stratCol file2: ", shape(stratFile2)
+print ""
+
+
+print""
+print""
+
+
+#########
+
+
+
+# flip the array to the same orientation as FILE2
+if file2Flag == "GMI":
+    zmGeosCtmStratRev = zmGeosCtmStrat[::-1, :]
+else:
+    zmGeosCtmStratRev = zmGeosCtmStrat[:,:]
+
+
+
+
 
 minValueOfBoth = zmGeosCtmStratRev.min()
 maxValueOfBoth = zmGeosCtmStratRev.max()
 
-if zmGmiStrat.min() < minValueOfBoth:
-    minValueOfBoth = zmGmiStrat.min()
-if zmGmiStrat.max() > maxValueOfBoth:
-    maxValueOfBoth = zmGmiStrat.max()
+if zmFile2Strat.min() < minValueOfBoth:
+    minValueOfBoth = zmFile2Strat.min()
+if zmFile2Strat.max() > maxValueOfBoth:
+    maxValueOfBoth = zmFile2Strat.max()
 
 
-print "Min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth
-print "Min / max of GMI ", field, zmGmiStrat.min(), " / ", zmGmiStrat.max()
-print "Min / max of GEOS-CTM ", field, zmGeosCtmStratRev.min(), " / ", zmGeosCtmStratRev.max()
+print "Strat min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth
+print "Strat min / max of GEOS-CTM ", field, zmGeosCtmStratRev.min(), " / ", zmGeosCtmStratRev.max()
+print "Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Strat.max()
+
 
 fig = plt.figure(figsize=(20,20))
 plotOpt = {}
 ax1 = fig.add_subplot(311)
-plotOpt['title'] = "GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
+plotOpt['title'] = "Strat GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
 plotZM (zmGeosCtmStratRev, geosCtmObject.lat[:], \
-            gmiObject.lev[tropMinLev::], fig, ax1, 'jet', \
+            useLevels[tropMinLev::], \
+            #file2Object.lev[tropMinLev::], \
+            fig, ax1, 'jet', \
             minValueOfBoth, maxValueOfBoth, plotOpt)
-#    zmGeosCtmStratRev.min(), zmGeosCtmStratRev.max(), plotOpt)
+#    	    zmGeosCtmStratRev.min(), zmGeosCtmStratRev.max(), plotOpt)
     
 ax2 = fig.add_subplot(312)
-plotOpt['title'] = "GMI " + gmiSimName + " " + field + " ZM " + dateYearMonth
-plotZM (zmGmiStrat, gmiObject.lat[:], gmiObject.lev[tropMinLev::], \
+plotOpt['title'] = "Strat " + plotTitleFile2 + " " + field + " ZM " + dateYearMonth
+plotZM (zmFile2Strat, file2Object.lat[:], \
+            useLevels[tropMinLev::], \
+            #file2Object.lev[tropMinLev::], \
             fig, ax2, 'jet', \
             minValueOfBoth, maxValueOfBoth, plotOpt)
-        #zmGmiStrat.min(), zmGmiStrat.max(), plotOpt)
+            #zmFile2Strat.min(), zmFile2Strat.max(), plotOpt)
 ax3 = fig.add_subplot(313)    
-plotOpt['title'] = "Model ratio " + field + " " + " ZM " + dateYearMonth
+plotOpt['title'] = "Strat model ratio " + field + " " + " ZM " + dateYearMonth
 
-zmStratRatio = zmGeosCtmStratRev/zmGmiStrat
+zmStratRatio = zmGeosCtmStratRev/zmFile2Strat
 print "Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max()
-plotZM (zmStratRatio, gmiObject.lat[:], \
-            gmiObject.lev[tropMinLev::], fig, ax3, 'nipy_spectral', \
+plotZM (zmStratRatio, file2Object.lat[:], \
+#            file2Object.lev[tropMinLev::], \
+            useLevels[tropMinLev::], \
+            fig, ax3, 'nipy_spectral', \
             0.0, 1.5, plotOpt)
         #zmStratRatio.min(), zmStratRatio.max(), plotOpt)
 
 FILE = "f"
 if FILE == "f":
-    plt.savefig ("plots/" + field + ".GEOS-CTM.GMI."
+    plt.savefig ("plots/" + field + fileTitle \
                  + "strat.", bbox_inches='tight')
 else:
     plt.show()

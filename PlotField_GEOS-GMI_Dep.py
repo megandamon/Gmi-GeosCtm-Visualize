@@ -309,8 +309,8 @@ print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
 
 
 create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
-#                   [minValueOfBoth,maxValueOfBoth], \
-                   [z_GeosCtm.min(), z_GeosCtm.max()], \
+                   [minValueOfBoth,maxValueOfBoth], \
+#                   [z_GeosCtm.min(), z_GeosCtm.max()], \
                    [minGeosCtmLat,maxGeosCtmLat], \
                    [minGeosCtmLong, maxGeosCtmLong], 311, \
                    "GEOS-CTM " + geosCtmSimName + " " + \
@@ -323,8 +323,8 @@ print ""
 
 # GMI lev0 is surface
 create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
-#                   [minValueOfBoth,maxValueOfBoth], \
-                   [z_Gmi.min(), z_Gmi.max()], \
+                   [minValueOfBoth,maxValueOfBoth], \
+#                   [z_Gmi.min(), z_Gmi.max()], \
                    [minGeosCtmLat,maxGeosCtmLat], \
                    [minGeosCtmLong, maxGeosCtmLong], 312, \
                    "GMI " + gmiSimName + " " + \
@@ -332,8 +332,8 @@ create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
                    dateYearMonth, "jet")
 
 create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                   [z_Diff.min(), z_Diff.max()], \
-#                   [0, 1.5], \
+#                   [z_Diff.min(), z_Diff.max()], \
+                   [0, 1.5], \
                    [minGeosCtmLat,maxGeosCtmLat], \
                    [minGeosCtmLong, maxGeosCtmLong], 313, \
                    "Model ratio for dep of " + field + " @ " \

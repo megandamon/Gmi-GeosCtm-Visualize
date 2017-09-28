@@ -160,6 +160,11 @@ order = "GMI"
 list1 = gmiObject.fieldList
 list2 = geosCtmObject.fieldList
 
+print "Geos CTM field list: ", list2
+print ""
+print "GMI field list: ", list1
+
+
 if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
     list1 = geosCtmObject.fieldList
     list2 = gmiObject.fieldList
@@ -177,6 +182,8 @@ for field in fieldsToCompareAll[:]:
 print ""
 print "Fields to compare: ", fieldsToCompare[:]
 print ""
+
+
 
 foundField = False
 print ""
@@ -261,7 +268,6 @@ print ""
 print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
 print "Shape of GMI field: ", gmiFieldArray.shape[:]
 print ""
-
 
 
 # put GMI on -180 to 0 to 180
@@ -350,6 +356,7 @@ for modelLev in modelLevsToPlotGmi:
 
     create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
                        [minValueOfBoth,maxValueOfBoth], \
+#                       [z_GeosCtm.min(),z_GeosCtm.max()], \
                        [minGeosCtmLat,maxGeosCtmLat], \
                        [minGeosCtmLong, maxGeosCtmLong], 311, \
                        "GEOS-CTM " + geosCtmSimName + " " + \
@@ -363,6 +370,7 @@ for modelLev in modelLevsToPlotGmi:
     # GMI lev0 is surface
     create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
                        [minValueOfBoth,maxValueOfBoth], \
+#                       [z_Gmi.min(), z_Gmi.max()], \
                        [minGeosCtmLat,maxGeosCtmLat], \
                        [minGeosCtmLong, maxGeosCtmLong], 312, \
                        "GMI " + gmiSimName + " " + \
@@ -370,7 +378,7 @@ for modelLev in modelLevsToPlotGmi:
                        " mb " + dateYearMonth, "jet")
 
     create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                       #                           [z_Diff.min(), z_Diff.max()], \
+                      #                           [z_Diff.min(), z_Diff.max()], \
                        [0, 1.5], \
                        [minGeosCtmLat,maxGeosCtmLat], \
                        [minGeosCtmLong, maxGeosCtmLong], 313, \

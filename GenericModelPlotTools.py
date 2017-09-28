@@ -40,6 +40,8 @@ class GenericModelPlotTools:
       self.hdfData = Dataset (self.fileName, "r", format="NETCDF4")
 
 
+
+
       self.dateTime = None
       self.latSize = len(self.hdfData.dimensions[latDim])
       self.longSize = len(self.hdfData.dimensions[lonDim])
@@ -105,7 +107,17 @@ class GenericModelPlotTools:
                            self.levVarName, self.timeVarName]:
             self.fieldList.append (var)
 
-      
+   def returnFieldsInCommonNew (self, list1, list2):
+
+      fieldsToCompare = []
+      for item in list1[:]:
+         
+         for item2 in list2[:]:
+            if item.lower() == item2.lower():
+               fieldsToCompare.append(item)
+
+      return fieldsToCompare
+               
    def returnFieldsInCommon (self, list1, list2, order):
 
       print order, " has more fields than the other model!"
@@ -140,12 +152,8 @@ class GenericModelPlotTools:
          # need to take out case insensitivity 
          for item2 in list2[:]:
             if item.lower() == item2.lower():
-#               print "lower match: ", item2.lower()
                fieldsToCompare.append(item)
             
-#         if item in list2[:]:
-#            print "Appending: ", item
-#            fieldsToCompare.append(item)
 
          count = count + 1
 

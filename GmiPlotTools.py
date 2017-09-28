@@ -94,43 +94,60 @@ class GmiPlotTools (GenericModelPlotTools):
       else:
          self.constVarName = "const_freq1"
 
-      print ""
-      print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
-      print ""
 
-
-      speciesArray = self.hdfData.variables[self.constVarName]
-
-
-      print self.speciesNames[:]
-
-      indexLocation = 0
-      for speciesName in self.speciesNames[:]:
-         if speciesName.lower() == fieldName.lower():
-            break
-         indexLocation = indexLocation + 1
-
-#      indexLocation = self.speciesNames.index(fieldName)
-
- #     print "num time recs of speciesArray: ", speciesArray.shape[0], timeRecord
-
-      if speciesArray.shape[0] - 1 < timeRecord: 
+      if fieldName.lower() == "moistq":
          print ""
-         print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
-             " Using rec dim 0"
+         print "Extracting field from GMI: ", fieldName
          print ""
-         returnTime = 0
+               
+         fieldArray = self.hdfData.variables[fieldName]   
+
+         if fieldArray.shape[0] - 1 < timeRecord:
+            print ""
+            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0"
+            print ""
+            returnTime = 0
+         else:
+            returnTime = timeRecord
+
+         returnArray = fieldArray[timeRecord,:,:,:]
+
       else:
-         returnTime = timeRecord
+
+         print ""
+         print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
+         print ""
+
+
+         speciesArray = self.hdfData.variables[self.constVarName]
+
+
+         print self.speciesNames[:]
+
+         indexLocation = 0
+         for speciesName in self.speciesNames[:]:
+            if speciesName.lower() == fieldName.lower():
+               break
+            indexLocation = indexLocation + 1
+ 
+         if speciesArray.shape[0] - 1 < timeRecord: 
+            print ""
+            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0"
+            print ""
+            returnTime = 0
+         else:
+            returnTime = timeRecord
       
-      print speciesArray.shape[:]
-      print "index loc: ", indexLocation
+         print speciesArray.shape[:]
+         print "index loc: ", indexLocation
 
       
-      if len(speciesArray.shape[:]) == 5:
-         returnArray = speciesArray[returnTime,indexLocation,:,:,:]    
-      if len(speciesArray.shape[:]) == 4:
-         returnArray = speciesArray[returnTime, indexLocation,:,:]
+         if len(speciesArray.shape[:]) == 5:
+            returnArray = speciesArray[returnTime,indexLocation,:,:,:]    
+         if len(speciesArray.shape[:]) == 4:
+            returnArray = speciesArray[returnTime, indexLocation,:,:]
 
 
       return returnArray
