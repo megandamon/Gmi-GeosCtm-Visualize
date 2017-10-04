@@ -9,6 +9,7 @@
 # Driver to plot zonal mean differences for one field between:
 # 1. A GEOS-CTM file
 # 2. A GEOS-CTM file or GMI file
+# Driver will always plot tropCol and stratCol 
 #------------------------------------------------------------------------------
 
 import re
@@ -522,7 +523,6 @@ plt.clf
 if file2Flag == "GMI": 
     # lev, lat, long
     zmFile2Strat = numpy.mean (newFile2Array[tropMinLev::,:,:], axis=2)
-#Before    zmFile2Strat = numpy.mean (newFile2Array[tropMinLev::], axis=2)
     stratFile2 = newFile2Array[tropMinLev::,:,:]
 else:
     zmFile2Strat = numpy.mean (newFile2Array[0:geosCtmTropPause+1, :, :] ,\
@@ -535,44 +535,6 @@ stratGeosCtm = geosCtmFieldArray[0:geosCtmTropPause+1, :, :]
 
 
 
-print ""
-print ""
-#######
-# tropColGEosCtm and tropColFile2 to be compared
-#GEOS-CTM
-print ""
-print "Shape of GEOS-CTM troposphere: ", shape(tropGeosCtm)
-tropColGeosCtm = numpy.sum(tropGeosCtm[:,:,:], axis=0)
-print "Shape of tropCol GEOS-CTM troposphere: ", shape (tropColGeosCtm)
-print "" 
-
-#UKNOWN FORMAT - Can toogle with GMI / GEOS-CTM
-print ""
-print "Shape of File2 troposphere: ", shape(tropFile2)
-tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
-print "Shape of tropCol file2 : ", shape(tropColFile2)
-print ""
-
-print ""
-#######
-# stratColGEosCtm and stratColFile2 to be compared
-#GEOS-CTM
-print ""
-print "Shape of GEOS-CTM stratosphere: ", shape(stratGeosCtm)
-stratColGeosCtm = numpy.sum(stratGeosCtm[:,:,:], axis=0)
-print "Shape of stratCol GEOS-CTM stratosphere: ", shape(stratColGeosCtm)
-print ""
-
-#UKNOWN FORMAT - Can toogle with GMI / GEOS-CTM
-print ""
-print "Shape of File2 stratesphere: ", shape(stratFile2)
-stratColFile2 = numpy.sum(stratFile2)
-print "Shape of stratCol file2: ", shape(stratFile2)
-print ""
-
-
-print""
-print""
 
 
 #########
@@ -621,7 +583,7 @@ plotZM (zmFile2Strat, file2Object.lat[:], \
             #file2Object.lev[tropMinLev::], \
             fig, ax2, 'jet', \
             minValueOfBoth, maxValueOfBoth, plotOpt)
-            #zmFile2Strat.min(), zmFile2Strat.max(), plotOpt)
+#            zmFile2Strat.min(), zmFile2Strat.max(), plotOpt)
 ax3 = fig.add_subplot(313)    
 plotOpt['title'] = "Strat model ratio " + field + " " + " ZM " + dateYearMonth
 
@@ -642,8 +604,200 @@ else:
     plt.show()
 plt.clf
 
-print ""
-print "Plotted: ", fieldToCompare, " to plots/ directory"
 
+
+
+
+# This section is for tropCol and stratCol plots only
+# Only certain species/fields need this 
+
+
+#O3, NO2, and CH2O
+if fieldToCompare.lower() == "moistq" or \
+        fieldToCompare.lower() == "o3" or \
+        fieldToCompare.lower() == "no2" or \
+        fieldToCompare.lower() == "ch2o":
+
+
+    # These are for 2D slices (lat/lon) only! 
+    print ""
+    print "Creating GEOS-CTM plot objects..."
+    geosCtmObject.createPlotObjects()
+    print "Creating File2 plot objects..."
+    file2Object.createPlotObjects()
+    print ""
+
+
+
+
+
+    print ""
+    print ""
+    print ""
+    print "Shape of GEOS-CTM troposphere: ", shape(tropGeosCtm)
+    tropColGeosCtm = numpy.sum(tropGeosCtm[:,:,:], axis=0)
+    print "Shape of tropCol GEOS-CTM troposphere: ", shape (tropColGeosCtm)
+    print "" 
+
+
+    print ""
+    print "Shape of File2 troposphere: ", shape(tropFile2)
+    tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
+    print "Shape of tropCol file2 : ", shape(tropColFile2)
+    print ""
+
+
+
+    minValueOfBoth = tropColGeosCtm.min()
+    maxValueOfBoth = tropColGeosCtm.max()
+
+    if tropColFile2.min() < minValueOfBoth:
+        minValueOfBoth = tropColFile2.min()
+    if tropColFile2.max() > maxValueOfBoth:
+        maxValueOfBoth = tropColFile2.max()
+
+    print ""
+    print "Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
+    print ""
+
+
+
+
+    fig = plt.figure(figsize=(20,20))
+
+    plotOpt = {}
+    ax1 = fig.add_subplot(311)
+    plotTitle = "Trop Column GEOS-CTM " + geosCtmSimName + " " + field + " " + dateYearMonth
+    geosCtmObject.create2dSlice2 (tropColGeosCtm, \
+                                      [minValueOfBoth, maxValueOfBoth], \
+                                      311, plotTitle, "jet")
+
+    ax2 = fig.add_subplot(312)
+    plotTitle = "Trop Column  " + sim2Name + " " + field + " " + dateYearMonth
+    geosCtmObject.create2dSlice2 (tropColFile2, \
+                                      [minValueOfBoth, maxValueOfBoth], \
+                                      312, plotTitle, "jet")
+                            
+
+    tropColDiff = tropColGeosCtm / tropColFile2
+    for lat in range(0, size(geosCtmObject.lat)):
+        for long in range(0, size(geosCtmObject.long)):
+
+            if tropColGeosCtm[lat, long] == 0 and tropColFile2[lat, long] == 0:
+                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+                tropColDiff[lat, long] = 1.0
+
+
+    ax3 = fig.add_subplot(313)  
+    plotTitle = "Trop Column model ratio for " + field + " " + dateYearMonth  
+    geosCtmObject.create2dSlice2(tropColDiff, \
+                                     [0, 1.5], \
+                                     313, plotTitle, "nipy_spectral", \
+                                     normalize=True)
+                                 
+
+
+    FILE = "f"
+    if FILE == "f":
+        plt.savefig ("plots/" + field + fileTitle \
+                         + "tropColumn.", bbox_inches='tight')
+    else:
+        plt.show()
+    plt.clf
+
+
+
+
+
+
+
+    print ""
+
+
+    print ""
+    print "Shape of GEOS-CTM stratosphere: ", shape(stratGeosCtm)
+    stratColGeosCtm = numpy.sum(stratGeosCtm[:,:,:], axis=0)
+    print "Shape of stratCol GEOS-CTM: ", shape(stratColGeosCtm)
+    print ""
+
+
+    print ""
+    print "Shape of File2 stratesphere: ", shape(stratFile2)
+    stratColFile2 = numpy.sum(stratFile2[:,:,:], axis=0)
+    print "Shape of stratCol file2: ", shape(stratColFile2)
+    print ""
+
+
+    print""
+    print""
+
+
+
+
+    minValueOfBoth = stratColGeosCtm.min()
+    maxValueOfBoth = stratColGeosCtm.max()
+
+    if stratColFile2.min() < minValueOfBoth:
+        minValueOfBoth = stratColFile2.min()
+    if stratColFile2.max() > maxValueOfBoth:
+        maxValueOfBoth = stratColFile2.max()
+
+    print ""
+    print "Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
+    print ""
+
+
+    fig = plt.figure(figsize=(20,20))
+
+    plotOpt = {}
+    ax1 = fig.add_subplot(311)
+    plotTitle = "Strat Column GEOS-CTM " + geosCtmSimName + " " + field + " " + dateYearMonth
+    geosCtmObject.create2dSlice2 (stratColGeosCtm, \
+                                      [minValueOfBoth, maxValueOfBoth], \
+                                      311, plotTitle, "jet")
+
+    ax2 = fig.add_subplot(312)
+    plotTitle = "Strat Column " + sim2Name + " " + field + " " + dateYearMonth
+    geosCtmObject.create2dSlice2 (stratColFile2, \
+                                      [minValueOfBoth, maxValueOfBoth], \
+                                      312, plotTitle, "jet")
+                            
+    stratColDiff = stratColGeosCtm / stratColFile2
+    for lat in range(0, size(geosCtmObject.lat)):
+        for long in range(0, size(geosCtmObject.long)):
+
+            if stratColGeosCtm[lat, long] == 0 and stratColFile2[lat, long] == 0:
+                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+                stratColDiff[lat, long] = 1.0
+
+    ax3 = fig.add_subplot(313)    
+    plotTitle = "Strat Column model ratio for " + field + " " + dateYearMonth
+    geosCtmObject.create2dSlice2(stratColDiff, \
+                                     [0, 1.5], \
+                                     313, plotTitle, "nipy_spectral", \
+                                     normalize=True)
+
+
+
+    FILE = "f"
+    if FILE == "f":
+        plt.savefig ("plots/" + field + fileTitle \
+                         + "stratColumn.", bbox_inches='tight')
+    else:
+        plt.show()
+    plt.clf
+
+    print ""
+    print "Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory"
+    print ""
+
+
+else:
+    print fieldToCompare, " is not currently set for strat or trop column plotting!"
+
+
+print ""
+print "Finished plotting: ", fieldToCompare, " to plots/ directory"
+print ""
     
 

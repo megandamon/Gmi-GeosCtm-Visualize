@@ -52,8 +52,6 @@ class GenericModelPlotTools:
       self.hdfData = Dataset (self.fileName, "r", format="NETCDF4")
 
 
-
-
       self.dateTime = None
       self.latSize = len(self.hdfData.dimensions[latDim])
       self.longSize = len(self.hdfData.dimensions[lonDim])
@@ -79,6 +77,12 @@ class GenericModelPlotTools:
       self.cenLat = (self.minLat + self.maxLat)/2.
       self.cenLong =  (self.minLong + self.maxLong)/2.
 
+      # User must call "createPlotObjects" to create these
+      self.baseMap = None
+      self.gridLons = None
+      self.gridLats = None
+      self.X_grid = None
+      self.Y_grid = None
 
       self.populateFieldList ()
 
@@ -112,11 +116,16 @@ class GenericModelPlotTools:
    def create2dSlice2 (self,  z, minMaxVals, subplotNum, plotTitle, \
                           colorMap, normalize=False):
 
+      print ""
       print "min/max field vals in create2dSlice: ", minMaxVals[:]
-
+      print ""
+      
       plt.subplot(subplotNum)
 
-
+      print ""
+      print "Shape of field to plot: ", shape(z)
+      print ""
+      
 
       imSlice = self.baseMap.pcolor(self.X_grid, self.Y_grid, z, \
                                        cmap=colorMap, \
