@@ -50,8 +50,7 @@ class GenericModelPlotTools:
 
       self.fileName = fileName
       self.hdfData = Dataset (self.fileName, "r", format="NETCDF4")
-
-
+      
       self.dateTime = None
       self.latSize = len(self.hdfData.dimensions[latDim])
       self.longSize = len(self.hdfData.dimensions[lonDim])
@@ -206,8 +205,12 @@ class GenericModelPlotTools:
 
       print "Generic populateFieldList"
       
+
+
       self.fieldList = []
       for var in self.hdfData.variables:
+
+
          if var not in [self.latVarName, self.longVarName, \
                            self.levVarName, self.timeVarName]:
             self.fieldList.append (var)

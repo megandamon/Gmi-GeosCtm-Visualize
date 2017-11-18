@@ -95,7 +95,7 @@ class GmiPlotTools (GenericModelPlotTools):
          self.constVarName = "const_freq1"
 
 
-      if fieldName.lower() == "moistq":
+      if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO":
          print ""
          print "Extracting field from GMI: ", fieldName
          print ""

@@ -1,3 +1,4 @@
+
 #------------------------------------------------------------------------------
 # NASA/GSFC
 #------------------------------------------------------------------------------
@@ -135,8 +136,6 @@ geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 
 
-print ""
-
 
 order = "GEOS-CTM"
 list1 = geosCtmObject1.fieldList
@@ -147,12 +146,19 @@ if len(geosCtmObject1.fieldList) >= len(geosCtmObject2.fieldList):
     list2 = geosCtmObject1.fieldList
     order = "GEOS-CTM"
 
+print ""
+print list1
+print ""
+print list2
+print ""
+
+
 # Does not matter which object to use - this is weird code. :/
 fieldsToCompareAll = geosCtmObject1.returnFieldsInCommon (list1, list2, order)
 
 fieldsToCompare = []
 for field in fieldsToCompareAll[:]:
-    if field[0:4] != "Var_" and field[0:2] != "EM" and \
+    if field[0:4] != "Var_" and \
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
 

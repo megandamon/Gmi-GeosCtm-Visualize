@@ -150,7 +150,7 @@ fieldsToCompareAll = gmiObject.returnFieldsInCommon (list1, list2, order)
 
 fieldsToCompare = []
 for field in fieldsToCompareAll[:]:
-    if field[0:4] != "Var_" and field[0:2] != "EM" and \
+    if field[0:4] != "Var_" and \
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
 
@@ -283,6 +283,30 @@ for modelLev in modelLevsToPlotGmi:
     z_Gmi = newGmiArray[:, :]
     z_Diff = z_GeosCtm / z_Gmi
 
+    print ""
+    print "Min/max of GMI: ", z_Gmi.min(), "/", z_Gmi.max()
+    print "Min/max of GEOS: ", z_GeosCtm.min(), "/", z_GeosCtm.max()
+    print "Differences: ", z_Gmi.min() - z_GeosCtm.min(), "/", z_Gmi.max() - z_GeosCtm.max()
+
+
+    zRangeGMI = z_Gmi.max() - z_Gmi.min()
+    zRangeGEOS = z_GeosCtm.max() - z_GeosCtm.min()
+
+
+    print "Ranges: ", zRangeGMI, "/", zRangeGEOS
+
+
+    orderGMI = 1
+    orderGEOS = 1
+    if zRangeGMI != 0 and zRangeGEOS !=0:
+        orderGMI = int(math.log10(zRangeGMI))
+        orderGEOS = int(math.log10(zRangeGEOS))
+
+    print orderGMI, "/", orderGEOS
+    print "" 
+
+
+
 
     minValueOfBoth = z_GeosCtm.min()
     maxValueOfBoth = z_GeosCtm.max()
@@ -301,6 +325,9 @@ for modelLev in modelLevsToPlotGmi:
 
 
 
+
+
+
     #-----------------------------------------------------#
     # GEOS-CTM
 
@@ -313,9 +340,18 @@ for modelLev in modelLevsToPlotGmi:
     print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
     print ""
 
-    geosCtmObject.create2dSlice2 (z_GeosCtm, \
-                                      [minValueOfBoth,maxValueOfBoth], \
-                                      #[z_GeosCtm.min(),z_GeosCtm.max()], \
+
+    if z_GeosCtm.max() - z_GeosCtm.min() == 0.0 or orderGEOS < -13:
+        print "Constant field found for GEOS-CTM!"
+        useMin = z_GeosCtm.min()
+        useMax = z_GeosCtm.max()
+
+    else:
+        useMin = minValueOfBoth
+        useMax = maxValueOfBoth
+
+
+    geosCtmObject.create2dSlice2 (z_GeosCtm, [useMin, useMax], \
                                       311, "GEOS-CTM " + geosCtmSimName + " " + \
                                       field + " @ " + str(modelLev) + \
                                       "mb " + dateYearMonth, "jet")
@@ -325,12 +361,19 @@ for modelLev in modelLevsToPlotGmi:
     print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
     print "" 
 
+    if z_Gmi.max() - z_Gmi.min() == 0.0 or orderGMI < -13:
+        print "Constant field found for GMI"
+        useMin = z_Gmi.min()
+        useMax = z_Gmi.max()
+
+    else:
+        useMin = minValueOfBoth
+        useMax = maxValueOfBoth
+
 
     # GMI lev0 is surface
     # using geosCtmObject because GMI should now be on lat/long system of GEOS-CTM
-    geosCtmObject.create2dSlice2 (z_Gmi, \
-                                      [minValueOfBoth,maxValueOfBoth], \
-                                      #[z_Gmi.min(), z_Gmi.max()], \
+    geosCtmObject.create2dSlice2 (z_Gmi, [useMin, useMax], \
                                       312, "GMI " + gmiSimName + " " + \
                                       field + " @ " + str(modelLev) + \
                                       " mb " + dateYearMonth, "jet")
@@ -356,7 +399,7 @@ for modelLev in modelLevsToPlotGmi:
         plt.show()
         
     plt.clf()
-
+                                  
 
 print ""
 print "Plotted : ", fieldToCompare, " to plots/directory"
