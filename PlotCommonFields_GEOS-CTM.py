@@ -114,7 +114,8 @@ if int(timeRecord) < 0:
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print "ERROR date must be in the format YYYYMM"
+    print "Received: ", dateYearMonth
     sys.exit(0)
 
 if not os.path.exists (pbsNodeFile): 
@@ -162,6 +163,11 @@ geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
 
 
 print ""
+print "geos ctm 1: ", geosCtmObject1.DATE
+print "geos ctm 2: ", geosCtmObject2.DATE
+print ""
+
+print ""
 
 
 order = "GEOS-CTM"
@@ -178,8 +184,7 @@ fieldsToCompareAll = geosCtmObject1.returnFieldsInCommon (list1, list2, order)
 
 fieldsToCompare = []
 for field in fieldsToCompareAll[:]:
-    if field[0:4] != "Var_" and field[0:2] != "EM" and \
-            field[0:3] != "GMI":
+    if field[0:4] != "Var_" and field[0:3] != "GMI":
         fieldsToCompare.append(field)
 
 

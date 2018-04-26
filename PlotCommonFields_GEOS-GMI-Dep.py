@@ -65,16 +65,24 @@ def returnFieldsInCommon (gmiList, geosCtmList, fieldPrefixIn):
     count = 0
     for item in geosCtmList[:]:
 
-        if item[0:3] == fieldPrefixIn :
-            print "Found Dep field: ", item
+        if fieldPrefixIn in item:
 
+            print ""
+            print "Found Dep field: ", item
+            itemSplit = item.split("_")
+            print "item split: ", itemSplit[1]
 
             for itemGmi in gmiList[:]:
-                if itemGmi[:] == item[3:]:
+
+
+                if itemGmi == itemSplit[1]:
                     print "Found GMI match: ", itemGmi
                     fieldsToCompare.append (itemGmi)
+                    print ""
+
 
         count = count + 1
+
 
     return fieldsToCompare
 
@@ -155,6 +163,8 @@ if fieldPrefix == "WD_":
 elif fieldPrefix == "DD_":
     gmiCharString = 'drydep_spc_labels'
     titleString = "Dry dep of "
+elif fieldPrefix == "SCAV_":
+    gmiCharString = "const_labels"
 else:
     print "Fieldp prefix: ", fieldPrefix, " not supported!"
     sys.exit(0)
@@ -165,6 +175,8 @@ fieldNameArrayGMI = gmiCharString
 print ""
 print "Will be looking at GMI fields in: ", fieldNameArrayGMI
 print ""
+
+
 
 print geosCtmFile
 print gmiFile

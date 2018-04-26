@@ -44,6 +44,25 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
       self.MODEL_NAME = "GEOS-CTM"
 
+      splitString= re.split('_', fileName)
+      tokens = []
+      for token in splitString[:]:
+         splitTokens = re.split('\.', token)
+         for splitToken in splitTokens[:]:
+            tokens.append(splitToken)
+
+      for token in tokens[:]:
+         if token.isdigit():
+            self.DATE = token
+
+      self.KNOWN_TRACERS = []
+      self.KNOWN_TRACERS.append('CH3I')
+      self.KNOWN_TRACERS.append('Pb210')
+      self.KNOWN_TRACERS.append('Rn222')
+      self.KNOWN_TRACERS.append('aoa')
+      self.KNOWN_TRACERS.append('e90')
+      self.KNOWN_TRACERS.append('st80_25')
+
    #---------------------------------------------------------------------------  
    # AUTHORS: Megan Damon NASA GSFC 
    #
@@ -68,10 +87,22 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
 
 
-   def returnField (self, fieldName, timeRecord):
+   def returnField (self, fieldName, timeRecord, prefix=''):
 
       #print "Return time record: ", timeRecord, " for : ", fieldName
-      fieldAllTime = self.hdfData.variables[fieldName.upper()]
+
+      fieldName = prefix + fieldName
+      print fieldName
+
+      if fieldName not in self.KNOWN_TRACERS:
+         fieldAllTime = self.hdfData.variables[fieldName.upper()]
+         print "Getting from GEOS-CTM: ", fieldName.upper()
+      else:
+         fieldAllTime = self.hdfData.variables[fieldName]
+         print "getting tracer field: ", fieldName
+         print ""
+
+
 
       #print fieldAllTime.shape[:], len(fieldAllTime.shape[:])
 

@@ -52,6 +52,7 @@ class GenericModelPlotTools:
       self.hdfData = Dataset (self.fileName, "r", format="NETCDF4")
       
       self.dateTime = None
+
       self.latSize = len(self.hdfData.dimensions[latDim])
       self.longSize = len(self.hdfData.dimensions[lonDim])
       self.levelSize = len(self.hdfData.dimensions[levDim])
@@ -231,6 +232,7 @@ class GenericModelPlotTools:
       print order, " has more fields than the other model!"
       print ""
 
+
       if order == "GEOS-CTM": # GEOS-CTM has more fields
          scanList = list1
       else:
@@ -253,12 +255,33 @@ class GenericModelPlotTools:
 
       print ""
       print "Scanning ", order, " fields for matches in other model."
+      
+      if hasattr(self, 'fieldName'):
+         print "Field name is: ", self.fieldName
+      else:
+         print "Field name does not exist!"
+         self.fieldName = None
+
+
       count = 0
       fieldsToCompare = []
       for item in list1[:]:
 
+         if self.fieldName == 'scav' and "SCAV_" in item:
+            print "found scav field: ", item
+            print "ERROR: Logic reversed. This code needs help"
+            sys.exit(-1)
+            
+
          # need to take out case insensitivity 
          for item2 in list2[:]:
+            
+            if self.fieldName == 'scav' and "SCAV_" in item2:
+               splitItem2 = item2.split("_")
+               if item.lower() == splitItem2[1].lower():
+                  print "Found SCAV match: ", item
+                  fieldsToCompare.append(item)
+            
             if item.lower() == item2.lower():
                fieldsToCompare.append(item)
             

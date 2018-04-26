@@ -41,13 +41,44 @@ class GmiPlotTools (GenericModelPlotTools):
       GenericModelPlotTools.__init__(self, fileName,  
                                      latDim, lonDim, levDim, timeDim, 
                                      latVar, lonVar, levVar, timeVar)
+      
 
       self.gmiConstString = constString
 
-      if fileName.find('idaily') != -1:
+      if 'dep_spc_labels' in self.gmiConstString:
+         print ""
+         print "Doing deposition field extraction"
+         print ""
+
+      elif fileName.find('idaily') != -1:
+
+         print ""
+         print "Doing freq1 idaily field extraction"
+         print ""
          self.gmiConstString = 'freq1_labels'
 
+      elif fileName.find('tracers') != -1:
+
+         print ""
+         print "Doing freq2 tracer field extraction"
+         print ""
+
+         self.gmiConstString = 'freq2_labels'
+
+      elif fileName.find('amonthly') != -1 or fileName.find('adaily') != -1:
+
+         print ""
+         print "Doing field extraction using const_labels"
+         print ""
+
+
+         self.gmiConstString = 'const_labels'
+
       self.MODEL_NAME = "GMI"
+
+
+      print self.gmiConstString
+
 
       self.addSpeciesToFieldList (self.gmiConstString)
 
@@ -79,18 +110,19 @@ class GmiPlotTools (GenericModelPlotTools):
 
 
 
-   def returnField (self, fieldName, timeRecord):
+   def returnField (self, fieldName, timeRecord, arrayName):
 
-      print ""
-      print self.gmiConstString
-      print ""
 
-      if self.gmiConstString == "const_labels":
+      if arrayName == 'SCAV_' or arrayName == 'scav':
+         self.constVarName = 'scav'
+      elif self.gmiConstString == "const_labels":
          self.constVarName = "const"
       elif self.gmiConstString == 'wetdep_spc_labels':
          self.constVarName = "wet_depos"
       elif self.gmiConstString == 'drydep_spc_labels':
          self.constVarName = "dry_depos"
+      elif self.gmiConstString == 'freq2_labels':
+         self.constVarName = "const_freq2"
       else:
          self.constVarName = "const_freq1"
 
@@ -118,7 +150,6 @@ class GmiPlotTools (GenericModelPlotTools):
          print ""
          print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
          print ""
-
 
          speciesArray = self.hdfData.variables[self.constVarName]
 
@@ -151,6 +182,80 @@ class GmiPlotTools (GenericModelPlotTools):
 
 
       return returnArray
+
+   def returnFieldAtSurface (self, fieldName, timeRecord, arrayName):
+
+
+      if arrayName == 'SCAV_' or arrayName == 'scav':
+         self.constVarName = 'scav'
+      elif self.gmiConstString == "const_labels":
+         self.constVarName = "const"
+      elif self.gmiConstString == 'wetdep_spc_labels':
+         self.constVarName = "wet_depos"
+      elif self.gmiConstString == 'drydep_spc_labels':
+         self.constVarName = "dry_depos"
+      elif self.gmiConstString == 'freq2_labels':
+         self.constVarName = "const_freq2"
+      else:
+         self.constVarName = "const_freq1"
+
+
+      if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO":
+         print ""
+         print "Extracting field from GMI: ", fieldName
+         print ""
+               
+         fieldArray = self.hdfData.variables[fieldName]   
+
+         if fieldArray.shape[0] - 1 < timeRecord:
+            print ""
+            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0"
+            print ""
+            returnTime = 0
+         else:
+            returnTime = timeRecord
+
+         returnArray = fieldArray[timeRecord,:,:,:]
+
+      else:
+
+         print ""
+         print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
+         print ""
+
+         speciesArray = self.hdfData.variables[self.constVarName]
+
+
+         print self.speciesNames[:]
+
+         indexLocation = 0
+         for speciesName in self.speciesNames[:]:
+            if speciesName.lower() == fieldName.lower():
+               break
+            indexLocation = indexLocation + 1
+ 
+         if speciesArray.shape[0] - 1 < timeRecord: 
+            print ""
+            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0"
+            print ""
+            returnTime = 0
+         else:
+            returnTime = timeRecord
+      
+         print speciesArray.shape[:]
+         print "index loc: ", indexLocation
+
+      
+         if len(speciesArray.shape[:]) == 5:
+            returnArray = speciesArray[returnTime,indexLocation,0,:,:]    
+         if len(speciesArray.shape[:]) == 4:
+            returnArray = speciesArray[returnTime, indexLocation,0,:]
+
+
+      return returnArray
+
 
 
 

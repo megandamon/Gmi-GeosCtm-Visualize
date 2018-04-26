@@ -50,15 +50,16 @@ from GmiPlotTools import GmiPlotTools
 
 FILE = "f"
 
-NUM_ARGS = 5
+NUM_ARGS = 6
 def usage ():
     print ""
-    print "usage: PlotRestartSpecies_ZonalMean.py [-c] [-g] [-r] [-d] [-f]"
+    print "usage: PlotRestartSpecies_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v]"
     print "-c File1 (GEOS-CTM)"
     print "-g File2 (GMI  or GEOS-CTM) [if GMI format is gmi*.nc]"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
     print "-f field to compare"
+    print "-v which variable to extract field from"
     print ""
     sys.exit (0)
 
@@ -152,7 +153,7 @@ print "Start plotting zonal mean differences"
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:v:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -162,6 +163,7 @@ file2 = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 fieldToCompare = optList[4][1]
+variableExtractField = optList[5][1]
 
 #---------------------------------------------------------------
 print ""
@@ -194,7 +196,8 @@ print file2
 
 file2Flag = "GMI"
 
-if file2[0:3] == "gmi" and file2[-3:] == ".nc":
+# known GMI prefixes
+if (file2[0:3] == "gmi" or file2[0:3] == "gmp") and file2[-3:] == ".nc":
     print "File2 is GMI"
 else:
     print "File2 is GEOS-CTM"
@@ -205,14 +208,15 @@ geosCtmSimName = geosCtmFile.split(".")[0]
 
 if file2Flag == "GMI": 
     sim2Name = file2.split("_")[1]
-    plotTitleFile2 = "GMI " + sim2Name
+    plotTitleFile2 = "GMI " 
     fileTitle = ".GEOS-CTM.GMI."
 else :
     sim2Name = file2.split(".")[0]
-    plotTitleFile2 = "GEOS-CTM " + sim2Name
+    plotTitleFile2 = "GEOS-CTM " 
     fileTitle = ".GEOS-CTM.inter."
 
 
+plotTitleFile2 = plotTitleFile2 + sim2Name + "        " + variableExtractField
 
 
 print ""
@@ -235,11 +239,13 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
 
 
 if file2Flag == "GMI":
+    order = "GMI"
     file2Object = GmiPlotTools (file2, 'latitude_dim', 'longitude_dim', \
                                   'eta_dim', 'rec_dim', 'latitude_dim', \
                                   'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
 
 else:
+    order = "GEOS-CTM"
     file2Object = GeosCtmPlotTools (file2, 'lat','lon',\
                                         'lev','time', 'lat', \
                                         'lon', 'lev', 'time' )
@@ -253,9 +259,13 @@ list2 = geosCtmObject.fieldList
 if len(geosCtmObject.fieldList) >= len(file2Object.fieldList):
     list1 = geosCtmObject.fieldList
     list2 = file2Object.fieldList
+    order = "GEOS-CTM"
+    
+        
 
 
-fieldsToCompareAll = file2Object.returnFieldsInCommonNew (list1, list2)
+file2Object.fieldName = variableExtractField
+fieldsToCompareAll = file2Object.returnFieldsInCommon (list1, list2, order)
 
 
 fieldsToCompare = []
@@ -281,7 +291,6 @@ for fieldInList in fieldsToCompare[:]:
 if foundField == False:
     print "ERROR: ", fieldToCompare, " cannot be compared!"
     sys.exit(-1)
-
 
 
 print ""
@@ -324,8 +333,12 @@ print ""
 
 field = fieldToCompare
 
-geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
-file2FieldArray = file2Object.returnField (field, timeRecord)
+if variableExtractField == 'scav': 
+    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord, "SCAV_")
+else:
+    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
+
+file2FieldArray = file2Object.returnField (field, timeRecord, variableExtractField)
 
 print "shapes of arrays: ", geosCtmFieldArray.shape, file2FieldArray.shape
 
@@ -472,7 +485,8 @@ fig = plt.figure(figsize=(20,20))
 plotOpt = {}
 
 ax1 = fig.add_subplot(311)
-plotOpt['title'] = "Trop GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
+plotOpt['title'] = "Trop GEOS-CTM " + geosCtmSimName + "        " + variableExtractField \
+    + " " + field + " ZM " + dateYearMonth
 
 
 if file2Object.lev[0] == 0:
@@ -501,7 +515,8 @@ plotZM (zmFile2Trop, file2Object.lat[:], \
             plotOpt)
 
 ax3 = fig.add_subplot(313)    
-plotOpt['title'] = "Trop model ratio " + field + " " + " ZM " + dateYearMonth
+plotOpt['title'] = "Trop model ratio         " + variableExtractField + "_" + \
+    field + " " + " ZM " + dateYearMonth
 plotZM (zmGeosCtmTropRev/zmFile2Trop, file2Object.lat[:], \
             #file2Object.lev[0:tropMinLev+1], \
             useLevels[0:tropMinLev+1], \
@@ -512,7 +527,7 @@ plotZM (zmGeosCtmTropRev/zmFile2Trop, file2Object.lat[:], \
 
 FILE = "f"
 if FILE == "f":
-    plt.savefig ("plots/" + field + fileTitle \
+    plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
                      + "trop.", bbox_inches='tight')
 else:
     plt.show()
@@ -568,7 +583,8 @@ print "Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Stra
 fig = plt.figure(figsize=(20,20))
 plotOpt = {}
 ax1 = fig.add_subplot(311)
-plotOpt['title'] = "Strat GEOS-CTM " + geosCtmSimName + " " + field + " ZM " + dateYearMonth
+plotOpt['title'] = "Strat GEOS-CTM " + geosCtmSimName + "         " + variableExtractField + \
+    "_" + field + " ZM " + dateYearMonth
 plotZM (zmGeosCtmStratRev, geosCtmObject.lat[:], \
             useLevels[tropMinLev::], \
             #file2Object.lev[tropMinLev::], \
@@ -577,7 +593,7 @@ plotZM (zmGeosCtmStratRev, geosCtmObject.lat[:], \
 #    	    zmGeosCtmStratRev.min(), zmGeosCtmStratRev.max(), plotOpt)
     
 ax2 = fig.add_subplot(312)
-plotOpt['title'] = "Strat " + plotTitleFile2 + " " + field + " ZM " + dateYearMonth
+plotOpt['title'] = "Strat " + plotTitleFile2 + "_" + field + " ZM " + dateYearMonth
 plotZM (zmFile2Strat, file2Object.lat[:], \
             useLevels[tropMinLev::], \
             #file2Object.lev[tropMinLev::], \
@@ -585,7 +601,8 @@ plotZM (zmFile2Strat, file2Object.lat[:], \
             minValueOfBoth, maxValueOfBoth, plotOpt)
 #            zmFile2Strat.min(), zmFile2Strat.max(), plotOpt)
 ax3 = fig.add_subplot(313)    
-plotOpt['title'] = "Strat model ratio " + field + " " + " ZM " + dateYearMonth
+plotOpt['title'] = "Strat model ratio         " + variableExtractField + "_" + \
+    field + " " + " ZM " + dateYearMonth
 
 zmStratRatio = zmGeosCtmStratRev/zmFile2Strat
 print "Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max()
@@ -598,7 +615,7 @@ plotZM (zmStratRatio, file2Object.lat[:], \
 
 FILE = "f"
 if FILE == "f":
-    plt.savefig ("plots/" + field + fileTitle \
+    plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
                  + "strat.", bbox_inches='tight')
 else:
     plt.show()
@@ -667,13 +684,16 @@ if fieldToCompare.lower() == "moistq" or \
 
     plotOpt = {}
     ax1 = fig.add_subplot(311)
-    plotTitle = "Trop Column GEOS-CTM " + geosCtmSimName + " " + field + " " + dateYearMonth
+    plotTitle = "Trop Column GEOS-CTM " + geosCtmSimName + "         " \
+        + variableExtractField + \
+        "_" + field + " " + dateYearMonth
     geosCtmObject.create2dSlice2 (tropColGeosCtm, \
                                       [minValueOfBoth, maxValueOfBoth], \
                                       311, plotTitle, "jet")
 
     ax2 = fig.add_subplot(312)
-    plotTitle = "Trop Column  " + sim2Name + " " + field + " " + dateYearMonth
+    plotTitle = "Trop Column  " + sim2Name + "         " + variableExtractField + "_" \
+        + field + " " + dateYearMonth
     geosCtmObject.create2dSlice2 (tropColFile2, \
                                       [minValueOfBoth, maxValueOfBoth], \
                                       312, plotTitle, "jet")
@@ -689,7 +709,8 @@ if fieldToCompare.lower() == "moistq" or \
 
 
     ax3 = fig.add_subplot(313)  
-    plotTitle = "Trop Column model ratio for " + field + " " + dateYearMonth  
+    plotTitle = "Trop Column model ratio for         " + variableExtractField + "_" + \
+        field + " " + dateYearMonth  
     geosCtmObject.create2dSlice2(tropColDiff, \
                                      [0, 1.5], \
                                      313, plotTitle, "nipy_spectral", \
@@ -699,7 +720,7 @@ if fieldToCompare.lower() == "moistq" or \
 
     FILE = "f"
     if FILE == "f":
-        plt.savefig ("plots/" + field + fileTitle \
+        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
                          + "tropColumn.", bbox_inches='tight')
     else:
         plt.show()
@@ -751,13 +772,15 @@ if fieldToCompare.lower() == "moistq" or \
 
     plotOpt = {}
     ax1 = fig.add_subplot(311)
-    plotTitle = "Strat Column GEOS-CTM " + geosCtmSimName + " " + field + " " + dateYearMonth
+    plotTitle = "Strat Column GEOS-CTM " + geosCtmSimName + "         " + \
+        variableExtractField + "_" + field + " " + dateYearMonth
     geosCtmObject.create2dSlice2 (stratColGeosCtm, \
                                       [minValueOfBoth, maxValueOfBoth], \
                                       311, plotTitle, "jet")
 
     ax2 = fig.add_subplot(312)
-    plotTitle = "Strat Column " + sim2Name + " " + field + " " + dateYearMonth
+    plotTitle = "Strat Column " + sim2Name + "         " + variableExtractField + "_" \
+        + field + " " + dateYearMonth
     geosCtmObject.create2dSlice2 (stratColFile2, \
                                       [minValueOfBoth, maxValueOfBoth], \
                                       312, plotTitle, "jet")
@@ -771,7 +794,8 @@ if fieldToCompare.lower() == "moistq" or \
                 stratColDiff[lat, long] = 1.0
 
     ax3 = fig.add_subplot(313)    
-    plotTitle = "Strat Column model ratio for " + field + " " + dateYearMonth
+    plotTitle = "Strat Column model ratio for         " + variableExtractField + "_" + \
+        field + " " + dateYearMonth
     geosCtmObject.create2dSlice2(stratColDiff, \
                                      [0, 1.5], \
                                      313, plotTitle, "nipy_spectral", \
@@ -781,7 +805,7 @@ if fieldToCompare.lower() == "moistq" or \
 
     FILE = "f"
     if FILE == "f":
-        plt.savefig ("plots/" + field + fileTitle \
+        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
                          + "stratColumn.", bbox_inches='tight')
     else:
         plt.show()

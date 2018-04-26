@@ -54,10 +54,10 @@ def workerLocal (command):
     return os.system(command)
 
 
-NUM_ARGS = 7
+NUM_ARGS = 8
 def usage ():
     print ""
-    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d] [-n] [-p] [-s]"
+    print "usage: PlotRestartSpecies.py [-c] [-g] [-r] [-d] [-n] [-p] [-s] [-v]"
     print "-c GEOS CTM restart file"
     print "-g GMI restart file"
     print "-r time record to plot"
@@ -65,6 +65,7 @@ def usage ():
     print "-n PBS_NODEFILE"
     print "-p number of processes to use per node"
     print "-s string defining the GMI array with species/fields names (const_labels, etc.)"
+    print "-v variable to extract GMI array fields from (const, scav. etc.)"
     print ""
     sys.exit (0)
 
@@ -74,7 +75,7 @@ print "Start plotting restart field differences"
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:s:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:s:v:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -86,6 +87,7 @@ dateYearMonth = optList[3][1]
 pbsNodeFile = optList[4][1]
 numProcesses = int(optList[5][1])
 fieldNameArrayGMI = optList[6][1]
+variableExtractField = optList[7][1]
 
 #---------------------------------------------------------------
 print ""
@@ -136,9 +138,10 @@ gmiSimName = gmiFile.split("_")[1]
 #---------------------------------------------------------------
 print ""
 print "Command line options look good."
+print "GEOS-CTM simulation name: ", geosCtmSimName
+print "GMI simulation name: ", gmiSimName
 print""
 #--------------------------------------------------------------
-
 
 geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -150,11 +153,14 @@ gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
 print ""
 
+print fieldNameArrayGMI
+print ""
 
 
 order = "GMI"
 list1 = gmiObject.fieldList
 list2 = geosCtmObject.fieldList
+
 
 if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
     list1 = geosCtmObject.fieldList
@@ -162,12 +168,20 @@ if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
     order = "GEOS-CTM"
 
 # Does not matter which object to use - this is weird code. :/
+gmiObject.fieldName = variableExtractField
 fieldsToCompare = gmiObject.returnFieldsInCommon (list1, list2, order)
+
+print "variableExtractField: ", variableExtractField
+print ""
+
 
 
 print ""
 print "Fields to compare: ", fieldsToCompare[:]
 print ""
+
+#print list1[:]
+#print list2[:]
 
 
 nodes = gmiObject.readNodesIntoArray (pbsNodeFile)
@@ -234,7 +248,7 @@ for field in fieldsToCompare[:]:
         " \'. " + cwd + "/setup_env ; " + \
         " cd " + cwd + " ; " + \
         " python " + cwd + "/" + \
-        pythonCommand1 + " " + field + \
+        pythonCommand1 + " " + field + " -v " + variableExtractField + \
         " \' "
     commands.append(sysCommand)
 
@@ -242,7 +256,7 @@ for field in fieldsToCompare[:]:
         " \'. " + cwd + "/setup_env ; " + \
         " cd " + cwd + " ; " + \
         " python " + cwd + "/" + \
-        pythonCommand2 + " " + field + \
+        pythonCommand2 + " " + field + " -v " + variableExtractField + \
         " \' "
     commands.append(sysCommand)
 
@@ -258,8 +272,6 @@ for command in commands[:]:
     print command
 print "len of commands: ", len(commands)
 print ""
-
-
 
 
 
