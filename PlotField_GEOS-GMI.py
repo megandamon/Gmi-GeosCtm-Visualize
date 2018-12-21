@@ -44,15 +44,16 @@ from GenericModelPlotTools import GenericModelPlotTools
 from GmiPlotTools import GmiPlotTools
 
 
-NUM_ARGS = 5
+NUM_ARGS = 6
 def usage ():
     print ""
-    print "usage: PlotField_GEOS-GMI.py [-c] [-g] [-r] [-d] [-f]"
+    print "usage: PlotField_GEOS-GMI.py [-c] [-g] [-r] [-d] [-f] [-v]"
     print "-c GEOS CTM restart file"
     print "-g GMI restart file"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
     print "-f field to compare"
+    print "-v which variable to extract field from"
     print ""
     sys.exit (0)
 
@@ -63,7 +64,7 @@ print "Start plotting field differences."
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:v:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -73,6 +74,7 @@ gmiFile = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 fieldToCompare = optList[4][1]
+variableExtractField = optList[5][1]
 
 #---------------------------------------------------------------
 print ""
@@ -130,6 +132,7 @@ gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
 
 
 
+
 order = "GMI"
 list1 = gmiObject.fieldList
 list2 = geosCtmObject.fieldList
@@ -146,6 +149,8 @@ if len(geosCtmObject.fieldList) >= len(gmiObject.fieldList):
     order = "GEOS-CTM"
 
 # Does not matter which object to use - this is weird code. 
+
+gmiObject.fieldName = variableExtractField
 fieldsToCompareAll = gmiObject.returnFieldsInCommon (list1, list2, order)
 
 fieldsToCompare = []
@@ -160,6 +165,7 @@ print ""
 
 
 
+
 foundField = False
 print ""
 for fieldInList in fieldsToCompare[:]:
@@ -171,9 +177,6 @@ for fieldInList in fieldsToCompare[:]:
 if foundField == False:
     print "ERROR: ", fieldToCompare, " cannot be compared!"
     sys.exit(-1)
-
-
-
 
 
 
@@ -208,8 +211,15 @@ print ""
 
 field = fieldToCompare
 
-geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
-gmiFieldArray = gmiObject.returnField (field, timeRecord)
+if variableExtractField == 'scav': 
+    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord, "SCAV_")
+
+else:
+    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
+
+gmiFieldArray = gmiObject.returnField (field, timeRecord, variableExtractField)
+
+
 
 print ""
 print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
@@ -350,9 +360,14 @@ for modelLev in modelLevsToPlotGmi:
         useMin = minValueOfBoth
         useMax = maxValueOfBoth
 
+    # forcing scales to be the same for both models
+    useMin = minValueOfBoth
+    useMax = maxValueOfBoth
+
 
     geosCtmObject.create2dSlice2 (z_GeosCtm, [useMin, useMax], \
-                                      311, "GEOS-CTM " + geosCtmSimName + " " + \
+                                      311, "GEOS-CTM " + geosCtmSimName + "        " + \
+                                      variableExtractField + "_" + \
                                       field + " @ " + str(modelLev) + \
                                       "mb " + dateYearMonth, "jet")
 
@@ -371,10 +386,17 @@ for modelLev in modelLevsToPlotGmi:
         useMax = maxValueOfBoth
 
 
+
+    # forcing scales to be the same for both models
+    useMin = minValueOfBoth
+    useMax = maxValueOfBoth
+
+
     # GMI lev0 is surface
     # using geosCtmObject because GMI should now be on lat/long system of GEOS-CTM
     geosCtmObject.create2dSlice2 (z_Gmi, [useMin, useMax], \
-                                      312, "GMI " + gmiSimName + " " + \
+                                      312, "GMI " + gmiSimName + "        " + \
+                                      variableExtractField + "_" + \
                                       field + " @ " + str(modelLev) + \
                                       " mb " + dateYearMonth, "jet")
 
@@ -382,7 +404,9 @@ for modelLev in modelLevsToPlotGmi:
     geosCtmObject.create2dSlice2 (z_Diff, \
                                      #[z_Diff.min(), z_Diff.max()], \
                                      [0, 1.5], \
-                                     313, "Model ratio " + field + " @ " + str(modelLev) + \
+                                     313, "Model ratio        " + \
+                                      variableExtractField + "_" + \
+                                      field + " @ " + str(modelLev) + \
                                      " mb " + dateYearMonth, \
                                      "nipy_spectral", \
                                      normalize=True)
@@ -393,7 +417,7 @@ for modelLev in modelLevsToPlotGmi:
 
     file = "f"
     if file == "f":
-        plt.savefig("plots/" + field + ".GEOS-CTM.GMI."
+        plt.savefig("plots/" + variableExtractField + "_" + field + ".GEOS-CTM.GMI."
                     + str(modelLev) + "." , bbox_inches='tight')
     elif file == "s":
         plt.show()

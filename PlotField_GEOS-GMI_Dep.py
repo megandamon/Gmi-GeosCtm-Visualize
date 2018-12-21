@@ -17,6 +17,7 @@ import datetime
 import calendar
 import getopt
 import numpy
+import time
 from numpy import *
 from netCDF4 import Dataset
 
@@ -107,10 +108,18 @@ if fieldPrefix == "WD_":
 elif fieldPrefix == "DD_":
     gmiCharString = 'drydep_spc_labels'
     titleString = "Dry dep of "
+elif fieldPrefix == "SCAV_":
+    gmiCharString = 'const_labels'
+    titleString = "Scavenging of "
+elif fieldPrefix == "flash_":
+    gmiCharString = None
+    titleString = ""
 else:
-    print "Field prefix: ", fieldPrefix, " not supported!"
-    sys.exit(0)
-
+    print "Warning - unknown field prefix!!"
+    print ""
+    print "..."
+    time.sleep(2)
+    print ""
 
 
 print geosCtmFile
@@ -118,6 +127,8 @@ print gmiFile
 print ""
 print fieldPrefix + fieldToCompare
 print ""
+
+
 
 
 geosCtmSimName = geosCtmFile.split(".")[0]
@@ -149,6 +160,7 @@ longRecords = numpy.zeros(gmiObject.longSize, numpy.float32)
 
 remappedGmiArray = numpy.zeros(( gmiObject.latSize, \
                                      gmiObject.longSize), numpy.float32)
+
 
 newGmiArray = numpy.zeros((gmiObject.latSize, \
                                geosCtmObject.longSize), numpy.float32)
@@ -192,19 +204,23 @@ print ""
 
 field = fieldToCompare
 
-geosCtmFieldArray = geosCtmObject.returnField (fieldPrefix + field, timeRecord)
+if fieldPrefix != "flash_": # flashrate does not have prefix
+    geosCtmFieldArray = geosCtmObject.returnField (fieldPrefix + field, timeRecord)
+else:
+    geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
 
-gmiFieldArray = gmiObject.returnField (field, timeRecord)
+gmiFieldArray = gmiObject.returnField (field, timeRecord, fieldPrefix)
 
 print ""
 print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
 print "Shape of GMI field: ", gmiFieldArray.shape[:]
 print ""
 
-
-
 # put GMI on -180 to 0 to 180
 lenGmiLong = len(gmiObject.long[:])
+
+print "remapping: ", remappedGmiArray.shape, " to " , gmiFieldArray.shape
+
         
 remappedGmiArray [:,0:lenGmiLong/2] = gmiFieldArray[:,lenGmiLong/2:lenGmiLong]
 remappedGmiArray [:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,0:lenGmiLong/2]
@@ -240,8 +256,11 @@ else:
     newGmiArray[:,:] = remappedGmiArray[:,:]
 
 
+# What is this? Is this for Deposition?
 
-z_GeosCtm = geosCtmFieldArray[:, :] * 2678400
+#z_GeosCtm = geosCtmFieldArray[:, :] * 2678400
+
+z_GeosCtm = geosCtmFieldArray[:, :] 
 z_Gmi = newGmiArray[:, :] 
 z_Diff = z_GeosCtm / z_Gmi
 
@@ -277,13 +296,13 @@ print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
 
 
 geosCtmObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
-                                 [minValueOfBoth,maxValueOfBoth], \
-                                 #[z_GeosCtm.min(), z_GeosCtm.max()], \
+                                 #[minValueOfBoth,maxValueOfBoth], \
+                                 [z_GeosCtm.min(), z_GeosCtm.max()], \
                                  [minGeosCtmLat,maxGeosCtmLat], \
                                  [minGeosCtmLong, maxGeosCtmLong], 311, \
                                  "GEOS-CTM " + geosCtmSimName + " " + \
                                  titleString + field + " @ " + \
-                                 dateYearMonth, "jet")
+                                 geosCtmObject.DATE, "jet")
 
 
 print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
@@ -291,8 +310,8 @@ print ""
 
 # GMI lev0 is surface
 gmiObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
-                             [minValueOfBoth,maxValueOfBoth], \
-                             #[z_Gmi.min(), z_Gmi.max()], \
+                             #[minValueOfBoth,maxValueOfBoth], \
+                             [z_Gmi.min(), z_Gmi.max()], \
                              [minGeosCtmLat,maxGeosCtmLat], \
                              [minGeosCtmLong, maxGeosCtmLong], 312, \
                              "GMI " + gmiSimName + " " + \
@@ -304,7 +323,7 @@ geosCtmObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
                                  [0, 1.5], \
                                  [minGeosCtmLat,maxGeosCtmLat], \
                                  [minGeosCtmLong, maxGeosCtmLong], 313, \
-                                 "Model ratio for dep of " + field + " @ " \
+                                 "Model ratio for " + field + " @ " \
                                  + dateYearMonth, \
                                  "nipy_spectral", \
                                  normalize=True)

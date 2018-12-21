@@ -216,6 +216,8 @@ print "nodes: ", nodes
 cwd = os.getcwd()
 print "current working directory: ", cwd
 
+
+
 commands = []
 fieldCount = 0 
 procCount = 0
@@ -263,8 +265,8 @@ for field in fieldsToCompare[:]:
 
 
 print ""
-#for command in commands[:]:
-#    print command
+for command in commands[:]:
+    print command
 print ""
 
 

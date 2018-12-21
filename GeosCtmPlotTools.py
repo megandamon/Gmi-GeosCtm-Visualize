@@ -89,7 +89,7 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
    def returnField (self, fieldName, timeRecord, prefix=''):
 
-      #print "Return time record: ", timeRecord, " for : ", fieldName
+      print "Return time record: ", timeRecord, " for : ", fieldName
 
       fieldName = prefix + fieldName
       print fieldName

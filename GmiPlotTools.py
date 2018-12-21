@@ -45,7 +45,12 @@ class GmiPlotTools (GenericModelPlotTools):
 
       self.gmiConstString = constString
 
-      if 'dep_spc_labels' in self.gmiConstString:
+      if self.gmiConstString == None:
+         print ""
+         print "Looking for standalone GMI variable"
+         print""
+      
+      elif 'dep_spc_labels' in self.gmiConstString:
          print ""
          print "Doing deposition field extraction"
          print ""
@@ -96,6 +101,13 @@ class GmiPlotTools (GenericModelPlotTools):
 
 
    def addSpeciesToFieldList (self, speciesVar):
+
+      if speciesVar == None:
+         print ""
+         print "speciesVar is None"
+         print ""
+         return 
+
       print "Will extract species names from: ", speciesVar
       self.speciesVar = speciesVar
 
@@ -127,7 +139,8 @@ class GmiPlotTools (GenericModelPlotTools):
          self.constVarName = "const_freq1"
 
 
-      if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO":
+      if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO" \
+             or fieldName.lower() == "flashrate_nc":
          print ""
          print "Extracting field from GMI: ", fieldName
          print ""
@@ -143,7 +156,11 @@ class GmiPlotTools (GenericModelPlotTools):
          else:
             returnTime = timeRecord
 
-         returnArray = fieldArray[timeRecord,:,:,:]
+            if fieldName.lower() != "flashrate_nc":
+               returnArray = fieldArray[timeRecord,:,:,:]
+            else:
+               returnArray = fieldArray[timeRecord,:,:]
+
 
       else:
 

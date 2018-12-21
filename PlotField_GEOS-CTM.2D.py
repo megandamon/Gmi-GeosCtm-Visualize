@@ -4,10 +4,10 @@
 #------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
-# DATE:         August 9 2017
+# DATE:         October 4 2018
 #
 # DESCRIPTION:
-# Driver to plot a single field between two GEOS-CTM Simulations.
+# Driver to plot a 2D single field between two GEOS-CTM Simulations.
 #------------------------------------------------------------------------------
 
 
@@ -52,7 +52,7 @@ from GenericModelPlotTools import GenericModelPlotTools
 NUM_ARGS = 5
 def usage ():
     print ""
-    print "usage: PlotField_GEOS-CTM.py [-c] [-g] [-r] [-d] [-f]"
+    print "usage: PlotField_GEOS-CTM.2d.py [-c] [-g] [-r] [-d] [-f]"
     print "-c GEOS CTM file 1"
     print "-g GEOS CTM file 2"
     print "-r time record to plot"
@@ -178,19 +178,7 @@ else:
     sys.exit(-1)
 
 
-modelLevsToPlot = []
-modelLevsToPlot.append(71)
-modelLevsToPlot.append(49)
-modelLevsToPlot.append(41)
-
-
-print ""
-print "Model levs to plot: ", modelLevsToPlot[:]
-print ""
-
-
-
-# Arrays (one time record, one species)
+# Arrays (one time record, one field)
 longRecords = numpy.zeros(geosCtmObject1.longSize, numpy.float32)
 
 
@@ -237,133 +225,105 @@ print ""
 geosCtmFieldArray1 = geosCtmObject1.returnField (fieldToCompare, timeRecord)
 geosCtmFieldArray2 = geosCtmObject2.returnField (fieldToCompare, timeRecord)
 
-found2DArray = False
-for modelLev in modelLevsToPlot:
-        
-
-
-    print ""
-    print "GEOS-CTM level : ", modelLev
-    print ""
+if len(geosCtmFieldArray1.shape) != 2 or len(geosCtmFieldArray2.shape) != 2: 
+    print "The fields to be compared must be 2D"
+    sys.exit(-1)
 
 
 
-    if geosCtmFieldArray1.shape != geosCtmFieldArray2.shape:
-        print "Array shapes are different. Interpolation needed!"
-        print "This feature is currently not supported for inter GEOS-CTM runs"
-        sys.exit(0)
-
-    else:
-        print "Array shapes are the same, will continue with plotting..."
-
-
+if geosCtmFieldArray1.shape != geosCtmFieldArray2.shape:
+    print "Array shapes are different. Interpolation needed!"
+    print "This feature is currently not supported for inter GEOS-CTM runs"
+    sys.exit(0)
+    
+else:
+    print "Array shapes are the same, will continue with plotting..."
 
 
-    if len(geosCtmFieldArray1.shape) == 2:
-        print "Field is 2D"
-        found2DArray = True
-        z_GeosCtm1 = geosCtmFieldArray1[:, :]
-        z_GeosCtm2 = geosCtmFieldArray2[:, :]
-        modelLev = 0
-
-    else:
-        print "Field is 3D"
-        z_GeosCtm1 = geosCtmFieldArray1[modelLev, :, :]
-        z_GeosCtm2 = geosCtmFieldArray2[modelLev, :, :]
-
-    z_Diff = z_GeosCtm1 / z_GeosCtm2
-
-    minValueOfBoth = z_GeosCtm1.min()
-    maxValueOfBoth = z_GeosCtm1.max()
-
-    if z_GeosCtm2.min() < minValueOfBoth:
-        minValueOfBoth = z_GeosCtm2.min()
-    if z_GeosCtm2.max() > maxValueOfBoth:
-        maxValueOfBoth = z_GeosCtm2.max()
+z_GeosCtm1 = geosCtmFieldArray1[:, :]
+z_GeosCtm2 = geosCtmFieldArray2[:, :]
+    
+z_Diff = z_GeosCtm1 / z_GeosCtm2
 
 
-    print range(0, size(geosCtmObject1.long))
-    print range(0, size(geosCtmObject1.lat))
+minValueOfBoth = z_GeosCtm1.min()
+maxValueOfBoth = z_GeosCtm1.max()
 
-    print shape(z_GeosCtm1)
-    print shape(z_GeosCtm2)
-    print shape(z_Diff)
+if z_GeosCtm2.min() < minValueOfBoth:
+    minValueOfBoth = z_GeosCtm2.min()
+if z_GeosCtm2.max() > maxValueOfBoth:
+    maxValueOfBoth = z_GeosCtm2.max()
 
 
-    for lat in range(0, size(geosCtmObject1.lat)):
-        for long in range(0, size(geosCtmObject1.long)):
 
-            if z_GeosCtm1[lat, long] == 0 and z_GeosCtm2[lat, long] == 0:
-                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                z_Diff[lat, long] = 1.0
+print range(0, size(geosCtmObject1.long))
+print range(0, size(geosCtmObject1.lat))
+
+print shape(z_GeosCtm1)
+print shape(z_GeosCtm2)
+print shape(z_Diff)
+
+
+for lat in range(0, size(geosCtmObject1.lat)):
+    for long in range(0, size(geosCtmObject1.long)):
+
+        if z_GeosCtm1[lat, long] == 0 and z_GeosCtm2[lat, long] == 0:
+            #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+            z_Diff[lat, long] = 1.0
 
 
 
 
 
-    #-----------------------------------------------------#
-    # GEOS-CTM 1
+#-----------------------------------------------------#
+# GEOS-CTM 1
 
-    print ""
-    print "Min/max ", fieldToCompare, " values at level: ", modelLev
-    print ""
+print ""
+print "Min/max ", fieldToCompare
+print ""
 
 
-    print "GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max()
+print "GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max()
 
-    geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
-                                      #[z_GeosCtm1.min(),z_GeosCtm1.max()], \
-                                      [minValueOfBoth,maxValueOfBoth], \
-                                      [minGeosCtmLat,maxGeosCtmLat], \
-                                      [minGeosCtmLong, maxGeosCtmLong], 311, \
-                                      "GEOS-CTM " + geosCtmSimName1 + " " + \
-                                      fieldToCompare + " @ " + str(modelLev) + \
-                                      "lev " + geosCtmObject1.DATE, "jet")
+geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
+                                  [z_GeosCtm1.min(),z_GeosCtm1.max()], \
+                                  #[minValueOfBoth,maxValueOfBoth], \
+                                  [minGeosCtmLat,maxGeosCtmLat], \
+                                  [minGeosCtmLong, maxGeosCtmLong], 311, \
+                                  "GEOS-CTM " + geosCtmSimName1 + " " + \
+                                  fieldToCompare + " " + geosCtmObject1.DATE, "jet")
 
-    print "GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
+print "GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
 
-    geosCtmObject2.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
-                                      #[z_GeosCtm2.min(),z_GeosCtm2.max()], \
-                                      [minValueOfBoth,maxValueOfBoth], \
-                                      [minGeosCtmLat,maxGeosCtmLat], \
-                                      [minGeosCtmLong, maxGeosCtmLong], 312, \
-                                      "GEOS-CTM " + geosCtmSimName2 + " " + \
-                                      fieldToCompare + " @ " + str(modelLev) + \
-                                      "lev " + geosCtmObject2.DATE, "jet")
+geosCtmObject2.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
+                                  [z_GeosCtm2.min(),z_GeosCtm2.max()], \
+                                  #[minValueOfBoth,maxValueOfBoth], \
+                                  [minGeosCtmLat,maxGeosCtmLat], \
+                                  [minGeosCtmLong, maxGeosCtmLong], 312, \
+                                  "GEOS-CTM " + geosCtmSimName2 + " " + \
+                                  fieldToCompare + " " + geosCtmObject2.DATE, "jet")
     
 
 
-    geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                                      #[z_Diff.min(), z_Diff.max()], \
-                                      [0, 1.5], \
-                                      [minGeosCtmLat,maxGeosCtmLat], \
-                                      [minGeosCtmLong, maxGeosCtmLong], 313, \
-                                      "Model ratio " + fieldToCompare + " @ " + str(modelLev) + \
-                                      " lev ", \
-                                      "nipy_spectral", \
-                                      normalize=True)
+geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
+                                  #[z_Diff.min(), z_Diff.max()], \
+                                  [0, 1.5], \
+                                  [minGeosCtmLat,maxGeosCtmLat], \
+                                  [minGeosCtmLong, maxGeosCtmLong], 313, \
+                                  "Model ratio " + fieldToCompare, "nipy_spectral", \
+                                  normalize=True)
     #-----------------------------------------------------#
 
 
 
-    file = "f"
-    if file == "f":
-        plt.savefig("plots/" + fieldToCompare + ".inter.GEOS-CTM."
-                    + str(modelLev) + "." , bbox_inches='tight')
-    elif file == "s":
-        plt.show()
+file = "f"
+if file == "f":
+    plt.savefig("plots/" + fieldToCompare + ".inter.GEOS-CTM."
+                , bbox_inches='tight')
+elif file == "s":
+    plt.show()
         
-    plt.clf()
-
-    if found2DArray == True:
-        break
+plt.clf()
 
 print ""
 print "Plotted : ", fieldToCompare, " to plots/ directory"
-
-
-
-
-
-    
-

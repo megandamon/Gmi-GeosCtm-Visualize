@@ -53,7 +53,7 @@ FILE = "f"
 NUM_ARGS = 6
 def usage ():
     print ""
-    print "usage: PlotRestartSpecies_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v]"
+    print "usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v]"
     print "-c File1 (GEOS-CTM)"
     print "-g File2 (GMI  or GEOS-CTM) [if GMI format is gmi*.nc]"
     print "-r time record to plot"
@@ -130,9 +130,10 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
         t.set_fontsize("x-small")
 
     # set up y axes: log pressure labels on the left y axis
-    ax1.set_ylabel("Pressure [hPa]")
+    ax1.set_ylabel("Model levels")
     ax1.set_yscale('log')
     ax1.set_ylim(y.max(), y.min())
+    #ax1.set_ylim(y.min(), y.max())
     subs = [1,2,5]
     
     print "y_max, y_min = ", y.max(), y.min()
@@ -216,6 +217,7 @@ else :
     fileTitle = ".GEOS-CTM.inter."
 
 
+
 plotTitleFile2 = plotTitleFile2 + sim2Name + "        " + variableExtractField
 
 
@@ -263,16 +265,24 @@ if len(geosCtmObject.fieldList) >= len(file2Object.fieldList):
     
         
 
+if variableExtractField != "":
+    file2Object.fieldName = variableExtractField
+else:
+    file2Object.fileName = fieldToCompare
 
-file2Object.fieldName = variableExtractField
-fieldsToCompareAll = file2Object.returnFieldsInCommon (list1, list2, order)
+fieldsToCompareAll = file2Object.returnFieldsInCommonNew (list1, list2)
 
 
 fieldsToCompare = []
 for field in fieldsToCompareAll[:]:
-    if field[0:4] != "Var_" and field[0:2] != "EM" and \
+#    if field[0:4] != "Var_" and field[0:2] != "EM" and \
+    if field[0:4] != "Var_" and \
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
+
+print ""
+print "Order: ", order
+print ""
 
 print ""
 print "Fields to compare: ", fieldsToCompare[:]
@@ -293,9 +303,9 @@ if foundField == False:
     sys.exit(-1)
 
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+#print ""
+#print "Fields to compare: ", fieldsToCompare[:]
+#print ""
 
 
 
@@ -304,7 +314,6 @@ print ""
 
 # file2 has the potential to have a different lognitude system and length 
 # This is because GMI is on a 0-360 system
-# And GEOS-CTM is very flexible about resolution
 longRecords = numpy.zeros(file2Object.longSize, numpy.float32)
 
 remappedFile2Array = numpy.zeros((file2Object.levelSize, \
@@ -353,6 +362,7 @@ print sim2Name
 print ""
 
 
+
 # put GMI on -180 to 0 to 180
 if file2Flag == "GMI" or sim2Name == "MERRA2_300":
 
@@ -388,9 +398,9 @@ else:
 
 
 
-print ""
-print "Remapped long: ", remappedLong[:]
-print ""
+#print ""
+#print "Remapped long: ", remappedLong[:]
+#print ""
 
 
 if file2FieldArray.shape != geosCtmFieldArray.shape:
@@ -416,7 +426,9 @@ if file2FieldArray.shape != geosCtmFieldArray.shape:
 
 
 else:
+    print "Array shapes are the same. Will not interpolate"
     newFile2Array[:,:, :] = remappedFile2Array[:,:,:]
+
 
 
 
@@ -443,8 +455,14 @@ else:
 
 
 
-geosCtmSurface = geosCtmObject.levelSize-1
-geosCtmTropPause = (geosCtmObject.levelSize-1) - tropMinLev
+
+geosCtmSurface = geosCtmObject.levelSize
+geosCtmTropPause = (geosCtmObject.levelSize) - tropMinLev
+
+print ""
+print "GEOS-CTM surface and tropopause levels: ", geosCtmSurface, geosCtmTropPause
+print ""
+
 
 
 if file2Flag == "GMI": 
@@ -452,25 +470,30 @@ if file2Flag == "GMI":
     tropFile2 = newFile2Array[0:tropMinLev+1, :, :]
     zmFile2Trop = numpy.mean (newFile2Array[0:tropMinLev+1, :, :], axis=2)
 else:
-    tropFile2 = newFile2Array[geosCtmTropPause:geosCtmSurface+1, :, :]
-    zmFile2Trop = numpy.mean(newFile2Array[geosCtmTropPause:geosCtmSurface+1, :, :], \
+    tropFile2 = newFile2Array[geosCtmTropPause:geosCtmSurface, :, :]
+    zmFile2Trop = numpy.mean(newFile2Array[geosCtmTropPause:geosCtmSurface, :, :], \
                                  axis=2)
 
 
 
-zmGeosCtmTrop = numpy.mean (geosCtmFieldArray[geosCtmTropPause:geosCtmSurface+1, :, :], \
+zmGeosCtmTrop = numpy.mean (geosCtmFieldArray[geosCtmTropPause:geosCtmSurface, :, :], \
                                 axis=2)
-tropGeosCtm = geosCtmFieldArray[geosCtmTropPause:geosCtmSurface+1, :,:]
+tropGeosCtm = geosCtmFieldArray[geosCtmTropPause:geosCtmSurface, :,:]
 
 
 # flip the array to the same orientation as FILE2
 if file2Flag == "GMI":
     zmGeosCtmTropRev = zmGeosCtmTrop[::-1, :]
 else:
+    print ""
+    print "No data flipping necessary"
+    print ""
     zmGeosCtmTropRev = zmGeosCtmTrop[:,:]
 
 print "Size of Trop ZM GEOS: ", zmGeosCtmTrop.shape
 print "Size of Top ZM file2: ", zmFile2Trop.shape
+print ""
+
 
 minValueOfBoth = zmGeosCtmTropRev.min()
 maxValueOfBoth = zmGeosCtmTropRev.max()
@@ -489,37 +512,46 @@ plotOpt['title'] = "Trop GEOS-CTM " + geosCtmSimName + "        " + variableExtr
     + " " + field + " ZM " + dateYearMonth
 
 
+print file2Object.lev[0]
+print ""
+
 if file2Object.lev[0] == 0:
     useLevels = file2Object.lev[:] + 1
 else:
     useLevels = file2Object.lev[:]
 
 
+print "GEOS-CTM surface and tropopause levels: ", geosCtmSurface, geosCtmTropPause
+print useLevels[geosCtmTropPause:geosCtmSurface]
+
+
 plotZM (zmGeosCtmTropRev, geosCtmObject.lat[:], \
-            useLevels[0:tropMinLev+1], \
-            #file2Object.lev[0:tropMinLev+1], \
+            #useLevels[0:tropMinLev], \
+            useLevels[geosCtmTropPause:geosCtmSurface], \
             fig, ax1, 'jet', \
             minValueOfBoth, maxValueOfBoth, \
-#            zmGeosCtmTropRev.min(), zmGeosCtmTropRev.max(), \
+            #            zmGeosCtmTropRev.min(), zmGeosCtmTropRev.max(), \
             plotOpt)
+
+
 
 
 ax2 = fig.add_subplot(312)
 plotOpt['title'] = "Trop " + plotTitleFile2 + " " + field + " ZM " + dateYearMonth
 plotZM (zmFile2Trop, file2Object.lat[:], \
-            useLevels[0:tropMinLev+1], \
-            #file2Object.lev[0:tropMinLev+1], \
+            #useLevels[0:tropMinLev+1], \
+            useLevels[geosCtmTropPause:geosCtmSurface], \
             fig, ax2, 'jet', \
             minValueOfBoth, maxValueOfBoth, \
-#            zmFile2Trop.min(), zmFile2Trop.max(), \
+            #zmFile2Trop.min(), zmFile2Trop.max(), \
             plotOpt)
 
 ax3 = fig.add_subplot(313)    
 plotOpt['title'] = "Trop model ratio         " + variableExtractField + "_" + \
     field + " " + " ZM " + dateYearMonth
 plotZM (zmGeosCtmTropRev/zmFile2Trop, file2Object.lat[:], \
-            #file2Object.lev[0:tropMinLev+1], \
-            useLevels[0:tropMinLev+1], \
+            useLevels[geosCtmTropPause:geosCtmSurface], \
+            #useLevels[0:tropMinLev+1], \
             fig, ax3, 'nipy_spectral', \
             0.0, 1.5, plotOpt)
 
@@ -527,13 +559,20 @@ plotZM (zmGeosCtmTropRev/zmFile2Trop, file2Object.lat[:], \
 
 FILE = "f"
 if FILE == "f":
-    plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                     + "trop.", bbox_inches='tight')
+    if variableExtractField != "":
+        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
+                         + "trop.", bbox_inches='tight')
+    else:
+        plt.savefig ("plots/" + field + fileTitle \
+                         + "trop.", bbox_inches='tight')
+
+
 else:
     plt.show()
 plt.clf
 
 
+sys.exit(0)
 
 if file2Flag == "GMI": 
     # lev, lat, long
@@ -615,8 +654,13 @@ plotZM (zmStratRatio, file2Object.lat[:], \
 
 FILE = "f"
 if FILE == "f":
-    plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                 + "strat.", bbox_inches='tight')
+    if variableExtractField != "":
+        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
+                         + "strat.", bbox_inches='tight')
+    else:
+        plt.savefig ("plots/" + field + fileTitle \
+                         + "strat.", bbox_inches='tight')
+        
 else:
     plt.show()
 plt.clf
@@ -805,8 +849,13 @@ if fieldToCompare.lower() == "moistq" or \
 
     FILE = "f"
     if FILE == "f":
-        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                         + "stratColumn.", bbox_inches='tight')
+        if variableExtractField != "":
+            plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
+                             + "stratColumn.", bbox_inches='tight')
+        else:
+            plt.savefig ("plots/" + field + fileTitle \
+                             + "stratColumn.", bbox_inches='tight')
+            
     else:
         plt.show()
     plt.clf
