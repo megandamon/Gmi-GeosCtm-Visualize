@@ -209,6 +209,9 @@ if fieldPrefix != "flash_": # flashrate does not have prefix
 else:
     geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
 
+print field
+print timeRecord
+print fieldPrefix
 gmiFieldArray = gmiObject.returnField (field, timeRecord, fieldPrefix)
 
 print ""

@@ -122,6 +122,23 @@ class GmiPlotTools (GenericModelPlotTools):
 
 
 
+   def returnConstantField (self, fieldName):
+
+
+      print fieldName
+      print fieldName.lower()
+
+      print ""
+      print "Extracting field from GMI: ", fieldName
+      print ""
+               
+      fieldArray = self.hdfData.variables[fieldName]   
+
+      returnArray = fieldArray[:,:]
+
+      return returnArray
+
+
    def returnField (self, fieldName, timeRecord, arrayName):
 
 
@@ -139,8 +156,11 @@ class GmiPlotTools (GenericModelPlotTools):
          self.constVarName = "const_freq1"
 
 
+      print fieldName
+      print fieldName.lower()
+
       if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO" \
-             or fieldName.lower() == "flashrate_nc":
+             or fieldName.lower() == "flashrate_nc" or fieldName.lower() == "lfr":
          print ""
          print "Extracting field from GMI: ", fieldName
          print ""
@@ -156,7 +176,7 @@ class GmiPlotTools (GenericModelPlotTools):
          else:
             returnTime = timeRecord
 
-            if fieldName.lower() != "flashrate_nc":
+            if fieldName.lower() != "flashrate_nc" and fieldName.lower() != 'lfr':
                returnArray = fieldArray[timeRecord,:,:,:]
             else:
                returnArray = fieldArray[timeRecord,:,:]

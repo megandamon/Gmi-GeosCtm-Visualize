@@ -286,8 +286,8 @@ print ""
 print "GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max()
 
 geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
-                                  [z_GeosCtm1.min(),z_GeosCtm1.max()], \
-                                  #[minValueOfBoth,maxValueOfBoth], \
+                                  #[z_GeosCtm1.min(),z_GeosCtm1.max()], \
+                                  [minValueOfBoth,maxValueOfBoth], \
                                   [minGeosCtmLat,maxGeosCtmLat], \
                                   [minGeosCtmLong, maxGeosCtmLong], 311, \
                                   "GEOS-CTM " + geosCtmSimName1 + " " + \
@@ -296,8 +296,8 @@ geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, 
 print "GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
 
 geosCtmObject2.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
-                                  [z_GeosCtm2.min(),z_GeosCtm2.max()], \
-                                  #[minValueOfBoth,maxValueOfBoth], \
+                                  #[z_GeosCtm2.min(),z_GeosCtm2.max()], \
+                                  [minValueOfBoth,maxValueOfBoth], \
                                   [minGeosCtmLat,maxGeosCtmLat], \
                                   [minGeosCtmLong, maxGeosCtmLong], 312, \
                                   "GEOS-CTM " + geosCtmSimName2 + " " + \
