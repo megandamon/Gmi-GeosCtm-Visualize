@@ -160,7 +160,8 @@ class GmiPlotTools (GenericModelPlotTools):
       print fieldName.lower()
 
       if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO" \
-             or fieldName.lower() == "flashrate_nc" or fieldName.lower() == "lfr":
+             or fieldName.lower() == "flashrate_nc" or fieldName.lower() == "lfr" \
+             or fieldName.lower() == "mcor" or fieldName.lower() == "psf":
          print ""
          print "Extracting field from GMI: ", fieldName
          print ""
@@ -176,7 +177,8 @@ class GmiPlotTools (GenericModelPlotTools):
          else:
             returnTime = timeRecord
 
-            if fieldName.lower() != "flashrate_nc" and fieldName.lower() != 'lfr':
+            if fieldName.lower() != "flashrate_nc" and fieldName.lower() != 'lfr' \
+                   and fieldName.lower () != "mcor" and fieldName.lower() != "psf":
                returnArray = fieldArray[timeRecord,:,:,:]
             else:
                returnArray = fieldArray[timeRecord,:,:]

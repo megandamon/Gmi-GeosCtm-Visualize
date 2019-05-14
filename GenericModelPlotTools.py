@@ -56,18 +56,27 @@ class GenericModelPlotTools:
       self.latSize = len(self.hdfData.dimensions[latDim])
       self.longSize = len(self.hdfData.dimensions[lonDim])
       self.levelSize = len(self.hdfData.dimensions[levDim])
-      self.timeLength = len(self.hdfData.dimensions[timeDim])
+
+      ncDims = [dim for dim in self.hdfData.dimensions]  # list of nc dimensions
+      if timeDim in ncDims[:]:
+         self.timeLength = len(self.hdfData.dimensions[timeDim])
+         self.time = self.hdfData.variables[timeVar]
+         self.timeVarName = timeVar
+      else:
+         self.timeLength = 1
+         self.time = None
+         self.timeVarName = None
 
 
       self.lat = self.hdfData.variables[latVar]
       self.long = self.hdfData.variables[lonVar]
       self.lev = self.hdfData.variables[levVar]
-      self.time = self.hdfData.variables[timeVar]
+
 
       self.latVarName = latVar
       self.longVarName = lonVar
       self.levVarName = levVar
-      self.timeVarName = timeVar
+
 
       self.minLat = self.lat[:].min()
       self.maxLat = self.lat[:].max()

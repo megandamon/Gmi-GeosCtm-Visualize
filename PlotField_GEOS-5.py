@@ -1,4 +1,5 @@
 
+
 #------------------------------------------------------------------------------
 # NASA/GSFC
 #------------------------------------------------------------------------------
@@ -49,16 +50,17 @@ from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import GenericModelPlotTools
 
 
-NUM_ARGS = 6
+NUM_ARGS = 7
 def usage ():
     print ""
-    print "usage: PlotField_GEOS-5.py [-c] [-g] [-r] [-d] [-f] [-r]"
+    print "usage: PlotField_GEOS-5.py [-c] [-g] [-r] [-d] [-u] [-f] [-m]"
     print "-c GEOS CTM file 1"
     print "-g GEOS CTM file 2"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
+    print "-u unit of vertical level (lev/hPa)"
     print "-f field to compare"
-    print "-r model config (Replay, CCM, etc.)"
+    print "-m model config (Replay, CCM, etc.)"
     print ""
     sys.exit (0)
 
@@ -68,17 +70,18 @@ print "Start plotting field differences."
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:u:f:m:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
 
-geosCtmFile1 = optList[0][1]
-geosCtmFile2 = optList[1][1]
+geosCtmFile1 = str(optList[0][1])
+geosCtmFile2 = str(optList[1][1])
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
-fieldToCompare = optList[4][1]
-configName = optList[5][1]
+levUnit = str(optList[4][1])
+fieldToCompare = str(optList[5][1])
+configName = str(optList[6][1])
 
 #---------------------------------------------------------------
 print ""
@@ -111,8 +114,9 @@ print geosCtmFile1
 print geosCtmFile2
 print ""
 
-geosCtmSimName1 = geosCtmFile1.split(".")[0]
-geosCtmSimName2 = geosCtmFile2.split(".")[0]
+geosCtmSimName1 = geosCtmFile1.split(".")[0] + "-" + geosCtmFile1.split(".")[1]
+geosCtmSimName2 = geosCtmFile2.split(".")[0] + "-" + geosCtmFile2.split(".")[1]
+
 
 
 print ""
@@ -128,14 +132,14 @@ print ""
 print "Command line options look good."
 print""
 #--------------------------------------------------------------
-geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
-                                      'lev','time', 'lat', \
-                                      'lon', 'lev', 'time' )
+geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'latitude','longitude',\
+                                      'lev','time', 'latitude', \
+                                      'longitude', 'lev', 'time' )
 
 
-geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
-                                      'lev','time', 'lat', \
-                                      'lon', 'lev', 'time' )
+geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'latitude','longitude',\
+                                      'lev','time', 'latitude', \
+                                      'longitude', 'lev', 'time' )
 
 
 
@@ -181,9 +185,12 @@ else:
 
 
 modelLevsToPlot = []
-modelLevsToPlot.append(7)
-modelLevsToPlot.append(16)
-modelLevsToPlot.append(23)
+#modelLevsToPlot.append(23)
+#modelLevsToPlot.append(34)
+#modelLevsToPlot.append(50)
+#modelLevsToPlot.append(60)
+modelLevsToPlot.append(35)
+
 
 
 print ""
@@ -295,14 +302,12 @@ for modelLev in modelLevsToPlot:
     for lat in range(0, size(geosCtmObject1.lat)):
         for long in range(0, size(geosCtmObject1.long)):
 
-            if z_GeosCtm1[lat, long] == 0 and z_GeosCtm2[lat, long] == 0:
-                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+            if z_GeosCtm1[lat, long] == 0.0 and z_GeosCtm2[lat, long] == 0.0:
                 z_Diff[lat, long] = 1.0
-
-
-
-
-
+            if z_GeosCtm1[lat, long] != 0.0 and z_GeosCtm2[lat,long] == 0.0:
+                if z_GeosCtm1[lat, long] > 0.0: z_Diff[lat,long] = 2.5
+                if z_GeosCtm1[lat, long] < 0.0: z_Diff[lat,long] = .5
+                
     #-----------------------------------------------------#
     # GEOS-5 1
 
@@ -320,7 +325,8 @@ for modelLev in modelLevsToPlot:
                                       [minGeosCtmLong, maxGeosCtmLong], 311, \
                                       configName + " " + geosCtmSimName1 + " " + \
                                       fieldToCompare + " @ " + str(int(geosCtmObject1.lev[modelLev])) + \
-                                      " hPa " + geosCtmObject1.DATE, "jet")
+                                      " " + str(levUnit) + " " + str(geosCtmObject1.DATE), \
+                                      "jet")
 
     print "GEOS-5 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
 
@@ -331,18 +337,21 @@ for modelLev in modelLevsToPlot:
                                       [minGeosCtmLong, maxGeosCtmLong], 312, \
                                       configName + " " + geosCtmSimName2 + " " + \
                                       fieldToCompare + " @ " + str(int(geosCtmObject1.lev[modelLev])) + \
-                                      " hPa " + geosCtmObject2.DATE, "jet")
+                                      " " + levUnit + " " + geosCtmObject1.DATE, "jet")
     
 
 
     geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
                                       #[z_Diff.min(), z_Diff.max()], \
-                                      [.9, 1.1], \
+                                      [.5, 1.5], \
                                       [minGeosCtmLat,maxGeosCtmLat], \
                                       [minGeosCtmLong, maxGeosCtmLong], 313, \
-                                      "Model ratio " + fieldToCompare + " @ " + str(int(geosCtmObject1.lev[modelLev])) + \
-                                      " hPa ", \
-                                      "bwr", \
+                                      "Model ratio " + geosCtmSimName1 + "/" + \
+                                      geosCtmSimName2 + " " + \
+                                      fieldToCompare + " @ " + \
+                                      str(int(geosCtmObject1.lev[modelLev])) + \
+                                      " " + levUnit + " " , \
+                                      "PuOr", \
                                       normalize=True)
     #-----------------------------------------------------#
 

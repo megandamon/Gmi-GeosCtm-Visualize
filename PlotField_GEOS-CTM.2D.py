@@ -240,7 +240,7 @@ else:
     print "Array shapes are the same, will continue with plotting..."
 
 
-z_GeosCtm1 = geosCtmFieldArray1[:, :]
+z_GeosCtm1 = geosCtmFieldArray1[:, :] 
 z_GeosCtm2 = geosCtmFieldArray2[:, :]
     
 z_Diff = z_GeosCtm1 / z_GeosCtm2

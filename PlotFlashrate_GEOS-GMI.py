@@ -207,6 +207,7 @@ for lat in gmiObject.lat[:]:
 
 
 z_GeosCtm = geosCtmFieldArray[:, :]
+z_GeosCtm = z_GeosCtm  
 z_Gmi = newGmiArray[:, :]  / (newMcorArray[:,:] / 1e6)
 z_Diff = z_GeosCtm / z_Gmi
 
@@ -233,9 +234,6 @@ for lat in range(0, size(geosCtmObject.lat)):
 # GEOS-CTM
             
 
-print ""
-print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
-print ""
 
 # forcing scales to be the same for both models
 useMin = minValueOfBoth
@@ -248,16 +246,18 @@ geosCtmObject.create2dSlice2 (z_GeosCtm, [useMin, useMax], \
                                   dateYearMonth, "jet")
 
 
-print ""
-print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
-print "" 
-
-
-
 geosCtmObject.create2dSlice2 (z_Gmi, [useMin, useMax], \
                                   312, "GMI " + gmiSimName + "        " + \
                                   fieldToCompareGmi + "_" + \
                                   dateYearMonth, "jet")
+
+
+print ""
+print "GEOS-CTM ", fieldToCompareGeos, " min/max/mean : ", z_GeosCtm.min(), " / ", z_GeosCtm.max(), " / ", z_GeosCtm.mean()
+print ""
+print ""
+print "GMI ", fieldToCompareGmi, " min/max/mean : ", z_Gmi.min(), " / ", z_Gmi.max(), " / ", z_Gmi.mean()
+print "" 
 
 
 geosCtmObject.create2dSlice2 (z_Diff, \

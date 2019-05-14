@@ -9,8 +9,9 @@
 # Driver to plot zonal mean differences for one field between:
 # 1. A GEOS file
 # 2. A GEOS file or GMI file
-# Driver will always plot tropCol and stratCol 
 #------------------------------------------------------------------------------
+
+from __future__ import division
 
 import re
 import os
@@ -50,10 +51,10 @@ from GmiPlotTools import GmiPlotTools
 
 FILE = "f"
 
-NUM_ARGS = 7
+NUM_ARGS = 8
 def usage ():
     print ""
-    print "usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v] [-m]"
+    print "usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v] [-m] [-a]"
     print "-c File1 (GEOS)"
     print "-g File2 (GMI  or GEOS) [if GMI format is gmi*.nc]"
     print "-r time record to plot"
@@ -61,6 +62,7 @@ def usage ():
     print "-f field to compare"
     print "-v which variable to extract field from"
     print "-m model configuration (Replay, CCM, etc.)" 
+    print "-a analysis type (d=perc diff, r=ratio"
     print ""
     sys.exit (0)
 
@@ -81,7 +83,7 @@ def findLevelFromArray(array, value):
     return returnLev
 
 
-def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
+def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, plotOpt=None):
     """Create a zonal mean contour plot of one variable
     plotOpt is a dictionary with plotting options:
     'scale_factor': multiply values with this factor before plotting
@@ -107,7 +109,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
 
     # draw the (filled) contours
     contour = ax1.contourf(x, y, pdata, levels=clevs, norm=norm, cmap=colorMap, \
-                               vmin = dataMin, vmax = dataMax)
+                               vmin = dataMin, vmax = dataMax, extend='both')
 
     # add a title
     title = plotOpt.get('title',  'Zonal Mean')
@@ -132,10 +134,12 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
 
     # set up y axes: log pressure labels on the left y axis
     ax1.set_ylabel("Model levels")
-    ax1.set_yscale('log')
+    ax1.set_yscale('linear')
     ax1.set_ylim(y.max(), y.min())
     #ax1.set_ylim(y.min(), y.max())
     subs = [1,2,5]
+
+    ax1.set_xlabel(xAxisLabel)
     
     print "y_max, y_min = ", y.max(), y.min()
     if y.max()/y.min() < 30.:
@@ -155,7 +159,7 @@ print "Start plotting zonal mean differences"
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:v:m:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:f:v:m:a:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -167,6 +171,7 @@ dateYearMonth = optList[3][1]
 fieldToCompare = optList[4][1]
 variableExtractField = optList[5][1]
 modelConfig = optList[6][1]
+analType = str(optList[7][1])
 
 #---------------------------------------------------------------
 print ""
@@ -193,6 +198,9 @@ if len(dateYearMonth) != 6:
     print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
     sys.exit(0)
 
+if analType != "r" and analType != "d":
+    print "ERROR: analysis type must be r (ratios) or d (percent differences)"
+    sys.exit(0)
 
 print geos5File
 print file2
@@ -207,20 +215,20 @@ else:
     file2Flag = "GEOS"
 
 
-geos5SimName = geos5File.split(".")[0]
+geos5SimName = geos5File.split(".")[0] + "-" + geos5File.split(".")[1]
 
 if file2Flag == "GMI": 
     sim2Name = file2.split("_")[1]
     plotTitleFile2 = "GMI " 
     fileTitle = "." + modelConfig + ".GMI."
 else :
-    sim2Name = file2.split(".")[0]
+    sim2Name = file2.split(".")[0] + "-" + file2.split(".")[1]
     plotTitleFile2 = modelConfig 
     fileTitle = "." + modelConfig + ".inter."
 
 
 
-plotTitleFile2 = plotTitleFile2 + sim2Name + "        " + variableExtractField
+plotTitleFile2 = plotTitleFile2 + " " + sim2Name + "        " + variableExtractField
 
 
 print ""
@@ -433,84 +441,45 @@ else:
 
 
 
-
-if file2Flag == "GMI":
-    # find tropMaxLev and tropMinLev from GMI
-    tropMinLev = findLevelFromArray (file2Object.lev, 100.00)
-
-    print ""
-    print "Trop min level: ", tropMinLev
-    print ""
-
-    print ""
-    print"Trop levels: ",  file2Object.lev[0:tropMinLev+1]
-    print "Strat levels: '", file2Object.lev[tropMinLev+1::]
-    print ""
-
-
-else:
-
-    tropMinLev = 34
-    print ""
-    print "WARNING: Default tropophere min level being used : ", tropMinLev
-    print ""
-
-
-
-
-geos5Surface = geos5Object.levelSize
-geos5TropPause = (geos5Object.levelSize) - tropMinLev
-
-print ""
-print "GEOS surface and tropopause levels: ", geos5Surface, geos5TropPause
-print ""
-
-
-
 if file2Flag == "GMI": 
-    # lev, lat, long
-    tropFile2 = newFile2Array[0:tropMinLev+1, :, :]
-    zmFile2Trop = numpy.mean (newFile2Array[0:tropMinLev+1, :, :], axis=2)
+    zmFile2 = numpy.mean (newFile2Array[:, :, :], axis=2)
 else:
-    tropFile2 = newFile2Array[geos5TropPause:geos5Surface, :, :]
-    zmFile2Trop = numpy.mean(newFile2Array[geos5TropPause:geos5Surface, :, :], \
-                                 axis=2)
+    zmFile2 = numpy.mean(newFile2Array[:, :, :], axis=2)
 
 
 
-zmGeosCtmTrop = numpy.mean (geos5FieldArray[geos5TropPause:geos5Surface, :, :], \
+zmGeosCtm = numpy.mean (geos5FieldArray[:, :, :], \
                                 axis=2)
-tropGeosCtm = geos5FieldArray[geos5TropPause:geos5Surface, :,:]
+
 
 
 # flip the array to the same orientation as FILE2
 if file2Flag == "GMI":
-    zmGeosCtmTropRev = zmGeosCtmTrop[::-1, :]
+    zmGeosCtmRev = zmGeosCtm[::-1, :]
 else:
     print ""
     print "No data flipping necessary"
     print ""
-    zmGeosCtmTropRev = zmGeosCtmTrop[:,:]
-
-print "Size of Trop ZM GEOS: ", zmGeosCtmTrop.shape
-print "Size of Top ZM file2: ", zmFile2Trop.shape
-print ""
+    zmGeosCtmRev = zmGeosCtm[:,:]
 
 
-minValueOfBoth = zmGeosCtmTropRev.min()
-maxValueOfBoth = zmGeosCtmTropRev.max()
 
-if zmFile2Trop.min() < minValueOfBoth:
-    minValueOfBoth = zmFile2Trop.min()
-if zmFile2Trop.max() > maxValueOfBoth:
-    maxValueOfBoth = zmFile2Trop.max()
+
+minValueOfBoth = zmGeosCtmRev.min()
+maxValueOfBoth = zmGeosCtmRev.max()
+
+if zmFile2.min() < minValueOfBoth:
+    minValueOfBoth = zmFile2.min()
+if zmFile2.max() > maxValueOfBoth:
+    maxValueOfBoth = zmFile2.max()
+
 
 
 fig = plt.figure(figsize=(20,20))
 plotOpt = {}
 
 ax1 = fig.add_subplot(311)
-plotOpt['title'] = "Trop " + modelConfig + " " + geos5SimName + "        " + variableExtractField \
+plotOpt['title'] = modelConfig + " " + geos5SimName + "        " + variableExtractField \
     + " " + field + " ZM " + dateYearMonth
 
 
@@ -523,356 +492,99 @@ else:
     useLevels = file2Object.lev[:]
 
 
-print "GEOS surface and tropopause levels: ", geos5Surface, geos5TropPause
-print useLevels[geos5TropPause:geos5Surface]
-
-
-plotZM (zmGeosCtmTropRev, geos5Object.lat[:], \
-            #useLevels[0:tropMinLev], \
-            useLevels[geos5TropPause:geos5Surface], \
+plotZM (zmGeosCtmRev, geos5Object.lat[:], \
+            useLevels[:], \
             fig, ax1, 'jet', \
             minValueOfBoth, maxValueOfBoth, \
-            #            zmGeosCtmTropRev.min(), zmGeosCtmTropRev.max(), \
-            plotOpt)
+            #            zmGeosCtmRev.min(), zmGeosCtmRev.max(), \
+            "Model values", plotOpt)
 
 
 
 
 ax2 = fig.add_subplot(312)
-plotOpt['title'] = "Trop " + plotTitleFile2 + " " + field + " ZM " + dateYearMonth
-plotZM (zmFile2Trop, file2Object.lat[:], \
-            #useLevels[0:tropMinLev+1], \
-            useLevels[geos5TropPause:geos5Surface], \
+plotOpt['title'] = plotTitleFile2 + " " + field + " ZM " + dateYearMonth
+plotZM (zmFile2, file2Object.lat[:], \
+            useLevels[:], \
             fig, ax2, 'jet', \
             minValueOfBoth, maxValueOfBoth, \
-            #zmFile2Trop.min(), zmFile2Trop.max(), \
-            plotOpt)
+            #zmFile2.min(), zmFile2.max(), \
+            "Model values", plotOpt)
 
 ax3 = fig.add_subplot(313)    
-plotOpt['title'] = "Trop model ratio         " + variableExtractField + "_" + \
+plotOpt['title'] = geos5SimName + " vs " + sim2Name + "   " + \
     field + " " + " ZM " + dateYearMonth
-plotZM (zmGeosCtmTropRev/zmFile2Trop, file2Object.lat[:], \
-            useLevels[geos5TropPause:geos5Surface], \
-            #useLevels[0:tropMinLev+1], \
-            fig, ax3, 'nipy_spectral', \
-            0.0, 1.5, plotOpt)
-
-
-
-FILE = "f"
-if FILE == "f":
-    if variableExtractField != "":
-        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                         + "trop.", bbox_inches='tight')
-    else:
-        plt.savefig ("plots/" + field + fileTitle \
-                         + "trop.", bbox_inches='tight')
-
-
-else:
-    plt.show()
-plt.clf
-
-
-sys.exit(0)
-
-if file2Flag == "GMI": 
-    # lev, lat, long
-    zmFile2Strat = numpy.mean (newFile2Array[tropMinLev::,:,:], axis=2)
-    stratFile2 = newFile2Array[tropMinLev::,:,:]
-else:
-    zmFile2Strat = numpy.mean (newFile2Array[0:geos5TropPause+1, :, :] ,\
-                                     axis=2)
-    stratFile2 = newFile2Array[0:geos5TropPause+1, :, :]
-
-zmGeosCtmStrat = numpy.mean (geos5FieldArray[0:geos5TropPause+1, :, :], \
-                                 axis=2)
-stratGeosCtm = geos5FieldArray[0:geos5TropPause+1, :, :]
 
 
 
 
-
-#########
-
-
-
-# flip the array to the same orientation as FILE2
-if file2Flag == "GMI":
-    zmGeosCtmStratRev = zmGeosCtmStrat[::-1, :]
-else:
-    zmGeosCtmStratRev = zmGeosCtmStrat[:,:]
+levPoints = zmGeosCtmRev.shape[0]
+latPoints = zmGeosCtmRev.shape[1]
 
 
+zmDiff = numpy.zeros((file2Object.levelSize, \
+                          file2Object.latSize), numpy.float32)
+if analType == "d":
+
+    for lev in range(0,levPoints):
+        for lat in range(0,latPoints):
+            absVal = abs(zmGeosCtmRev[lev,lat]-zmFile2[lev,lat])
+            denVal = (zmGeosCtmRev[lev,lat]+zmFile2[lev,lat]) / 2.0
+            zmDiff [lev,lat] = (absVal/denVal) * 100.
 
 
-
-minValueOfBoth = zmGeosCtmStratRev.min()
-maxValueOfBoth = zmGeosCtmStratRev.max()
-
-if zmFile2Strat.min() < minValueOfBoth:
-    minValueOfBoth = zmFile2Strat.min()
-if zmFile2Strat.max() > maxValueOfBoth:
-    maxValueOfBoth = zmFile2Strat.max()
-
-
-print "Strat min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth
-print "Strat min / max of GEOS ", field, zmGeosCtmStratRev.min(), " / ", zmGeosCtmStratRev.max()
-print "Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Strat.max()
-
-
-fig = plt.figure(figsize=(20,20))
-plotOpt = {}
-ax1 = fig.add_subplot(311)
-plotOpt['title'] = "Strat " + modelConfig + modelConfig + " " + geos5SimName + "         " + variableExtractField + \
-    "_" + field + " ZM " + dateYearMonth
-plotZM (zmGeosCtmStratRev, geos5Object.lat[:], \
-            useLevels[tropMinLev::], \
-            #file2Object.lev[tropMinLev::], \
-            fig, ax1, 'jet', \
-            minValueOfBoth, maxValueOfBoth, plotOpt)
-#    	    zmGeosCtmStratRev.min(), zmGeosCtmStratRev.max(), plotOpt)
+    lowEnd = -zmDiff.mean()
+    highEnd = zmDiff.mean()
     
-ax2 = fig.add_subplot(312)
-plotOpt['title'] = "Strat " + plotTitleFile2 + "_" + field + " ZM " + dateYearMonth
-plotZM (zmFile2Strat, file2Object.lat[:], \
-            useLevels[tropMinLev::], \
-            #file2Object.lev[tropMinLev::], \
-            fig, ax2, 'jet', \
-            minValueOfBoth, maxValueOfBoth, plotOpt)
-#            zmFile2Strat.min(), zmFile2Strat.max(), plotOpt)
-ax3 = fig.add_subplot(313)    
-plotOpt['title'] = "Strat model ratio         " + variableExtractField + "_" + \
-    field + " " + " ZM " + dateYearMonth
+    if zmDiff.mean() < 0.0: 
+        print ""
+        print "WARNING: zmDiff mean is < 0!"
+        print ""
 
-zmStratRatio = zmGeosCtmStratRev/zmFile2Strat
-print "Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max()
-plotZM (zmStratRatio, file2Object.lat[:], \
-#            file2Object.lev[tropMinLev::], \
-            useLevels[tropMinLev::], \
-            fig, ax3, 'nipy_spectral', \
-            0.0, 1.5, plotOpt)
-        #zmStratRatio.min(), zmStratRatio.max(), plotOpt)
+        lowEnd = zmDiff.mean()
+        highEnd = -zmDiff.mean()
+
+    plotZM (zmDiff, file2Object.lat[:], \
+                useLevels[:], \
+                fig, ax3, 'PuOr', \
+                lowEnd, highEnd, \
+                "Perc difference %", plotOpt)
+
+
+else:
+
+    zmDiff = zmGeosCtmRev/zmFile2
+    for lev in range(0,levPoints):
+        for lat in range(0,latPoints):
+            if zmGeosCtmRev[lev,lat] == 0.0 and zmFile2[lev,lat] == 0.0:
+                zmDiff[lev,lat] = 1.0
+            if zmGeosCtmRev[lev,lat] != 0.0 and zmFile2[lev,lat] == 0.0:
+                if zmGeosCtmRev[lev,lat] > 0.0: zmDiff[lev,lat] = 2.5
+                if zmGeosCtmRev[lev,lat] < 0.0: zmDiff[lev,lat] = -.5
+
+    plotZM (zmDiff, file2Object.lat[:], \
+                useLevels[:], fig, ax3, \
+                "PuOr", \
+                -.5, 2.5, \
+                "Model ratios", plotOpt)
+
+
+
+
 
 FILE = "f"
 if FILE == "f":
-    if variableExtractField != "":
-        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                         + "strat.", bbox_inches='tight')
-    else:
-        plt.savefig ("plots/" + field + fileTitle \
-                         + "strat.", bbox_inches='tight')
-        
+    plt.savefig ("plots/" + field + fileTitle \
+                     + ".", bbox_inches='tight')
 else:
     plt.show()
 plt.clf
 
-
-
-
-
-# This section is for tropCol and stratCol plots only
-# Only certain species/fields need this 
-
-
-#O3, NO2, and CH2O
-if fieldToCompare.lower() == "moistq" or \
-        fieldToCompare.lower() == "o3" or \
-        fieldToCompare.lower() == "no2" or \
-        fieldToCompare.lower() == "ch2o":
-
-
-    # These are for 2D slices (lat/lon) only! 
-    print ""
-    print "Creating GEOS plot objects..."
-    geos5Object.createPlotObjects()
-    print "Creating File2 plot objects..."
-    file2Object.createPlotObjects()
-    print ""
-
-
-
-
-
-    print ""
-    print ""
-    print ""
-    print "Shape of GEOS troposphere: ", shape(tropGeosCtm)
-    tropColGeosCtm = numpy.sum(tropGeosCtm[:,:,:], axis=0)
-    print "Shape of tropCol GEOS troposphere: ", shape (tropColGeosCtm)
-    print "" 
-
-
-    print ""
-    print "Shape of File2 troposphere: ", shape(tropFile2)
-    tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
-    print "Shape of tropCol file2 : ", shape(tropColFile2)
-    print ""
-
-
-
-    minValueOfBoth = tropColGeosCtm.min()
-    maxValueOfBoth = tropColGeosCtm.max()
-
-    if tropColFile2.min() < minValueOfBoth:
-        minValueOfBoth = tropColFile2.min()
-    if tropColFile2.max() > maxValueOfBoth:
-        maxValueOfBoth = tropColFile2.max()
-
-    print ""
-    print "Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
-    print ""
-
-
-
-
-    fig = plt.figure(figsize=(20,20))
-
-    plotOpt = {}
-    ax1 = fig.add_subplot(311)
-    plotTitle = "Trop Column " + modelConfig + " " + geos5SimName + "         " \
-        + variableExtractField + \
-        "_" + field + " " + dateYearMonth
-    geos5Object.create2dSlice2 (tropColGeosCtm, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      311, plotTitle, "jet")
-
-    ax2 = fig.add_subplot(312)
-    plotTitle = "Trop Column  " + sim2Name + "         " + variableExtractField + "_" \
-        + field + " " + dateYearMonth
-    geos5Object.create2dSlice2 (tropColFile2, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      312, plotTitle, "jet")
-                            
-
-    tropColDiff = tropColGeosCtm / tropColFile2
-    for lat in range(0, size(geos5Object.lat)):
-        for long in range(0, size(geos5Object.long)):
-
-            if tropColGeosCtm[lat, long] == 0 and tropColFile2[lat, long] == 0:
-                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                tropColDiff[lat, long] = 1.0
-
-
-    ax3 = fig.add_subplot(313)  
-    plotTitle = "Trop Column model ratio for         " + variableExtractField + "_" + \
-        field + " " + dateYearMonth  
-    geos5Object.create2dSlice2(tropColDiff, \
-                                     [0, 1.5], \
-                                     313, plotTitle, "nipy_spectral", \
-                                     normalize=True)
-                                 
-
-
-    FILE = "f"
-    if FILE == "f":
-        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                         + "tropColumn.", bbox_inches='tight')
-    else:
-        plt.show()
-    plt.clf
-
-
-
-
-
-
-
-    print ""
-
-
-    print ""
-    print "Shape of GEOS stratosphere: ", shape(stratGeosCtm)
-    stratColGeosCtm = numpy.sum(stratGeosCtm[:,:,:], axis=0)
-    print "Shape of stratCol GEOS: ", shape(stratColGeosCtm)
-    print ""
-
-
-    print ""
-    print "Shape of File2 stratesphere: ", shape(stratFile2)
-    stratColFile2 = numpy.sum(stratFile2[:,:,:], axis=0)
-    print "Shape of stratCol file2: ", shape(stratColFile2)
-    print ""
-
-
-    print""
-    print""
-
-
-
-
-    minValueOfBoth = stratColGeosCtm.min()
-    maxValueOfBoth = stratColGeosCtm.max()
-
-    if stratColFile2.min() < minValueOfBoth:
-        minValueOfBoth = stratColFile2.min()
-    if stratColFile2.max() > maxValueOfBoth:
-        maxValueOfBoth = stratColFile2.max()
-
-    print ""
-    print "Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
-    print ""
-
-
-    fig = plt.figure(figsize=(20,20))
-
-    plotOpt = {}
-    ax1 = fig.add_subplot(311)
-    plotTitle = "Strat Column " + modelConfig + " " + geos5SimName + "         " + \
-        variableExtractField + "_" + field + " " + dateYearMonth
-    geos5Object.create2dSlice2 (stratColGeosCtm, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      311, plotTitle, "jet")
-
-    ax2 = fig.add_subplot(312)
-    plotTitle = "Strat Column " + sim2Name + "         " + variableExtractField + "_" \
-        + field + " " + dateYearMonth
-    geos5Object.create2dSlice2 (stratColFile2, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      312, plotTitle, "jet")
-                            
-    stratColDiff = stratColGeosCtm / stratColFile2
-    for lat in range(0, size(geos5Object.lat)):
-        for long in range(0, size(geos5Object.long)):
-
-            if stratColGeosCtm[lat, long] == 0 and stratColFile2[lat, long] == 0:
-                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                stratColDiff[lat, long] = 1.0
-
-    ax3 = fig.add_subplot(313)    
-    plotTitle = "Strat Column model ratio for         " + variableExtractField + "_" + \
-        field + " " + dateYearMonth
-    geos5Object.create2dSlice2(stratColDiff, \
-                                     [0, 1.5], \
-                                     313, plotTitle, "nipy_spectral", \
-                                     normalize=True)
-
-
-
-    FILE = "f"
-    if FILE == "f":
-        if variableExtractField != "":
-            plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                             + "stratColumn.", bbox_inches='tight')
-        else:
-            plt.savefig ("plots/" + field + fileTitle \
-                             + "stratColumn.", bbox_inches='tight')
-            
-    else:
-        plt.show()
-    plt.clf
-
-    print ""
-    print "Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory"
-    print ""
-
-
-else:
-    print fieldToCompare, " is not currently set for strat or trop column plotting!"
 
 
 print ""
 print "Finished plotting: ", fieldToCompare, " to plots/ directory"
+print "Zonal mean diff min/max/mean: ", zmDiff.min(), "/", zmDiff.max(), zmDiff.mean()
 print ""
     
 

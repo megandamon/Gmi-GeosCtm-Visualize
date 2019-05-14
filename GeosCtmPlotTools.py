@@ -92,15 +92,12 @@ class GeosCtmPlotTools (GenericModelPlotTools):
       print "Return time record: ", timeRecord, " for : ", fieldName
 
       fieldName = prefix + fieldName
-      print fieldName
+
 
       if fieldName not in self.KNOWN_TRACERS:
          fieldAllTime = self.hdfData.variables[fieldName.upper()]
-         print "Getting from GEOS-CTM: ", fieldName.upper()
       else:
          fieldAllTime = self.hdfData.variables[fieldName]
-         print "getting tracer field: ", fieldName
-         print ""
 
 
 
@@ -118,9 +115,17 @@ class GeosCtmPlotTools (GenericModelPlotTools):
       #(1, 181, 360) - GEOS-CTM "2D field"
       #(1, 72, 181, 360) - GEOS-CTM "3d field"xs
 
-      if len(fieldAllTime.shape[:]) == 4:
+      print ""
+      print "Dims of array: ", len(fieldAllTime.shape)
+      print "No Time? ", self.time==None
+      print "Shape: ", fieldAllTime.shape 
+      print ""
+
+      if len(fieldAllTime.shape[:]) == 4:                                         
          return fieldAllTime[returnTime, :, :, :]
-      if len(fieldAllTime.shape[:]) == 3:
+      elif len(fieldAllTime.shape[:]) == 3 and self.time==None:
+         return fieldAllTime[:, :, :]
+      else:
          return fieldAllTime[returnTime, :, :]
 
 

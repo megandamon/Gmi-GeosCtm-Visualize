@@ -59,14 +59,15 @@ def worker (command):
 
 
 
-NUM_ARGS = 7
+NUM_ARGS = 8
 def usage ():
     print ""
-    print "usage: PlotCommonFields_GEOS-CTM.py [-c] [-g] [-r] [-d] [-n] [-p] [-m]"
+    print "usage: PlotCommonFields_GEOS-CTM.py [-c] [-g] [-r] [-d] [-u] [-n] [-p] [-m]"
     print "-c GEOS CTM file 1"
     print "-g GEOS CTM file 2"
     print "-r time record to plot"
     print "-d date of comparision (YYYYMM)"
+    print "-u vertical level (lev/hPa)"
     print "-n PBS_NODEFILE"
     print "-p number of processes to use per node"
     print "-m configuration name (Replay, CCM, etc.)"
@@ -79,7 +80,7 @@ print "Start plotting field differences"
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:m:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:u:n:p:m:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -88,9 +89,10 @@ geosCtmFile1 = optList[0][1]
 geosCtmFile2 = optList[1][1]
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
-pbsNodeFile = optList[4][1]
-numProcesses = int(optList[5][1])
-configName = optList[6][1]
+levUnit = optList[4][1]
+pbsNodeFile = optList[5][1]
+numProcesses = int(optList[6][1])
+configName = optList[7][1]
 
 
 
@@ -137,8 +139,8 @@ print geosCtmFile1
 print geosCtmFile2
 print ""
 
-geosCtmSimName1 = geosCtmFile1.split(".")[0]
-geosCtmSimName2 = geosCtmFile2.split(".")[0]
+geosCtmSimName1 = geosCtmFile1.split(".")[0] + "-" + geosCtmFile1.split(".")[1]
+geosCtmSimName2 = geosCtmFile2.split(".")[0] + "-" + geosCtmFile2.split(".")[1]
 
 
 print ""
@@ -146,6 +148,7 @@ print "Sim names: "
 print geosCtmSimName1
 print geosCtmSimName2
 print ""
+
 
 
 
@@ -227,10 +230,12 @@ nodeCount = 0
 
 #geosCtmFile1, geosCtmFile2, timeRecord, dateYearMonth
 pythonCommand = "PlotField_GEOS-5.py -c  " + geosCtmFile1 \
-    + " -g " + geosCtmFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth 
-pythonCommand2 = "PlotField_ZonalMeanPressLevels.py -c "+ geosCtmFile1 \
-    + " -g " + geosCtmFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth 
+    + " -g " + geosCtmFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth \
+    + " -u " + levUnit
+#pythonCommand2 = "PlotField_ZonalMeanPressLevels.py -c "+ geosCtmFile1 \
+#    + " -g " + geosCtmFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth 
 
+print pythonCommand
 
 for field in fieldsToCompare[:]:
 
@@ -255,25 +260,24 @@ for field in fieldsToCompare[:]:
     print ""
     
 
-    sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
-        " \'. " + cwd + "/setup_env ; " + \
-        " cd " + cwd + " ; " + \
-        " python " + cwd + "/" + \
-        pythonCommand + " -f " + field + " -r " + configName \
-        + " \' "
+    sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+        "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+        pythonCommand + " -f " + str(field) + " -m " + configName + \
+        " \'"
     commands.append(sysCommand)
 
-    sysCommand2 = "ssh -XYqt " + nodes[nodeCount] + \
-        " \'. " + cwd + "/setup_env ; " + \
-        " cd " + cwd + " ; " + \
-        " python " + cwd + "/" + \
-        pythonCommand2 + " -f " + field + " -r " + configName \
-        + " \' "
-    commands.append(sysCommand2)
+
+    #sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
+    #    " \'. " + cwd + "/setup_env ; " + \
+    #    " cd " + cwd + " ; " + \
+    #    " python " + cwd + "/" + \
+    #    pythonCommand + " -f " + field + " -r " + configName \
+    #    + " \'"
+    #commands.append(sysCommand)
 
 
 
-    procCount = procCount + 2
+    procCount = procCount + 1
     fieldCount = fieldCount + 1
 
 

@@ -54,10 +54,10 @@ def workerLocal (command):
     return os.system(command)
 
 
-NUM_ARGS = 8
+NUM_ARGS = 9
 def usage ():
     print ""
-    print "usage: PlotCommonFields_GMI-GMI.py [-c] [-g] [-r] [-d] [-n] [-p] [-s] [-v]"
+    print "usage: PlotCommonFields_GMI-GMI.py [-c] [-g] [-r] [-d] [-n] [-p] [-s] [-v] [-t]"
     print "-c GMI file 1"
     print "-g GMI file 2"
     print "-r time record to plot"
@@ -66,8 +66,30 @@ def usage ():
     print "-p number of processes to use per node"
     print "-s string defining the GMI array with species/fields names (const_labels, etc.)"
     print "-v variable to extract GMI array fields from (const, scav. etc.)"
+    print "-t type of plots (Q-quick, S-Standard, C-Complete"
     print ""
     sys.exit (0)
+
+
+IGNORE_FIELDS = ['hdf_dim', 'species_dim', 'am', 'bm', 'ai', 'bi', \
+                     'pt', 'metdata_name', 'const_labels', 'const', \
+                     'drydep_spc_labels', 'drydep_spc_dim', 'wetdep_spc_dim', \
+                     'wetdep_spc_labels', 'emiss_spc_dim', 'emiss_spc_labels', \
+                     'emiss_spc_dim2', 'emiss_spc_labels2', 'mcor']
+
+TWOD_FIELDS = ['mcor', 'psf', 'flashrate_nc', 'cldmas0_nc', 'cmi_flags1_nc', \
+                   'cmi_flags_nc', 'dry_depos']
+
+QUICK_FIELDS = ['CH4', 'CO', 'HNO3', 'N2O', 'NO2', 'O3', 'OH', 'BrONO2', \
+                    'HCl', 'ALK4', 'PAN', 'flashrate_nc']
+
+STANDARD_FIELDS = ['CH2O',    'CH4', 'CO', 'HNO3',   'HNO4', 'HO2', 'H2O2',  'MO2', \
+                       'MP',      'N2O' , 'NO', 'NO2',  'NO3',    'N2O5',    'O1D', \
+                       'O3',     'OH',  'BrCl',    'BrO',     'BrONO2', \
+                       'HBr',     'HOBr',    'Cl2',    'ClO',     'ClONO2', \
+                       'HCl', 'HOCl', 'CH3Br', 'CH3Cl', 'CFCl3', 'CF2Cl2',  'CFC113',  \
+                       'HCFC22', 'CF2Br2',  'ALD2', \
+                       'ALK4', 'C2H6', 'GLYX', 'PAN', 'ACET', 'flashrate_nc']
 
 
 print "Start plotting restart field differences"
@@ -75,7 +97,7 @@ print "Start plotting restart field differences"
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:s:v:')
+optList, argList = getopt.getopt(sys.argv[1:],'c:g:r:d:n:p:s:v:t:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -88,6 +110,7 @@ pbsNodeFile = optList[4][1]
 numProcesses = int(optList[5][1])
 fieldNameArrayGMI = optList[6][1]
 variableExtractField = optList[7][1]
+packageType = str(optList[8][1])
 
 #---------------------------------------------------------------
 print ""
@@ -122,6 +145,11 @@ if numProcesses <= 0:
     print "Given: ", numProcesses
     sys.exit(0)
 
+if packageType != "Q" and packageType != "S" and packageType != "C":
+    print "Please provide packageType as Q, S, or C"
+    print "Given: ", packageType
+    sys.exit(0)
+
 print ""
 print "Will be looking at GMI fields in: ", fieldNameArrayGMI
 print ""
@@ -151,10 +179,8 @@ gmiObject2 = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
 print ""
-
-print fieldNameArrayGMI
+print "Field to extract species names from: ", fieldNameArrayGMI
 print ""
-
 
 
 order = "GMI2"
@@ -171,21 +197,21 @@ if len(gmiObject1.fieldList) >= len(gmiObject2.fieldList):
 gmiObject2.fieldName = variableExtractField
 fieldsToCompare = gmiObject2.returnFieldsInCommon (list1, list2, order)
 
+
+
+print ""
 print "variableExtractField: ", variableExtractField
 print ""
 
 
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
-
-#print list1[:]
-#print list2[:]
-
 
 nodes = gmiObject2.readNodesIntoArray (pbsNodeFile)
+print ""
 print "nodes: ", nodes
+print ""
+
+
 
 # print ""
 # print "*******************************"
@@ -205,7 +231,10 @@ print "nodes: ", nodes
 
 
 cwd = os.getcwd()
+print ""
 print "current working directory: ", cwd
+print ""
+
 
 
 commands = []
@@ -219,12 +248,48 @@ pythonCommand1 = "PlotField_GMI-GMI.py -c  " + gmiFile1 \
 pythonCommand2= "PlotField_ZonalMean_GMI.py -c " + gmiFile1 \
     + " -g " + gmiFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth + " -f"
 
+
+
+
+print ""
+print "Package type is: ", packageType
+if packageType == "Q": 
+    fieldsToCompare = QUICK_FIELDS
+elif packageType == "S":
+    fieldsToCompare = STANDARD_FIELDS
+else:
+    print "all"
+print ""
+
+
+print ""
+
+
+editedFields = []
+print ""
+for field in fieldsToCompare:
+    if field not in IGNORE_FIELDS[:]:
+        editedFields.append(field)
+        
+print ""
+
+print ""
+print editedFields[:]
+print ""
+
+
+
+fieldsToCompare = None
+fieldsToCompare = editedFields
+
+
+
 for field in fieldsToCompare[:]:
 
     if procCount == numProcesses: 
-        print "node count exceeds num processes per node: ", procCount
         procCount = 0
         nodeCount = nodeCount + 1
+        print "Attempting to assign process to new node: ", nodeCount
 
         if nodeCount >= len(nodes):
             print ""
@@ -252,18 +317,31 @@ for field in fieldsToCompare[:]:
         pythonCommand1 + " " + field + " -v " + variableExtractField + \
         " \' "
     commands.append(sysCommand)
-
-    sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
-        " \'. " + cwd + "/setup_env ; " + \
-        " cd " + cwd + " ; " + \
-        " python " + cwd + "/" + \
-        pythonCommand2 + " " + field + " -v " + variableExtractField + \
-        " \' "
-    commands.append(sysCommand)
+    procCount = procCount + 1
 
 
+    print ""
+    print "Deciding if zonal mean is possible for : ", field
+    print ""
 
-    procCount = procCount + 2
+    if field in TWOD_FIELDS[:]:
+        print ""
+        print "2D field found. NO zonal mean!"
+        print ""
+        
+    else:
+
+        sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
+            " \'. " + cwd + "/setup_env ; " + \
+            " cd " + cwd + " ; " + \
+            " python " + cwd + "/" + \
+            pythonCommand2 + " " + field + " -v " + variableExtractField + \
+            " \' "
+        commands.append(sysCommand)
+        procCount = procCount + 1
+    
+
+
     fieldCount = fieldCount + 1
 
 
@@ -271,9 +349,10 @@ for field in fieldsToCompare[:]:
 print ""
 for command in commands[:]:
     print command
+
+print ""
 print "len of commands: ", len(commands)
 print ""
-
 
 
 pool = multiprocessing.Pool(processes=len(commands))

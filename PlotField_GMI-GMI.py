@@ -206,6 +206,16 @@ gmiFieldArray1 = gmiObject1.returnField (field, timeRecord, variableExtractField
 gmiFieldArray2 = gmiObject2.returnField (field, timeRecord, variableExtractField)
 
 
+rankArray1 = size(gmiFieldArray1.shape[:])
+rankArray2 = size(gmiFieldArray1.shape[:])
+
+
+if rankArray1 != rankArray2: 
+    print ""
+    print field, " is not the same rank in each file!"
+    print ""
+    sys.exit(0)
+
 
 print ""
 print "Shape of GMI field 1 : ", gmiFieldArray1.shape[:]
@@ -219,6 +229,8 @@ print "Creating GMI plot objects..."
 gmiObject1.createPlotObjects()
 gmiObject2.createPlotObjects()
 print ""
+
+
 
 
 levCount = 0
@@ -238,8 +250,13 @@ for modelLev in modelLevsToPlotGmi:
     extractLevel = modelLevsToPlotGmi[modelLev]
     print "Extracting Gmi level: ", extractLevel
     
-    z_Gmi1 = gmiFieldArray1[extractLevel,:,:]
-    z_Gmi2 = gmiFieldArray2[extractLevel,:,:]
+    if rankArray1 == 3: 
+        z_Gmi1 = gmiFieldArray1[extractLevel,:,:]
+        z_Gmi2 = gmiFieldArray2[extractLevel,:,:]
+    else:
+        z_Gmi1 = gmiFieldArray1[:,:]
+        z_Gmi2 = gmiFieldArray2[:,:]
+
 
     z_Diff = z_Gmi1 / z_Gmi2
 
@@ -254,6 +271,7 @@ for modelLev in modelLevsToPlotGmi:
 
     print ""
     print "Ranges: ", zRangeGMI1, "/", zRangeGMI2
+    print ""
 
     orderGMI2 = 1
     orderGMI1 = 1
@@ -274,9 +292,15 @@ for modelLev in modelLevsToPlotGmi:
         maxValueOfBoth = z_Gmi2.max()
 
 
-    if z_Gmi2.all() == 0 and z_Gmi1.all() == 0:
-        print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-        z_Diff[lat, long] = 1.0
+    # play with ratios a little
+    for lat in range(0, size(gmiObject1.lat)):
+        for long in range(0, size(gmiObject1.long)):
+
+            if z_Gmi1[lat, long] == 0.0 and z_Gmi2[lat, long] == 0.0:
+                z_Diff[lat, long] = 1.0
+            elif z_Gmi1[lat, long] != 0.0 and z_Gmi2[lat,long] == 0.0:
+                if z_Gmi1[lat, long] > 0.0: z_Diff[lat,long] = 1.5 #saturate
+                if z_Gmi1[lat, long] < 0.0: z_Diff[lat,long] = .5 #saturate
 
 
     #-----------------------------------------------------#
@@ -347,7 +371,7 @@ for modelLev in modelLevsToPlotGmi:
 
     gmiObject1.create2dSlice2 (z_Diff, \
                                      #[z_Diff.min(), z_Diff.max()], \
-                                     [.9, 1.1], \
+                                     [.5, 1.5], \
                                      313, "Model ratio        " + \
                                       variableExtractField + "_" + \
                                       field + " @ " + str(modelLev) + \
@@ -372,6 +396,9 @@ for modelLev in modelLevsToPlotGmi:
 
 
     plt.clf()
+
+    if rankArray1 == 2:
+        break
 
                           
 sys.stdout.flush()
