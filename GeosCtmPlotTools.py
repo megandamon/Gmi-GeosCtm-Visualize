@@ -125,6 +125,8 @@ class GeosCtmPlotTools (GenericModelPlotTools):
          return fieldAllTime[returnTime, :, :, :]
       elif len(fieldAllTime.shape[:]) == 3 and self.time==None:
          return fieldAllTime[:, :, :]
+      elif len(fieldAllTime.shape[:]) == 2:
+         return fieldAllTime[:,:]
       else:
          return fieldAllTime[returnTime, :, :]
 

@@ -131,10 +131,6 @@ remappedGmiArray = numpy.zeros((gmiObject.latSize, \
                                     gmiObject.longSize), numpy.float32)
 remappedMcorArray = numpy.zeros((gmiObject.latSize, \
                                     gmiObject.longSize), numpy.float32)
-newGmiArray = numpy.zeros((gmiObject.latSize, \
-                               geosCtmObject.longSize), numpy.float32)
-newMcorArray = numpy.zeros((gmiObject.latSize, \
-                               geosCtmObject.longSize), numpy.float32)
 
 
                              
@@ -185,36 +181,19 @@ print ""
 
 
 
-latCount = 0
-for lat in gmiObject.lat[:]:
-
-    longRecords[:] = remappedGmiArray [latCount,:]
-            
-    yinterp =  numpy.interp(geosCtmLongPlus180, remappedLongPlus180, longRecords)
-                
-    newGmiArray[latCount, :] = yinterp [:]
-
-
-    longRecords[:] = remappedMcorArray [latCount,:]
-    
-    yinterp = numpy.interp(geosCtmLongPlus180, remappedLongPlus180, longRecords)
-    
-    newMcorArray[latCount, :] = yinterp [:]
-
-
-
-    latCount = latCount + 1
-
-
 z_GeosCtm = geosCtmFieldArray[:, :]
 z_GeosCtm = z_GeosCtm  
-z_Gmi = newGmiArray[:, :]  / (newMcorArray[:,:] / 1e6)
+
+print "mcorArray min/max; ", remappedMcorArray.min(), remappedMcorArray.max()
+
+#z_Gmi = remappedGmiArray[:, :]  
+z_Gmi = remappedGmiArray[:, :]  / (remappedMcorArray[:,:] / 1e6)
 z_Diff = z_GeosCtm / z_Gmi
 
 print ""
 print "Min/max of GMI: ", z_Gmi.min(), "/", z_Gmi.max()
 print "Min/max of GEOS: ", z_GeosCtm.min(), "/", z_GeosCtm.max()
-print "Differences: ", z_Gmi.min() - z_GeosCtm.min(), "/", z_Gmi.max() - z_GeosCtm.max()
+print "Min/max of Ratios: ", z_Diff.min(), "/",  z_Diff.max()
 
 minValueOfBoth = z_GeosCtm.min()
 maxValueOfBoth = z_GeosCtm.max()
@@ -245,6 +224,7 @@ geosCtmObject.create2dSlice2 (z_GeosCtm, [useMin, useMax], \
                                   fieldToCompareGeos + "_" + \
                                   dateYearMonth, "jet")
 
+# GMI
 
 geosCtmObject.create2dSlice2 (z_Gmi, [useMin, useMax], \
                                   312, "GMI " + gmiSimName + "        " + \
@@ -258,6 +238,16 @@ print ""
 print ""
 print "GMI ", fieldToCompareGmi, " min/max/mean : ", z_Gmi.min(), " / ", z_Gmi.max(), " / ", z_Gmi.mean()
 print "" 
+
+print "" 
+geosCtmGlobalSum = sum(z_GeosCtm)
+gmiCtmGlobalSum = sum(z_Gmi)
+print "GEOS-CTM flashrate global sum: ", geosCtmGlobalSum 
+print "GMI flashrate global sum: ", gmiCtmGlobalSum
+print "Diff: ", (geosCtmGlobalSum/gmiCtmGlobalSum)
+print 
+print ""
+
 
 
 geosCtmObject.create2dSlice2 (z_Diff, \

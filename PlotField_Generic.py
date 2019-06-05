@@ -43,9 +43,6 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.basemap import Basemap
 
 
-
-
-
 sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 
 from GeosCtmPlotTools import GeosCtmPlotTools
@@ -68,6 +65,18 @@ def usage ():
     print ""
     sys.exit (0)
 
+
+def createStringLevel (fileLevel, stringLevel):
+
+    stringLevel.strip()
+
+    if str(fileLevel) != stringLevel:
+        print (str(file1Level) + " != " + stringLevel)
+        returnString = stringLevel + "hPa"
+    else:
+        returnString = "lev" + stringLevel        
+
+    return returnString
 
 print "Start plotting field differences."
 
@@ -142,6 +151,7 @@ print "Sim names: "
 print modelSimName1
 print modelSimName2
 print ""
+
 
 
 
@@ -291,7 +301,7 @@ print ""
 if z_Model1.shape != z_Model2.shape:
 
     print ""
-    print "Array shapes are different. Interpolation needed!"
+    print "Array shapes are different. Interpolation needed! ", z_Model1.shape, " verus ", z_Model2.shape
     print ""
 
     # Arrays (one time record, one species)
@@ -314,7 +324,7 @@ if z_Model1.shape != z_Model2.shape:
         latCount = latCount + 1
 
     print ""
-    print "Model-Temp min / max / shape", newModel2Array.min(), " / ", newModel2Array.max(), " / ", newModel2Array.shape
+    print "Model-2 min / max / shape", newModel2Array.min(), " / ", newModel2Array.max(), " / ", newModel2Array.shape
     print ""        
 
     longCount = 0
@@ -330,7 +340,7 @@ if z_Model1.shape != z_Model2.shape:
         longCount = longCount + 1
 
     print ""
-    print "Interpolated model 2 array min / max: ", newModel2ArrayBoth.min(), " / " , newModel2ArrayBoth.max()
+    print "Interpolated model 2 array min / max / shape: ", newModel2ArrayBoth.min(), " / " , newModel2ArrayBoth.max(), newModel2ArrayBoth.shape
     print ""
 
     z_Model2 = None
@@ -340,7 +350,6 @@ else:
     print ""
     print "Array shapes are the same, will continue with plotting..."
     print ""
-
 
 
 minValueOfBoth = z_Model1.min()
@@ -359,17 +368,13 @@ if z_Model2.max() > maxValueOfBoth:
 #-----------------------------------------------------#
 # Model-1 
 
-stringLevel1 = str(int(modelObject1.lev[file1Level]))
-stringLevel2 = str(int(modelObject2.lev[file2Level]))
+stringLevel1 = createStringLevel (file1Level, str(int(modelObject1.lev[file1Level])))
+stringLevel2 = createStringLevel (file2Level, str(int(modelObject2.lev[file2Level])))
 
 
 
-
-print ""
-print "model 1 level: ", file1Level, stringLevel1
-print "model 2 level: ", file2Level, stringLevel2
-print ""
-
+print "Model1 level: " , file1Level , "(" , stringLevel1 , ")" 
+print "Model2 level: " , file2Level , "(" , stringLevel2 , ")" 
 
 
 
@@ -548,7 +553,7 @@ else:
 
 file = "f"
 if file == "f":
-    plt.savefig("plots/" + fieldToCompare + "-" + modelSimName1 + "_" + stringLevel1 \
+    plt.savefig("plots/" + fieldToCompare + "__" + modelSimName1 + "_" + stringLevel1 \
                     + "." + modelSimName2 + "_" + stringLevel2 + "." + analType + ".", \
                     bbox_inches='tight')
 elif file == "s":

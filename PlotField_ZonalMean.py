@@ -371,6 +371,12 @@ print ""
 print sim2Name
 print ""
 
+print ""
+print "lenFile2Long: ", lenFile2Long, int(lenFile2Long/2)
+print ""
+
+midLong = int(lenFile2Long/2)
+
 
 
 # put GMI on -180 to 0 to 180
@@ -381,17 +387,17 @@ if file2Flag == "GMI" or sim2Name == "MERRA2_300":
     print ""
 
         
-    remappedFile2Array [:,:,0:lenFile2Long/2] = \
-        file2FieldArray[:,:,lenFile2Long/2:lenFile2Long]
+    remappedFile2Array [:,:,0:midLong] = \
+        file2FieldArray[:,:,midLong:lenFile2Long]
 
-    remappedFile2Array [:,:,lenFile2Long/2:lenFile2Long] = \
-        file2FieldArray[:,:,0:lenFile2Long/2]
+    remappedFile2Array [:,:,midLong:lenFile2Long] = \
+        file2FieldArray[:,:,0:midLong]
 
 
 
-    remappedLong [0:lenFile2Long/2] = file2Object.long[lenFile2Long/2:lenFile2Long] - 360.0
+    remappedLong [0:midLong] = file2Object.long[midLong:lenFile2Long] - 360.0
 
-    remappedLong [lenFile2Long/2:lenFile2Long] = file2Object.long[0:lenFile2Long/2]
+    remappedLong [midLong:lenFile2Long] = file2Object.long[0:midLong]
         
     remappedLongPlus180 = numpy.zeros(lenFile2Long, float32)
     remappedLongPlus180[:] = remappedLong[:] + 180.0
@@ -408,9 +414,11 @@ else:
 
 
 
-#print ""
-#print "Remapped long: ", remappedLong[:]
-#print ""
+print ""
+print "Remapped long: ", remappedLong[:]
+print ""
+
+
 
 
 if file2FieldArray.shape != geos5FieldArray.shape:

@@ -1,5 +1,4 @@
 
-
 #------------------------------------------------------------------------------
 # NASA/GSFC
 #------------------------------------------------------------------------------
@@ -9,11 +8,7 @@
 #
 # DESCRIPTION:
 # Driver to plot a single field from one model.
-#------------------------------------------------------------------------------
-
-
-
-
+#-----------------------------------------------------------------------------
 import re
 import os
 import sys
@@ -197,6 +192,11 @@ modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord)
 print ""
 print "modelFieldArray shape: ", modelFieldArray.shape
 print ""
+
+print ""
+print "Global sum of ", fieldToPlot, " : ", sum(modelFieldArray)
+print ""
+
 
 
 if len(modelFieldArray.shape) == 2:

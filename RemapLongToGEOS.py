@@ -115,10 +115,16 @@ levelSize = modelFieldArray.shape[0]
 print ""
 
 
-remappedModelArray = numpy.zeros((size(modelObject.time), \
-                                      levelSize, \
-                                      modelObject.latSize, \
-                                      modelObject.longSize), numpy.float32)
+modelFieldArray = modelObject.returnField (field, 0)
+
+if len(modelFieldArray.shape) == 2:
+    remappedModelArray = numpy.zeros((modelObject.latSize, \
+                                          modelObject.longSize), numpy.float32)
+else:
+    remappedModelArray = numpy.zeros((size(modelObject.time), \
+                                          levelSize, \
+                                          modelObject.latSize, \
+                                          modelObject.longSize), numpy.float32)
 
 remappedLong = numpy.zeros(lenLong, float32)
 remappedLong [0:lenLong/2] = modelObject.long[lenLong/2:lenLong] - 360.0
@@ -148,8 +154,13 @@ for timeRecord in range(0, size(modelObject.time)):
     print "Shape of field: ", modelFieldArray.shape[:], " time: ", timeRecord
     print ""
 
-    remappedModelArray [timeRecord,:,:, 0:lenLong/2] = modelFieldArray[:,:,lenLong/2:lenLong]
-    remappedModelArray [timeRecord,:,:, lenLong/2:lenLong] = modelFieldArray[:,:,0:lenLong/2]
+    if len(modelFieldArray.shape) == 2:
+        remappedModelArray [:, 0:lenLong/2] = modelFieldArray[:,lenLong/2:lenLong]
+        remappedModelArray [:, lenLong/2:lenLong] = modelFieldArray[:,0:lenLong/2]
+
+    else:
+        remappedModelArray [timeRecord,:,:, 0:lenLong/2] = modelFieldArray[:,:,lenLong/2:lenLong]
+        remappedModelArray [timeRecord,:,:, lenLong/2:lenLong] = modelFieldArray[:,:,0:lenLong/2]
 
 
     
@@ -183,13 +194,18 @@ lonDim = rootgrp.createDimension("lon", modelObject.longSize)
 levVar = rootgrp.createVariable("lev","f8",("lev",))
 latVar = rootgrp.createVariable("lat","f8",("lat",))
 lonVar = rootgrp.createVariable("lon","f8",("lon",))
-fieldVar = rootgrp.createVariable(field,"f8",("time","lev","lat","lon"))
+
 
 lonVar[:] = remappedLong[:]
 latVar[:] = modelObject.lat[:]
 levVar[:] = range(1,levelSize+1)
 #timeVar[:] = modelObject.time[:]
 
-fieldVar[:,:,:,:] = remappedModelArray[:,:,:,:]
+if len(modelFieldArray.shape) == 2:
+    fieldVar = rootgrp.createVariable(field,"f8",("lat","lon"))
+    fieldVar[:,:] = remappedModelArray[:,:]
+else:
+    fieldVar = rootgrp.createVariable(field,"f8",("time","lev","lat","lon"))
+    fieldVar[:,:,:,:] = remappedModelArray[:,:,:,:]
 
 rootgrp.close()
