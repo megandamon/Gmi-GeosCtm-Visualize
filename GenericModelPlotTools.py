@@ -340,4 +340,93 @@ class GenericModelPlotTools:
          self.long = self.g_long + 360.0
 
 
+   def doDifferenceAnalysis (self, field1, field2, analysisType, fieldDiff):
+      
+      if field1.shape != field2.shape:
+         print ("Fields of different sizes are not supported for difference analysis!")
+         sys.exit(0)
 
+      # Generic array to contain differences 
+      levPoints = field1.shape[0]
+      latPoints = field2.shape[1]
+
+      # User requested percent difference
+      if analysisType == "d":
+
+         print ("")
+         print ("Doing analysis type percent diff")
+         print ("")
+
+         for lev in range(0,levPoints):
+            for lat in range(0,latPoints):
+
+               absVal = abs(field1[lev,lat]-field2[lev,lat])
+               denVal = (field1[lev,lat]+field2[lev,lat]) / 2.0
+               fieldDiff [lev,lat] = (absVal/denVal) * 100.
+
+               if math.isnan(fieldDiff[lev,lat]): 
+                  fieldDiff[lev,lat] = 0
+
+         minDiff = fieldDiff.min()
+         maxDiff = fieldDiff.max()
+    
+
+         print ("")
+         print ("Shape of fieldDiff for percent difference: ", fieldDiff.shape)
+         print ("low end / high end: ", minDiff, maxDiff)
+         print ("")
+
+
+
+      # User requested absolute difference
+      elif analysisType == "s":
+         
+         print ""
+         print "Creating Absolute Differences"
+         print ""
+
+         fieldDiff = field1 - field2
+
+         minDiff = fieldDiff.min()
+         maxDiff = fieldDiff.max()
+
+         if abs(minDiff) > abs(maxDiff):
+            maxDiff = abs(minDiff)
+         else:
+            minDiff = -maxDiff
+
+         print ""
+         print "low end / high end for simple diffs: ", minDiff, " / ", maxDiff
+         print ""
+
+
+      # User requested ratio
+      elif analysisType == "r":
+
+         fieldDiff = field1/field2
+
+         print ("")
+         print ("Ratios min / max: ", fieldDiff.min(), fieldDiff.max())
+         print ("")
+
+         for lev in range(0,levPoints):
+            for lat in range(0,latPoints):
+               if field1[lev,lat] == 0.0 and field2[lev,lat] == 0.0:
+                  fieldDiff[lev,lat] = 1.0
+                  print ("Updating to 1.0")
+               if field1[lev,lat] != 0.0 and field2[lev,lat] == 0.0:
+                  if field1[lev,lat] > 0.0: fieldDiff[lev,lat] = 1.5
+                  if field1[lev,lat] < 0.0: fieldDiff[lev,lat] = .5
+                  print ("Found ratio .5 away from 1!")
+
+
+         minDiff = fieldDiff.min()
+         maxDiff = fieldDiff.max()
+
+      else:
+         print ("")
+         print ("Analysis type not supported: ", analysisType)
+         print ("")
+           
+      
+      return minDiff, maxDiff, fieldDiff

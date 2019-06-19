@@ -371,11 +371,12 @@ if z_Model2.max() > maxValueOfBoth:
 stringLevel1 = createStringLevel (file1Level, str(int(modelObject1.lev[file1Level])))
 stringLevel2 = createStringLevel (file2Level, str(int(modelObject2.lev[file2Level])))
 
+stringLevel1 = "lev" + str(file1Level)
+stringLevel2 = "lev" + str(file2Level)
 
 
 print "Model1 level: " , file1Level , "(" , stringLevel1 , ")" 
 print "Model2 level: " , file2Level , "(" , stringLevel2 , ")" 
-
 
 
 

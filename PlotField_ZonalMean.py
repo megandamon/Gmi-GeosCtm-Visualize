@@ -62,7 +62,7 @@ def usage ():
     print "-f field to compare"
     print "-v which variable to extract field from"
     print "-m model configuration (Replay, CCM, etc.)" 
-    print "-a analysis type (d=perc diff, r=ratio"
+    print "-a analysis type (d=perc diff, r=ratio, s=simple difference"
     print ""
     sys.exit (0)
 
@@ -102,6 +102,8 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, plotOpt
     # determine contour levels to be used; default: linear spacing, 20 levels
     clevs = plotOpt.get('levels', numpy.linspace(dataMin, dataMax, 20))
 
+    print ("clevs:", clevs)
+
     # map contour values to colors
     norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
@@ -133,8 +135,8 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, plotOpt
         t.set_fontsize("x-small")
 
     # set up y axes: log pressure labels on the left y axis
-    ax1.set_ylabel("Model levels")
-    ax1.set_yscale('linear')
+    ax1.set_ylabel("hPa")
+    ax1.set_yscale('log')
     ax1.set_ylim(y.max(), y.min())
     #ax1.set_ylim(y.min(), y.max())
     subs = [1,2,5]
@@ -198,7 +200,7 @@ if len(dateYearMonth) != 6:
     print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
     sys.exit(0)
 
-if analType != "r" and analType != "d":
+if analType != "r" and analType != "d" and analType != "s":
     print "ERROR: analysis type must be r (ratios) or d (percent differences)"
     sys.exit(0)
 
@@ -262,6 +264,28 @@ else:
                                         'lev','time', 'lat', \
                                         'lon', 'lev', 'time' )
 
+
+
+if file2Object.lev[0] == 0:
+    useLevels = file2Object.lev[:] + 1
+else:
+    useLevels = file2Object.lev[:]
+
+
+count = 0 
+for level in useLevels[:]:
+    print level
+    if int(level) == 100:
+        print "Found 100 mb! ", count
+    count = count + 1
+
+
+tropLevels = useLevels [37::]
+
+print ""
+print "trop levels: "
+print tropLevels[:]
+print ""
 
 
 
@@ -422,25 +446,73 @@ print ""
 
 
 if file2FieldArray.shape != geos5FieldArray.shape:
+
+    print ""
     print "Array shapes are different. Interpolation needed!"
+    print ""
+
     
-    modelLevCount = 0
+    # Arrays (one time record at a time)
+    longRecords = numpy.zeros(file2Object.longSize, numpy.float32)
+    latRecords = numpy.zeros(file2Object.latSize, numpy.float32)
+
+    newModel2Array = numpy.zeros((geos5Object.levelSize, file2Object.latSize, geos5Object.longSize), numpy.float32)
+    newModel2ArrayBoth = numpy.zeros((geos5Object.levelSize, geos5Object.latSize, geos5Object.longSize), numpy.float32)
+
+
+    print ""
+    print geos5Object.lev[:]
+    print ""
 
     for modelLev in geos5Object.lev[:]:
 
+        modelLevIndex = modelLev - 1
+
+        print ""
+        print "Interpolating data from model level: ", int(modelLev)
+        print ""
+
         latCount = 0
         for lat in file2Object.lat[:]:
+        
+            # pull long records out of model 2
+            longRecords[:] = remappedFile2Array[modelLevIndex, latCount, :]
 
-            longRecords[:] = remappedFile2Array [modelLevCount, latCount,:]
-                        
-            yinterp =  numpy.interp(geos5Object.long[:], remappedLong[:], longRecords)
+            yinterp = numpy.interp(geos5Object.long[:], file2Object.long[:], longRecords)
             
-            newFile2Array[modelLevCount, latCount, :] = yinterp [:]
-            
+            newModel2Array [modelLevIndex, latCount, :] = yinterp[:]
+      
             latCount = latCount + 1
 
-        modelLevCount = modelLevCount + 1
+            #print ""
+            #print "Model-2 min / max / shape", newModel2Array.min(), " / ", newModel2Array.max(), " / ", newModel2Array.shape
+            #print ""        
 
+
+        #print ""
+        #print "Interpolated model 2 array min / max / shape: ", newModel2ArrayBoth.min(), " / " , newModel2ArrayBoth.max(), newModel2ArrayBoth.shape
+        #print ""
+
+
+        longCount = 0
+        for long in geos5Object.long[:]:
+
+            # pull lat records our of model 2
+            latRecords[:] = newModel2Array[modelLevIndex,:,longCount]
+
+            yinterp = numpy.interp(geos5Object.lat[:], file2Object.lat[:], latRecords)
+
+            newModel2ArrayBoth [modelLevIndex, :, longCount] = yinterp[:]
+
+            longCount = longCount + 1
+
+        #print ""
+        #print "Interpolated model 2 array min / max / shape: ", newModel2ArrayBoth.min(), " / " , newModel2ArrayBoth.max(), newModel2ArrayBoth.shape
+        #print ""
+
+
+    newFile2Array = None
+    newFile2Array = newModel2ArrayBoth
 
 
 else:
@@ -486,25 +558,38 @@ if zmFile2.max() > maxValueOfBoth:
 fig = plt.figure(figsize=(20,20))
 plotOpt = {}
 
+
+
+
+numTropLevels = len(tropLevels)
+
+print ""
+print "Plotting on these levels: ", tropLevels[:]
+print "" 
+
+
+zmGeosCtmTrop = zmGeosCtmRev[0:len(tropLevels),:]
+zmFile2Trop = zmFile2[0:len(tropLevels),:]
+
+# minValueOfBoth = zmGeosCtmTrop.min()
+# maxValueOfBoth = zmGeosCtmTrop.max()
+# if zmFile2Trop.min() < minValueOfBoth:
+#     minValueOfBoth = zmFile2Trop.min()
+# if zmFile2Trop.max() > maxValueOfBoth:
+#     maxValueOfBoth = zmFile2Trop.max()
+
+
+
+
 ax1 = fig.add_subplot(311)
 plotOpt['title'] = modelConfig + " " + geos5SimName + "        " + variableExtractField \
     + " " + field + " ZM " + dateYearMonth
-
-
-print file2Object.lev[0]
-print ""
-
-if file2Object.lev[0] == 0:
-    useLevels = file2Object.lev[:] + 1
-else:
-    useLevels = file2Object.lev[:]
-
-
 plotZM (zmGeosCtmRev, geos5Object.lat[:], \
+#plotZM (zmGeosCtmTrop, geos5Object.lat[:], \
             useLevels[:], \
+#            tropLevels[:], \
             fig, ax1, 'jet', \
             minValueOfBoth, maxValueOfBoth, \
-            #            zmGeosCtmRev.min(), zmGeosCtmRev.max(), \
             "Model values", plotOpt)
 
 
@@ -512,26 +597,24 @@ plotZM (zmGeosCtmRev, geos5Object.lat[:], \
 
 ax2 = fig.add_subplot(312)
 plotOpt['title'] = plotTitleFile2 + " " + field + " ZM " + dateYearMonth
-plotZM (zmFile2, file2Object.lat[:], \
+
+plotZM (zmFile2, geos5Object.lat[:], \
+#plotZM (zmFile2Trop, geos5Object.lat[:], \
             useLevels[:], \
+#            tropLevels[:], \
             fig, ax2, 'jet', \
             minValueOfBoth, maxValueOfBoth, \
             #zmFile2.min(), zmFile2.max(), \
             "Model values", plotOpt)
 
 ax3 = fig.add_subplot(313)    
-plotOpt['title'] = geos5SimName + " vs " + sim2Name + "   " + \
-    field + " " + " ZM " + dateYearMonth
-
-
-
 
 levPoints = zmGeosCtmRev.shape[0]
 latPoints = zmGeosCtmRev.shape[1]
 
 
-zmDiff = numpy.zeros((file2Object.levelSize, \
-                          file2Object.latSize), numpy.float32)
+zmDiff = numpy.zeros((geos5Object.levelSize, \
+                          geos5Object.latSize), numpy.float32)
 if analType == "d":
 
     for lev in range(0,levPoints):
@@ -540,6 +623,9 @@ if analType == "d":
             denVal = (zmGeosCtmRev[lev,lat]+zmFile2[lev,lat]) / 2.0
             zmDiff [lev,lat] = (absVal/denVal) * 100.
 
+
+
+    zmDiffTrop = zmDiff[0:len(tropLevels),:]
 
     lowEnd = -zmDiff.mean()
     highEnd = zmDiff.mean()
@@ -552,32 +638,98 @@ if analType == "d":
         lowEnd = zmDiff.mean()
         highEnd = -zmDiff.mean()
 
-    plotZM (zmDiff, file2Object.lat[:], \
+
+
+    print ("")
+    print ("Shape of zmDiff: ", zmDiff.shape)
+    print ("Shape of lat: ", len(geos5Object.lat))
+    print ("")
+
+
+
+
+    plotOpt['title'] = "Percent Difference " + geos5SimName + " vs " + sim2Name + "   " + \
+        field + " " + " ZM " + dateYearMonth
+
+    plotZM (zmDiff, geos5Object.lat[:], \
+#    plotZM (zmDiffTrop, geos5Object.lat[:], \
                 useLevels[:], \
+#                useLevelsTrop[:], \
                 fig, ax3, 'PuOr', \
                 lowEnd, highEnd, \
                 "Perc difference %", plotOpt)
 
 
-else:
+
+elif analType == "s":
+
+    print ""
+    print "Creating Simple Differences"
+    print ""
+
+    zmDiff = zmGeosCtmRev - zmFile2
+
+    zmDiffTrop = zmDiff[0:len(tropLevels),:]
+
+    lowEnd = zmDiff.min()
+    highEnd = zmDiff.max()
+
+
+    print ""
+    print "low end / high end for simple diffs: ", lowEnd, " / ", highEnd
+    print ""
+
+    plotOpt['title'] = "Simple Difference " + geos5SimName + " vs " + sim2Name + "   " + \
+        field + " " + " ZM " + dateYearMonth
+
+
+    plotZM (zmDiff, geos5Object.lat[:], \
+#    plotZM (zmDiffTrop, geos5Object.lat[:], \
+                useLevels[:], \
+#                tropLevels[:], \
+                fig, ax3, 'PuOr', \
+                lowEnd, highEnd, \
+                "Absolute Difference ", plotOpt)
+
+
+
+
+elif analType == "r":
 
     zmDiff = zmGeosCtmRev/zmFile2
+
+    print ("")
+    print ("ratios min / max: ", zmDiff.min(), zmDiff.max())
+    print ("")
+
     for lev in range(0,levPoints):
         for lat in range(0,latPoints):
             if zmGeosCtmRev[lev,lat] == 0.0 and zmFile2[lev,lat] == 0.0:
                 zmDiff[lev,lat] = 1.0
+                print ("Updating to 1.0")
             if zmGeosCtmRev[lev,lat] != 0.0 and zmFile2[lev,lat] == 0.0:
-                if zmGeosCtmRev[lev,lat] > 0.0: zmDiff[lev,lat] = 2.5
-                if zmGeosCtmRev[lev,lat] < 0.0: zmDiff[lev,lat] = -.5
+                if zmGeosCtmRev[lev,lat] > 0.0: zmDiff[lev,lat] = 1.5
+                if zmGeosCtmRev[lev,lat] < 0.0: zmDiff[lev,lat] = .5
+                print ("Found ratio .5 away from 1!")
 
-    plotZM (zmDiff, file2Object.lat[:], \
+
+    plotOpt['title'] = "Ratios " + geos5SimName + " vs " + sim2Name + "   " + \
+        field + " " + " ZM " + dateYearMonth
+
+    plotZM (zmDiff, geos5Object.lat[:], \
                 useLevels[:], fig, ax3, \
                 "PuOr", \
-                -.5, 2.5, \
+                -5, 1.5, \
+#                zmDiff.min(), zmDiff.max(), \
                 "Model ratios", plotOpt)
 
 
 
+else:
+    print ("")
+    print ("Analysis type not supported: ", analType)
+    print ("")
+           
 
 
 FILE = "f"

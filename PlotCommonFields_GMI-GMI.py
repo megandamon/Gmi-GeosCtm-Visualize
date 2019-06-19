@@ -47,16 +47,17 @@ from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import *
 
 from GmiPlotTools import GmiPlotTools
+from GmiDef import *
 
 
 def workerLocal (command):
-    print "I will execute: ", command
+    print("I will execute: ", command)
     return os.system(command)
 
 
 NUM_ARGS = 9
 def usage ():
-    print ""
+    print("")
     print "usage: PlotCommonFields_GMI-GMI.py [-c] [-g] [-r] [-d] [-n] [-p] [-s] [-v] [-t]"
     print "-c GMI file 1"
     print "-g GMI file 2"
@@ -67,29 +68,10 @@ def usage ():
     print "-s string defining the GMI array with species/fields names (const_labels, etc.)"
     print "-v variable to extract GMI array fields from (const, scav. etc.)"
     print "-t type of plots (Q-quick, S-Standard, C-Complete"
-    print ""
+    print("")
     sys.exit (0)
 
 
-IGNORE_FIELDS = ['hdf_dim', 'species_dim', 'am', 'bm', 'ai', 'bi', \
-                     'pt', 'metdata_name', 'const_labels', 'const', \
-                     'drydep_spc_labels', 'drydep_spc_dim', 'wetdep_spc_dim', \
-                     'wetdep_spc_labels', 'emiss_spc_dim', 'emiss_spc_labels', \
-                     'emiss_spc_dim2', 'emiss_spc_labels2', 'mcor']
-
-TWOD_FIELDS = ['mcor', 'psf', 'flashrate_nc', 'cldmas0_nc', 'cmi_flags1_nc', \
-                   'cmi_flags_nc', 'dry_depos']
-
-QUICK_FIELDS = ['CH4', 'CO', 'HNO3', 'N2O', 'NO2', 'O3', 'OH', 'BrONO2', \
-                    'HCl', 'ALK4', 'PAN', 'flashrate_nc']
-
-STANDARD_FIELDS = ['CH2O',    'CH4', 'CO', 'HNO3',   'HNO4', 'HO2', 'H2O2',  'MO2', \
-                       'MP',      'N2O' , 'NO', 'NO2',  'NO3',    'N2O5',    'O1D', \
-                       'O3',     'OH',  'BrCl',    'BrO',     'BrONO2', \
-                       'HBr',     'HOBr',    'Cl2',    'ClO',     'ClONO2', \
-                       'HCl', 'HOCl', 'CH3Br', 'CH3Cl', 'CFCl3', 'CF2Cl2',  'CFC113',  \
-                       'HCFC22', 'CF2Br2',  'ALD2', \
-                       'ALK4', 'C2H6', 'GLYX', 'PAN', 'ACET', 'flashrate_nc']
 
 
 print "Start plotting restart field differences"
@@ -113,7 +95,7 @@ variableExtractField = optList[7][1]
 packageType = str(optList[8][1])
 
 #---------------------------------------------------------------
-print ""
+print("")
 print "Checking command line options... "
 print""
 #---------------------------------------------------------------
@@ -150,20 +132,21 @@ if packageType != "Q" and packageType != "S" and packageType != "C":
     print "Given: ", packageType
     sys.exit(0)
 
-print ""
+print("")
 print "Will be looking at GMI fields in: ", fieldNameArrayGMI
-print ""
+print("")
 
 print gmiFile1
 print gmiFile2
-print ""
+print("")
+
 
 gmiSimName1 = gmiFile1.split(".")[0]
 gmiSimName2 = gmiFile2.split("_")[1]
 
 
 #---------------------------------------------------------------
-print ""
+print("")
 print "Command line options look good."
 print "GMI1 simulation name: ", gmiSimName1
 print "GMI2 simulation name: ", gmiSimName2
@@ -173,14 +156,14 @@ print""
 gmiObject1 =  GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
-print ""
+print("")
 
 gmiObject2 = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
-print ""
+print("")
 print "Field to extract species names from: ", fieldNameArrayGMI
-print ""
+print("")
 
 
 order = "GMI2"
@@ -199,21 +182,21 @@ fieldsToCompare = gmiObject2.returnFieldsInCommon (list1, list2, order)
 
 
 
-print ""
+print("")
 print "variableExtractField: ", variableExtractField
-print ""
+print("")
 
 
 
 
 nodes = gmiObject2.readNodesIntoArray (pbsNodeFile)
-print ""
+print("")
 print "nodes: ", nodes
-print ""
+print("")
 
 
 
-# print ""
+# print("")
 # print "*******************************"
 # print "Testing nodes for access..."
 # for node in nodes: 
@@ -227,13 +210,13 @@ print ""
 
 # print "All nodes accessible"
 # print "*******************************"
-# print ""
+# print("")
 
 
 cwd = os.getcwd()
-print ""
+print("")
 print "current working directory: ", cwd
-print ""
+print("")
 
 
 
@@ -251,32 +234,31 @@ pythonCommand2= "PlotField_ZonalMean_GMI.py -c " + gmiFile1 \
 
 
 
-print ""
+print("")
 print "Package type is: ", packageType
 if packageType == "Q": 
-    fieldsToCompare = QUICK_FIELDS
+    fieldsToCompare = GmiDef.GMI_QUICK_FIELDS
 elif packageType == "S":
-    fieldsToCompare = STANDARD_FIELDS
+    fieldsToCompare = GmiDef.GMI_STANDARD_FIELDS
 else:
     print "all"
-print ""
+print("")
 
 
-print ""
+print("")
 
 
 editedFields = []
-print ""
+print("")
 for field in fieldsToCompare:
-    if field not in IGNORE_FIELDS[:]:
+    if field not in GmiDef.GMI_IGNORE_FIELDS[:]:
         editedFields.append(field)
         
-print ""
+print("")
 
-print ""
+print("")
 print editedFields[:]
-print ""
-
+print("")
 
 
 fieldsToCompare = None
@@ -292,23 +274,23 @@ for field in fieldsToCompare[:]:
         print "Attempting to assign process to new node: ", nodeCount
 
         if nodeCount >= len(nodes):
-            print ""
+            print("")
             print "ERROR: number of commands added to queue ", len(commands)
             print "Number of nodes available: ", len(nodes)
             print "Number of processes per node: ", numProcesses
             print "number of fields to compare: ", len(fieldsToCompare)
             print "Node count: ", nodeCount
-            print ""
+            print("")
             sys.exit(-1)
 
     
     field = fieldsToCompare[fieldCount]
 
 
-    print ""
+    print("")
     print "Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount, \
         " and " , procCount+1
-    print ""
+    print("")
 
     sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
         " \'. " + cwd + "/setup_env ; " + \
@@ -320,14 +302,14 @@ for field in fieldsToCompare[:]:
     procCount = procCount + 1
 
 
-    print ""
+    print("")
     print "Deciding if zonal mean is possible for : ", field
-    print ""
+    print("")
 
-    if field in TWOD_FIELDS[:]:
-        print ""
+    if field in GmiDef.GMI_TWOD_FIELDS[:]:
+        print("")
         print "2D field found. NO zonal mean!"
-        print ""
+        print("")
         
     else:
 
@@ -346,26 +328,26 @@ for field in fieldsToCompare[:]:
 
 
     
-print ""
+print("")
 for command in commands[:]:
     print command
 
-print ""
+print("")
 print "len of commands: ", len(commands)
-print ""
+print("")
 
 
 pool = multiprocessing.Pool(processes=len(commands))
 
-print ""
+print("")
 print "Calling pool.map"
 pool.map(workerLocal, commands)
-print ""
+print("")
 
-print ""
+print("")
 print "Calling pool.close"
 pool.close()
-print ""
+print("")
 
 
 

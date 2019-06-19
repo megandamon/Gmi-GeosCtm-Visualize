@@ -222,6 +222,18 @@ class GmiPlotTools (GenericModelPlotTools):
 
       return returnArray
 
+   def returnFlashRateData (self, fieldName, yearIndex, monthIndex):
+
+      print ""
+      print "in returnFlashRateData: ", yearIndex, monthIndex
+      print ""
+
+
+      fieldArray = self.hdfData.variables[fieldName]   
+      returnArray = fieldArray[yearIndex,monthIndex,:,:]
+
+      return returnArray
+
    def returnFieldAtSurface (self, fieldName, timeRecord, arrayName):
 
 
