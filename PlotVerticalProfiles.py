@@ -119,23 +119,23 @@ from GenericModelPlotTools import GenericModelPlotTools
 
 NUM_ARGS = 9
 def usage ():
-    print ""
-    print "usage: PlotVerticalProfiles.py [-c] [-g] [-l] [-k] [-r] [-d] [-u] [-f] [-a]"
-    print "-c Model file 1"
-    print "-g Model file 2"
-    print "-l vertical level for file 1"
-    print "-k vertical level for file 2"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-u unit of vertical level (lev/hPa)"
-    print "-f field to compare"
-    print "-a analysis type (d=perc diff, s=simple diff, r=ratio"
-    print ""
+    print("")
+    print("usage: PlotVerticalProfiles.py [-c] [-g] [-l] [-k] [-r] [-d] [-u] [-f] [-a]")
+    print("-c Model file 1")
+    print("-g Model file 2")
+    print("-l vertical level for file 1")
+    print("-k vertical level for file 2")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-u unit of vertical level (lev/hPa)")
+    print("-f field to compare")
+    print("-a analysis type (d=perc diff, s=simple diff, r=ratio")
+    print("")
     sys.exit (0)
 
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -157,57 +157,57 @@ analType = str(optList[8][1])
 
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (modelFile1):
-    print "The file you provided does not exist: ", modelFile1
+    print("The file you provided does not exist: ", modelFile1)
     sys.exit(0)
 
 if not os.path.exists (modelFile2):
-    print "The file you provided does not exist: ", modelFile2
+    print("The file you provided does not exist: ", modelFile2)
     sys.exit(0)
 
 if file1Level < 0:
-    print "The level to plot must be >= 0 (check file 1 lev)"
+    print("The level to plot must be >= 0 (check file 1 lev)")
     sys.exit(0)
 
 if file2Level < 0:
-    print "The level to plot must be >= 0 (check file 2 lev)"
+    print("The level to plot must be >= 0 (check file 2 lev)")
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 if analType != "r" and analType != "d" and analType != "s":
-    print "ERROR: analysis type must be r (ratios) or d (percent differences) or s (simple difference)"
+    print("ERROR: analysis type must be r (ratios) or d (percent differences) or s (simple difference)")
     sys.exit(0)
 
 
-print ""
-print modelFile1
-print modelFile2
-print ""
+print("")
+print(modelFile1)
+print(modelFile2)
+print("")
 
 modelSimName1 = modelFile1.split(".")[0] + "-" + modelFile1.split(".")[1]
 modelSimName2 = modelFile2.split(".")[0] + "-" + modelFile2.split(".")[1]
 
 
 
-print ""
-print "Sim names: "
-print modelSimName1
-print modelSimName2
-print ""
+print("")
+print("Sim names: ")
+print(modelSimName1)
+print(modelSimName2)
+print("")
 
 splitString1= re.split('[_-]',modelSimName1)
 splitString2= re.split('[_-]', modelSimName2)
@@ -215,17 +215,17 @@ splitString2= re.split('[_-]', modelSimName2)
 dateModel1 = splitString1[1]
 dateModel2 = splitString2[1]
 
-print ""
-print "Dates: "
-print dateModel1, dateModel2
-print ""
+print("")
+print("Dates: ")
+print(dateModel1, dateModel2)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 modelObject1 = GeosCtmPlotTools (modelFile1, 'latitude','longitude',\
                                       'lev','time', 'latitude', \
@@ -258,33 +258,33 @@ for field in fieldsToCompareAll[:]:
 
 
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print "Model-1 1 vertical levels: ", modelObject1.lev[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("Model-1 1 vertical levels: ", modelObject1.lev[:])
+print("")
 
 
-print ""
+print("")
 if fieldToCompare in fieldsToCompare[:]:
-    print "Success: ", fieldToCompare, " can be compared!"
+    print("Success: ", fieldToCompare, " can be compared!")
 else:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
-print ""
+print("")
 
 
 
 
 
-print ""
-print "Model levs to search for maximum differences: ", file1Level, " ", file2Level
-print ""
+print("")
+print("Model levs to search for maximum differences: ", file1Level, " ", file2Level)
+print("")
 
 
     
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
     
 
 
@@ -300,40 +300,40 @@ psArray2 = modelObject2.returnField ("PS", timeRecord)
 
 
 if len(modelFieldArray1.shape) == 2:
-    print ""
-    print "WARNING!!! Field is 2D"
-    print ""
+    print("")
+    print("WARNING!!! Field is 2D")
+    print("")
     z_Model1 = modelFieldArray1[:, :]
     z_Model2 = modelFieldArray2[:, :]
     file1Level = 0
     file2Level = 0 
 
 elif len(modelFieldArray1.shape) == 3:
-    print "Field is 3D (expected)"
+    print("Field is 3D (expected)")
     z_Model1 = modelFieldArray1[file1Level, :, :]
     z_Model2 = modelFieldArray2[file2Level, :, :]
 else:
-    print ""
-    print "Unexpected rank of data!"
-    print ""
+    print("")
+    print("Unexpected rank of data!")
+    print("")
     sys.exit(0)
 
-print ""
+print("")
 
 
-print ""
-print "Shape of PS 1: ", psArray1.shape
-print "Shape of PS 2: ", psArray2.shape
-print ""
+print("")
+print("Shape of PS 1: ", psArray1.shape)
+print("Shape of PS 2: ", psArray2.shape)
+print("")
 
 
 
 
 if z_Model1.shape != z_Model2.shape:
 
-    print ""
-    print "Array shapes are different. Interpolation needed!"
-    print ""
+    print("")
+    print("Array shapes are different. Interpolation needed!")
+    print("")
 
     # Arrays (one time record, one species)
     longRecords = numpy.zeros(modelObject2.longSize, numpy.float32)
@@ -354,12 +354,12 @@ if z_Model1.shape != z_Model2.shape:
       
         latCount = latCount + 1
 
-    print ""
-    print "Model-Temp min / max / shape", newModel2Array.min(), " / ", newModel2Array.max(), " / ", newModel2Array.shape
-    print ""        
+    print("")
+    print("Model-Temp min / max / shape", newModel2Array.min(), " / ", newModel2Array.max(), " / ", newModel2Array.shape)
+    print("")        
 
     longCount = 0
-    for long in modelObject1.long[:]:
+    for int in modelObject1.long[:]:
 
         # pull lat records our of model 2
         latRecords[:] = newModel2Array[:,longCount]
@@ -370,25 +370,25 @@ if z_Model1.shape != z_Model2.shape:
 
         longCount = longCount + 1
 
-    print ""
-    print "Interpolated model 2 array min / max: ", newModel2ArrayBoth.min(), " / " , newModel2ArrayBoth.max()
-    print ""
+    print("")
+    print("Interpolated model 2 array min / max: ", newModel2ArrayBoth.min(), " / " , newModel2ArrayBoth.max())
+    print("")
 
     z_Model2 = None
     z_Model2 = newModel2ArrayBoth
 
 
-    print ""
-    print "WARNING: interpolation of PS is not complete! "
-    print "Please finish the implementation before proceeding."
-    print ""
+    print("")
+    print("WARNING: interpolation of PS is not complete! ")
+    print("Please finish the implementation before proceeding.")
+    print("")
 
     sys.exit(0)
 
 else:
-    print ""
-    print "Array shapes are the same, will continue with plotting..."
-    print ""
+    print("")
+    print("Array shapes are the same, will continue with plotting...")
+    print("")
 
 
 
@@ -415,27 +415,27 @@ stringLevel2 = str(int(modelObject2.lev[file2Level]))
 
 
 
-print ""
-print "model 1 level: ", file1Level, stringLevel1
-print "model 2 level: ", file2Level, stringLevel2
-print ""
+print("")
+print("model 1 level: ", file1Level, stringLevel1)
+print("model 2 level: ", file2Level, stringLevel2)
+print("")
 
 
 
 
 
-print ""
+print("")
 
-print "Model-1 min / max : ", z_Model1.min(), " / ", z_Model1.max()
+print("Model-1 min / max : ", z_Model1.min(), " / ", z_Model1.max())
 
-print ""
+print("")
 
 
-print ""
+print("")
 
-print "Model-2 min / max ", z_Model2.min(), " / ", z_Model2.max()
+print("Model-2 min / max ", z_Model2.min(), " / ", z_Model2.max())
 
-print ""
+print("")
 
 
 
@@ -444,9 +444,9 @@ print ""
 z_Diff = numpy.zeros((modelObject1.latSize, \
                           modelObject1.longSize), numpy.float32)
 
-print ""
-print "Size of z_Diff: ", z_Diff.shape
-print ""
+print("")
+print("Size of z_Diff: ", z_Diff.shape)
+print("")
 
 
 latPoints = z_Diff.shape[0]
@@ -455,18 +455,18 @@ lonPoints = z_Diff.shape[1]
 if analType == "s":
 
     
-    print ""
-    print "Getting Simple Differences"
-    print ""
+    print("")
+    print("Getting Simple Differences")
+    print("")
 
     z_Diff = z_Model1 - z_Model2 
 
     lowEnd = z_Diff.min()
     highEnd = z_Diff.max()
 
-    print ""
-    print "low end / high end for diffs: ", lowEnd, " / ", highEnd
-    print ""
+    print("")
+    print("low end / high end for diffs: ", lowEnd, " / ", highEnd)
+    print("")
 
 
     flatzDiff = z_Diff.flatten()
@@ -474,10 +474,10 @@ if analType == "s":
     maxDiffIndex = numpy.argmax(flatzDiff)
     minDiffIndex = numpy.argmin(flatzDiff)
 
-    print ""
-    print "max diff @ ", maxDiffIndex, " : ", flatzDiff[maxDiffIndex]
-    print "min diff @ ", minDiffIndex, " : ", flatzDiff[minDiffIndex]
-    print ""
+    print("")
+    print("max diff @ ", maxDiffIndex, " : ", flatzDiff[maxDiffIndex])
+    print("min diff @ ", minDiffIndex, " : ", flatzDiff[minDiffIndex])
+    print("")
 
     
     largestDiff = flatzDiff[maxDiffIndex]
@@ -486,59 +486,59 @@ if analType == "s":
         largestDiff = flatzDiff[minDiffIndex]
         maxDiffIndex = minDiffIndex
 
-    print ""
-    print "Largest differences @ ", maxDiffIndex, " : ", largestDiff
-    print ""
+    print("")
+    print("Largest differences @ ", maxDiffIndex, " : ", largestDiff)
+    print("")
 
-    print ""
+    print("")
     index2d = unravel_index(maxDiffIndex, (latPoints, lonPoints))
-    print "Un-raveled index: ", index2d
-    print ""
+    print("Un-raveled index: ", index2d)
+    print("")
 
     value1 = z_Model1[index2d[0], index2d[1]]
     value2 = z_Model2[index2d[0], index2d[1]]
 
     if abs(value1-value2) != abs(largestDiff):
-        print ""
-        print "There was a problem unraveling the index of the largest difference"
+        print("")
+        print("There was a problem unraveling the index of the largest difference")
         sys.exit(0)
     else:
-        print ""
-        print "abs value1-value2 = ", abs(value1-value2)
-        print ""
+        print("")
+        print("abs value1-value2 = ", abs(value1-value2))
+        print("")
 
     latCoord = modelObject1.lat[index2d[0]]
     lonCoord = modelObject1.long[index2d[1]]
 
-    print ""
-    print "lat/lon coord: ", latCoord, "/", lonCoord
-    print ""
+    print("")
+    print("lat/lon coord: ", latCoord, "/", lonCoord)
+    print("")
 
            
        
 else: 
 
-    print ""
-    print "Analysis type: ", analType, " not supported!"
-    print ""
+    print("")
+    print("Analysis type: ", analType, " not supported!")
+    print("")
     sys.exit(0)
     
 
 
 
 
-print ""
-print "modelFieldArray1 shape: ", modelFieldArray1.shape
-print "modelFieldArray2 shape: ", modelFieldArray2.shape
-print ""
+print("")
+print("modelFieldArray1 shape: ", modelFieldArray1.shape)
+print("modelFieldArray2 shape: ", modelFieldArray2.shape)
+print("")
 
 levPoints1 = modelFieldArray1.shape[0]
 levPoints2 = modelFieldArray2.shape[0]
 
-print ""
-print "model levs field1: ", levPoints1
-print "model levs field2: ", levPoints2
-print ""
+print("")
+print("model levs field1: ", levPoints1)
+print("model levs field2: ", levPoints2)
+print("")
 
 
 
@@ -549,17 +549,17 @@ print ""
 vertProfile1 = []
 
 
-print ""
-print "Creating vertical profile bottom to top of model 1"
-print ""
+print("")
+print("Creating vertical profile bottom to top of model 1")
+print("")
 
 for lev1 in range(0,levPoints1): # bottom to top of NRL
     field12dFlat = modelFieldArray1[lev1,:,:].flatten()
     vertProfile1.append(field12dFlat[maxDiffIndex])
 
-print ""
-print "Creating pressure coordinates for model 1"
-print ""
+print("")
+print("Creating pressure coordinates for model 1")
+print("")
 edgePress1 = []
 psArray1Flatten = psArray1.flatten()
 a60Rev = a60[::-1]
@@ -567,18 +567,18 @@ b60Rev = b60[::-1]
 for lev1 in range(0,size(a60)): 
     edgePress1.append(a60Rev[lev1] + (b60Rev[lev1] * psArray1Flatten[maxDiffIndex]))
 
-print ""
-print "Edge pressures calculated for ", size(edgePress1[:]), " levels for model 1."
-print ""
+print("")
+print("Edge pressures calculated for ", size(edgePress1[:]), " levels for model 1.")
+print("")
 
 midPress1 = []
 for lev1 in range(0,levPoints1):
     midPress = exp ( .5 *(log(edgePress1[lev1]) + log(edgePress1[lev1+1])) )
     midPress1.append(midPress/100.)
 
-print ""
-print "Mid-level pressures calculated for ", size(midPress1[:]), " levels for model 1."
-print ""
+print("")
+print("Mid-level pressures calculated for ", size(midPress1[:]), " levels for model 1.")
+print("")
 
 
 # Model 2 / GEOS
@@ -593,9 +593,9 @@ vertProfile2Rev = vertProfile2[::-1] # reverse to surface at level 0
 vertProfile2 = vertProfile2Rev
 
 
-print ""
-print "Creating pressure coordinates for model 2"
-print ""
+print("")
+print("Creating pressure coordinates for model 2")
+print("")
 
 edgePress2 = []
 psArray2Flatten = psArray2.flatten()
@@ -604,9 +604,9 @@ b72Rev = b72[::-1]
 for lev2 in range(0,size(a72)): 
     edgePress2.append(a72Rev[lev2] + (b72Rev[lev2] * psArray2Flatten[maxDiffIndex]))
 
-print ""
-print "Edge pressures calculated for ", size(edgePress2[:]), " levels for model 2."
-print ""
+print("")
+print("Edge pressures calculated for ", size(edgePress2[:]), " levels for model 2.")
+print("")
 
 midPress2 = []
 for lev2 in range(0,levPoints2):
@@ -614,20 +614,20 @@ for lev2 in range(0,levPoints2):
     midPress2.append(midPress/100.)
 
 
-print ""
-print "Mid-level pressures calculated for ", size(midPress2[:]), " levels for model 2."
-print ""
+print("")
+print("Mid-level pressures calculated for ", size(midPress2[:]), " levels for model 2.")
+print("")
 
 plt.figure(figsize=(20,20))
 
-print ""
-print "Vert profile 1 at surface: ", vertProfile1[0], "(", midPress1[0], " hPa) at top: ", vertProfile1[59], " (", midPress1[59], " hPa)"
-print "Vert profile 2 at surface: ", vertProfile2[0], "(", midPress2[0], " hPa) at top: ", vertProfile2[71], " (", midPress2[71], " hPa)"
-print ""
+print("")
+print("Vert profile 1 at surface: ", vertProfile1[0], "(", midPress1[0], " hPa) at : ", vertProfile1[30], " (", midPress1[30], " hPa)")
+print("Vert profile 2 at surface: ", vertProfile2[0], "(", midPress2[0], " hPa) at : ", vertProfile2[47], " (", midPress2[47], " hPa)")
+print("")
 
-plt.plot(vertProfile1, midPress1[:], color="blue", label='NRL 60 level')
-plt.plot(vertProfile2, midPress2[:], color="red", label='NRL 72 level')
-degree_sign= u'\N{DEGREE SIGN}'
+plt.plot(vertProfile1, midPress1[:], color="blue", label='NRL Replayed ')
+plt.plot(vertProfile2, midPress2[:], color="red", label='NRL Eta Input')
+degree_sign= '\N{DEGREE SIGN}'
 plotTitle = dateModel1 + " " + str(latCoord) + degree_sign + " " + str(lonCoord) + degree_sign + " where lev(" + stringLevel1 + \
     ") difference = " + str(flatzDiff[maxDiffIndex])
 plt.title (plotTitle)
@@ -644,14 +644,14 @@ axes.set_yscale('log')
 
 minPress = min(min(midPress1), min(midPress2))
 maxPress = max(max(midPress1), max(midPress2))
-print "min of mid press 1 & 2: ", minPress
-print "max of mid press 1 & 2: ", maxPress
+print("min of mid press 1 & 2: ", minPress)
+print("max of mid press 1 & 2: ", maxPress)
 
 pressureRange1 = pl.frange (minPress,10.,1.)
 pressureRange2 = pl.frange(15,100.,10.)
 pressureRange3 = pl.frange(150.,maxPress,150.)
 pressureRange = concatenate([pressureRange1,pressureRange2, pressureRange3])
-print "pressure range to plot: ", pressureRange[:]
+print("pressure range to plot: ", pressureRange[:])
 
 #axes.set_yticks(midPress2[::4])
 axes.set_yticks(pressureRange)
@@ -677,9 +677,9 @@ plt.clf()
 
 
 
-print ""
-print "Plotted : ", fieldToCompare, " to plots/ directory"
-print "" 
+print("")
+print("Plotted : ", fieldToCompare, " to plots/ directory")
+print("") 
 
 
 

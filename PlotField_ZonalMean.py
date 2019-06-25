@@ -11,7 +11,7 @@
 # 2. A GEOS file or GMI file
 #------------------------------------------------------------------------------
 
-from __future__ import division
+
 
 import re
 import os
@@ -53,17 +53,17 @@ FILE = "f"
 
 NUM_ARGS = 8
 def usage ():
-    print ""
-    print "usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v] [-m] [-a]"
-    print "-c File1 (GEOS)"
-    print "-g File2 (GMI  or GEOS) [if GMI format is gmi*.nc]"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print "-v which variable to extract field from"
-    print "-m model configuration (Replay, CCM, etc.)" 
-    print "-a analysis type (d=perc diff, r=ratio, s=simple difference"
-    print ""
+    print("")
+    print("usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v] [-m] [-a]")
+    print("-c File1 (GEOS)")
+    print("-g File2 (GMI  or GEOS) [if GMI format is gmi*.nc]")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("-v which variable to extract field from")
+    print("-m model configuration (Replay, CCM, etc.)") 
+    print("-a analysis type (d=perc diff, r=ratio, s=simple difference")
+    print("")
     sys.exit (0)
 
 def find_nearest(array, value):
@@ -102,7 +102,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, plotOpt
     # determine contour levels to be used; default: linear spacing, 20 levels
     clevs = plotOpt.get('levels', numpy.linspace(dataMin, dataMax, 20))
 
-    print ("clevs:", clevs)
+    print(("clevs:", clevs))
 
     # map contour values to colors
     norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
@@ -143,7 +143,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, plotOpt
 
     ax1.set_xlabel(xAxisLabel)
     
-    print "y_max, y_min = ", y.max(), y.min()
+    print("y_max, y_min = ", y.max(), y.min())
     if y.max()/y.min() < 30.:
         subs = [1,2,3,4,5,6,7,8,9]
     loc = ticker.LogLocator(base=10., subs=subs)
@@ -156,7 +156,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, plotOpt
 
 
 
-print "Start plotting zonal mean differences"
+print("Start plotting zonal mean differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -176,44 +176,44 @@ modelConfig = optList[6][1]
 analType = str(optList[7][1])
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geos5File):
-    print "The GEOS file you provided does not exist: ", geos5File
+    print("The GEOS file you provided does not exist: ", geos5File)
     sys.exit(0)
 
 if not os.path.exists (file2):
-    print "The GEOS or GMI file you provided does not exist: ", file2
-    print "GMI format must be in gmi*.nc"
+    print("The GEOS or GMI file you provided does not exist: ", file2)
+    print("GMI format must be in gmi*.nc")
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 if analType != "r" and analType != "d" and analType != "s":
-    print "ERROR: analysis type must be r (ratios) or d (percent differences)"
+    print("ERROR: analysis type must be r (ratios) or d (percent differences)")
     sys.exit(0)
 
-print geos5File
-print file2
+print(geos5File)
+print(file2)
 
 file2Flag = "GMI"
 
 # known GMI prefixes
 if (file2[0:3] == "gmi" or file2[0:3] == "gmp") and file2[-3:] == ".nc":
-    print "File2 is GMI"
+    print("File2 is GMI")
 else:
-    print "File2 is GEOS"
+    print("File2 is GEOS")
     file2Flag = "GEOS"
 
 
@@ -233,17 +233,17 @@ else :
 plotTitleFile2 = plotTitleFile2 + " " + sim2Name + "        " + variableExtractField
 
 
-print ""
-print "geos5SimName: ", geos5SimName
-print "sim2Name: ", sim2Name
-print ""
+print("")
+print("geos5SimName: ", geos5SimName)
+print("sim2Name: ", sim2Name)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geos5Object = GeosCtmPlotTools (geos5File, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -274,18 +274,18 @@ else:
 
 count = 0 
 for level in useLevels[:]:
-    print level
+    print(level)
     if int(level) == 100:
-        print "Found 100 mb! ", count
+        print("Found 100 mb! ", count)
     count = count + 1
 
 
 tropLevels = useLevels [37::]
 
-print ""
-print "trop levels: "
-print tropLevels[:]
-print ""
+print("")
+print("trop levels: ")
+print(tropLevels[:])
+print("")
 
 
 
@@ -314,26 +314,26 @@ for field in fieldsToCompareAll[:]:
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
 
-print ""
-print "Order: ", order
-print ""
+print("")
+print("Order: ", order)
+print("")
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 
 
 foundField = False
-print ""
+print("")
 for fieldInList in fieldsToCompare[:]:
 
     if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
+        print("Success: ", fieldToCompare, " can be compared!")
         foundField = True
 
 if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 
@@ -367,9 +367,9 @@ geos5ZonalArray = numpy.zeros ((geos5Object.levelSize, \
 
 
 
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
 
 
 
@@ -383,7 +383,7 @@ else:
 
 file2FieldArray = file2Object.returnField (field, timeRecord, variableExtractField)
 
-print "shapes of arrays: ", geos5FieldArray.shape, file2FieldArray.shape
+print("shapes of arrays: ", geos5FieldArray.shape, file2FieldArray.shape)
 
 
 
@@ -391,13 +391,13 @@ lenFile2Long = len(file2Object.long[:])
 remappedLong = numpy.zeros(lenFile2Long, float32)
 
 
-print ""
-print sim2Name
-print ""
+print("")
+print(sim2Name)
+print("")
 
-print ""
-print "lenFile2Long: ", lenFile2Long, int(lenFile2Long/2)
-print ""
+print("")
+print("lenFile2Long: ", lenFile2Long, int(lenFile2Long/2))
+print("")
 
 midLong = int(lenFile2Long/2)
 
@@ -406,9 +406,9 @@ midLong = int(lenFile2Long/2)
 # put GMI on -180 to 0 to 180
 if file2Flag == "GMI" or sim2Name == "MERRA2_300":
 
-    print ""
-    print "File2 appears to be in GMI format. Remapping longitude coordinate"
-    print ""
+    print("")
+    print("File2 appears to be in GMI format. Remapping longitude coordinate")
+    print("")
 
         
     remappedFile2Array [:,:,0:midLong] = \
@@ -428,9 +428,9 @@ if file2Flag == "GMI" or sim2Name == "MERRA2_300":
 
 else: 
 
-    print ""
-    print "File2 appears to be in GEOS format. Will not remap longitude coordinate"
-    print ""
+    print("")
+    print("File2 appears to be in GEOS format. Will not remap longitude coordinate")
+    print("")
     
     remappedFile2Array [:,:,:] = file2FieldArray[:,:,:]
     remappedLong [:] = file2Object.long[:]
@@ -438,18 +438,18 @@ else:
 
 
 
-print ""
-print "Remapped long: ", remappedLong[:]
-print ""
+print("")
+print("Remapped long: ", remappedLong[:])
+print("")
 
 
 
 
 if file2FieldArray.shape != geos5FieldArray.shape:
 
-    print ""
-    print "Array shapes are different. Interpolation needed!"
-    print ""
+    print("")
+    print("Array shapes are different. Interpolation needed!")
+    print("")
 
     
     # Arrays (one time record at a time)
@@ -460,17 +460,17 @@ if file2FieldArray.shape != geos5FieldArray.shape:
     newModel2ArrayBoth = numpy.zeros((geos5Object.levelSize, geos5Object.latSize, geos5Object.longSize), numpy.float32)
 
 
-    print ""
-    print geos5Object.lev[:]
-    print ""
+    print("")
+    print(geos5Object.lev[:])
+    print("")
 
     for modelLev in geos5Object.lev[:]:
 
         modelLevIndex = modelLev - 1
 
-        print ""
-        print "Interpolating data from model level: ", int(modelLev)
-        print ""
+        print("")
+        print("Interpolating data from model level: ", int(modelLev))
+        print("")
 
         latCount = 0
         for lat in file2Object.lat[:]:
@@ -495,7 +495,7 @@ if file2FieldArray.shape != geos5FieldArray.shape:
 
 
         longCount = 0
-        for long in geos5Object.long[:]:
+        for int in geos5Object.long[:]:
 
             # pull lat records our of model 2
             latRecords[:] = newModel2Array[modelLevIndex,:,longCount]
@@ -516,7 +516,7 @@ if file2FieldArray.shape != geos5FieldArray.shape:
 
 
 else:
-    print "Array shapes are the same. Will not interpolate"
+    print("Array shapes are the same. Will not interpolate")
     newFile2Array[:,:, :] = remappedFile2Array[:,:,:]
 
 
@@ -537,9 +537,9 @@ zmGeosCtm = numpy.mean (geos5FieldArray[:, :, :], \
 if file2Flag == "GMI":
     zmGeosCtmRev = zmGeosCtm[::-1, :]
 else:
-    print ""
-    print "No data flipping necessary"
-    print ""
+    print("")
+    print("No data flipping necessary")
+    print("")
     zmGeosCtmRev = zmGeosCtm[:,:]
 
 
@@ -563,9 +563,9 @@ plotOpt = {}
 
 numTropLevels = len(tropLevels)
 
-print ""
-print "Plotting on these levels: ", tropLevels[:]
-print "" 
+print("")
+print("Plotting on these levels: ", tropLevels[:])
+print("") 
 
 
 zmGeosCtmTrop = zmGeosCtmRev[0:len(tropLevels),:]
@@ -631,9 +631,9 @@ if analType == "d":
     highEnd = zmDiff.mean()
     
     if zmDiff.mean() < 0.0: 
-        print ""
-        print "WARNING: zmDiff mean is < 0!"
-        print ""
+        print("")
+        print("WARNING: zmDiff mean is < 0!")
+        print("")
 
         lowEnd = zmDiff.mean()
         highEnd = -zmDiff.mean()
@@ -641,8 +641,8 @@ if analType == "d":
 
 
     print ("")
-    print ("Shape of zmDiff: ", zmDiff.shape)
-    print ("Shape of lat: ", len(geos5Object.lat))
+    print(("Shape of zmDiff: ", zmDiff.shape))
+    print(("Shape of lat: ", len(geos5Object.lat)))
     print ("")
 
 
@@ -663,9 +663,9 @@ if analType == "d":
 
 elif analType == "s":
 
-    print ""
-    print "Creating Simple Differences"
-    print ""
+    print("")
+    print("Creating Simple Differences")
+    print("")
 
     zmDiff = zmGeosCtmRev - zmFile2
 
@@ -675,9 +675,9 @@ elif analType == "s":
     highEnd = zmDiff.max()
 
 
-    print ""
-    print "low end / high end for simple diffs: ", lowEnd, " / ", highEnd
-    print ""
+    print("")
+    print("low end / high end for simple diffs: ", lowEnd, " / ", highEnd)
+    print("")
 
     plotOpt['title'] = "Simple Difference " + geos5SimName + " vs " + sim2Name + "   " + \
         field + " " + " ZM " + dateYearMonth
@@ -699,7 +699,7 @@ elif analType == "r":
     zmDiff = zmGeosCtmRev/zmFile2
 
     print ("")
-    print ("ratios min / max: ", zmDiff.min(), zmDiff.max())
+    print(("ratios min / max: ", zmDiff.min(), zmDiff.max()))
     print ("")
 
     for lev in range(0,levPoints):
@@ -727,7 +727,7 @@ elif analType == "r":
 
 else:
     print ("")
-    print ("Analysis type not supported: ", analType)
+    print(("Analysis type not supported: ", analType))
     print ("")
            
 
@@ -742,9 +742,9 @@ plt.clf
 
 
 
-print ""
-print "Finished plotting: ", fieldToCompare, " to plots/ directory"
-print "Zonal mean diff min/max/mean: ", zmDiff.min(), "/", zmDiff.max(), zmDiff.mean()
-print ""
+print("")
+print("Finished plotting: ", fieldToCompare, " to plots/ directory")
+print("Zonal mean diff min/max/mean: ", zmDiff.min(), "/", zmDiff.max(), zmDiff.mean())
+print("")
     
 

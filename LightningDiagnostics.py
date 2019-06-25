@@ -51,15 +51,15 @@ from GenericModelPlotTools import GenericModelPlotTools
 
 NUM_ARGS = 2
 def usage ():
-    print ""
-    print "usage: LightningDiagnostics.py [-c] [-t] "
-    print "-c GEOS CTM file 1"
-    print "-r time record"
-    print ""
+    print("")
+    print("usage: LightningDiagnostics.py [-c] [-t] ")
+    print("-c GEOS CTM file 1")
+    print("-t time record")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -73,41 +73,41 @@ geosCtmFile1 = optList[0][1]
 timeRecord = int(optList[1][1])
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile1):
-    print "The file you provided does not exist: ", geosCtmFile1
+    print("The file you provided does not exist: ", geosCtmFile1)
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 
-print ""
-print geosCtmFile1
-print timeRecord
-print ""
+print("")
+print(geosCtmFile1)
+print(timeRecord)
+print("")
 
 
 geosCtmSimName1 = geosCtmFile1.split(".")[0]
 
-print ""
-print "Sim name: "
-print geosCtmSimName1
-print ""
+print("")
+print("Sim name: ")
+print(geosCtmSimName1)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -117,9 +117,9 @@ geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
 list1 = geosCtmObject1.fieldList
 
 
-print ""
-print list1
-print ""
+print("")
+print(list1)
+print("")
 
 
 
@@ -131,13 +131,13 @@ for field in list1[:]:
 
 
 
-print ""
-print "Fields to analyze: ", fieldsToCompare[:]
-print "GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:]
-print ""
+print("")
+print("Fields to analyze: ", fieldsToCompare[:])
+print("GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:])
+print("")
 
-print ""
-print ""
+print("")
+print("")
 
 
 
@@ -147,14 +147,14 @@ fieldCount = 0
 
 for field in fieldsToCompare[:]:    
 
-    print ""
+    print("")
     geosCtmFieldArray1 = geosCtmObject1.returnField (field, timeRecord)
-    print ""
+    print("")
 
-    print ""    
-    print "Global mean of: ", field, " : ", mean(geosCtmFieldArray1)
-    print "Global sum of: ", field, " : ", sum(geosCtmFieldArray1)
-    print ""    
+    print("")    
+    print("Global mean of: ", field, " : ", mean(geosCtmFieldArray1) * 3.154e7, " 1/km2y")
+    print("Global sum of: ", field, " : ", sum(geosCtmFieldArray1))
+    print("")    
     
 
 

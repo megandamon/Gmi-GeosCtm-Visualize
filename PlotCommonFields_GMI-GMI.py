@@ -51,30 +51,30 @@ from GmiDef import *
 
 
 def workerLocal (command):
-    print("I will execute: ", command)
+    print(("I will execute: ", command))
     return os.system(command)
 
 
 NUM_ARGS = 9
 def usage ():
     print("")
-    print "usage: PlotCommonFields_GMI-GMI.py [-c] [-g] [-r] [-d] [-n] [-p] [-s] [-v] [-t]"
-    print "-c GMI file 1"
-    print "-g GMI file 2"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-n PBS_NODEFILE"
-    print "-p number of processes to use per node"
-    print "-s string defining the GMI array with species/fields names (const_labels, etc.)"
-    print "-v variable to extract GMI array fields from (const, scav. etc.)"
-    print "-t type of plots (Q-quick, S-Standard, C-Complete"
+    print("usage: PlotCommonFields_GMI-GMI.py [-c] [-g] [-r] [-d] [-n] [-p] [-s] [-v] [-t]")
+    print("-c GMI file 1")
+    print("-g GMI file 2")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-n PBS_NODEFILE")
+    print("-p number of processes to use per node")
+    print("-s string defining the GMI array with species/fields names (const_labels, etc.)")
+    print("-v variable to extract GMI array fields from (const, scav. etc.)")
+    print("-t type of plots (Q-quick, S-Standard, C-Complete")
     print("")
     sys.exit (0)
 
 
 
 
-print "Start plotting restart field differences"
+print("Start plotting restart field differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -96,48 +96,48 @@ packageType = str(optList[8][1])
 
 #---------------------------------------------------------------
 print("")
-print "Checking command line options... "
-print""
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (gmiFile1):
-    print "The file you provided does not exist: ", gmiFile1
+    print("The file you provided does not exist: ", gmiFile1)
     sys.exit(0)
 
 if not os.path.exists (gmiFile2):
-    print "The file you provided does not exist: ", gmiFile2
+    print("The file you provided does not exist: ", gmiFile2)
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 if not os.path.exists (pbsNodeFile): 
-    print "The file you provided does not exist: ", pbsNodeFile
+    print("The file you provided does not exist: ", pbsNodeFile)
     sys.exit(0)
 
 if numProcesses <= 0:
-    print "Number of processes must be larger than 0! "
-    print "Given: ", numProcesses
+    print("Number of processes must be larger than 0! ")
+    print("Given: ", numProcesses)
     sys.exit(0)
 
 if packageType != "Q" and packageType != "S" and packageType != "C":
-    print "Please provide packageType as Q, S, or C"
-    print "Given: ", packageType
+    print("Please provide packageType as Q, S, or C")
+    print("Given: ", packageType)
     sys.exit(0)
 
 print("")
-print "Will be looking at GMI fields in: ", fieldNameArrayGMI
+print("Will be looking at GMI fields in: ", fieldNameArrayGMI)
 print("")
 
-print gmiFile1
-print gmiFile2
+print(gmiFile1)
+print(gmiFile2)
 print("")
 
 
@@ -147,10 +147,10 @@ gmiSimName2 = gmiFile2.split("_")[1]
 
 #---------------------------------------------------------------
 print("")
-print "Command line options look good."
-print "GMI1 simulation name: ", gmiSimName1
-print "GMI2 simulation name: ", gmiSimName2
-print""
+print("Command line options look good.")
+print("GMI1 simulation name: ", gmiSimName1)
+print("GMI2 simulation name: ", gmiSimName2)
+print("")
 #--------------------------------------------------------------
 
 gmiObject1 =  GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
@@ -162,7 +162,7 @@ gmiObject2 = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
 print("")
-print "Field to extract species names from: ", fieldNameArrayGMI
+print("Field to extract species names from: ", fieldNameArrayGMI)
 print("")
 
 
@@ -183,7 +183,7 @@ fieldsToCompare = gmiObject2.returnFieldsInCommon (list1, list2, order)
 
 
 print("")
-print "variableExtractField: ", variableExtractField
+print("variableExtractField: ", variableExtractField)
 print("")
 
 
@@ -191,7 +191,7 @@ print("")
 
 nodes = gmiObject2.readNodesIntoArray (pbsNodeFile)
 print("")
-print "nodes: ", nodes
+print("nodes: ", nodes)
 print("")
 
 
@@ -215,7 +215,7 @@ print("")
 
 cwd = os.getcwd()
 print("")
-print "current working directory: ", cwd
+print("current working directory: ", cwd)
 print("")
 
 
@@ -235,13 +235,13 @@ pythonCommand2= "PlotField_ZonalMean_GMI.py -c " + gmiFile1 \
 
 
 print("")
-print "Package type is: ", packageType
+print("Package type is: ", packageType)
 if packageType == "Q": 
     fieldsToCompare = GmiDef.GMI_QUICK_FIELDS
 elif packageType == "S":
     fieldsToCompare = GmiDef.GMI_STANDARD_FIELDS
 else:
-    print "all"
+    print("all")
 print("")
 
 
@@ -257,7 +257,7 @@ for field in fieldsToCompare:
 print("")
 
 print("")
-print editedFields[:]
+print(editedFields[:])
 print("")
 
 
@@ -265,21 +265,24 @@ fieldsToCompare = None
 fieldsToCompare = editedFields
 
 
+procCount = 0
+nodeCount = 0
+
 
 for field in fieldsToCompare[:]:
 
     if procCount == numProcesses: 
         procCount = 0
         nodeCount = nodeCount + 1
-        print "Attempting to assign process to new node: ", nodeCount
+        print("Attempting to assign process to new node: ", nodeCount)
 
         if nodeCount >= len(nodes):
             print("")
-            print "ERROR: number of commands added to queue ", len(commands)
-            print "Number of nodes available: ", len(nodes)
-            print "Number of processes per node: ", numProcesses
-            print "number of fields to compare: ", len(fieldsToCompare)
-            print "Node count: ", nodeCount
+            print("ERROR: number of commands added to queue ", len(commands))
+            print("Number of nodes available: ", len(nodes))
+            print("Number of processes per node: ", numProcesses)
+            print("number of fields to compare: ", len(fieldsToCompare))
+            print("Node count: ", nodeCount)
             print("")
             sys.exit(-1)
 
@@ -288,8 +291,8 @@ for field in fieldsToCompare[:]:
 
 
     print("")
-    print "Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount, \
-        " and " , procCount+1
+    print("Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount, \
+        " and " , procCount+1)
     print("")
 
     sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
@@ -303,12 +306,12 @@ for field in fieldsToCompare[:]:
 
 
     print("")
-    print "Deciding if zonal mean is possible for : ", field
+    print("Deciding if zonal mean is possible for : ", field)
     print("")
 
     if field in GmiDef.GMI_TWOD_FIELDS[:]:
         print("")
-        print "2D field found. NO zonal mean!"
+        print("2D field found. NO zonal mean!")
         print("")
         
     else:
@@ -330,22 +333,22 @@ for field in fieldsToCompare[:]:
     
 print("")
 for command in commands[:]:
-    print command
+    print(command)
 
 print("")
-print "len of commands: ", len(commands)
+print("len of commands: ", len(commands))
 print("")
 
 
 pool = multiprocessing.Pool(processes=len(commands))
 
 print("")
-print "Calling pool.map"
+print("Calling pool.map")
 pool.map(workerLocal, commands)
 print("")
 
 print("")
-print "Calling pool.close"
+print("Calling pool.close")
 pool.close()
 print("")
 

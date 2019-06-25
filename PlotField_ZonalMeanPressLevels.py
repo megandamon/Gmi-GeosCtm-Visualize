@@ -45,15 +45,15 @@ FILE = "f"
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-m]"
-    print "-c File1 (GEOS)"
-    print "-g File2 (GEOS"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print "-m model configuration (Replay, CCM, etc.)" 
-    print ""
+    print("")
+    print("usage: PlotField_ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-m]")
+    print("-c File1 (GEOS)")
+    print("-g File2 (GEOS")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("-m model configuration (Replay, CCM, etc.)") 
+    print("")
     sys.exit (0)
 
 def find_nearest(array, value):
@@ -129,7 +129,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     #ax1.set_ylim(y.min(), y.max())
     subs = [1,2,5]
     
-    print "y_max, y_min = ", y.max(), y.min()
+    print("y_max, y_min = ", y.max(), y.min())
     if y.max()/y.min() < 30.:
         subs = [1,2,3,4,5,6,7,8,9]
     loc = ticker.LogLocator(base=10., subs=subs)
@@ -142,7 +142,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
 
 
 
-print "Start plotting zonal mean differences"
+print("Start plotting zonal mean differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -160,32 +160,32 @@ fieldToCompare = optList[4][1]
 modelConfig = optList[5][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geos5File):
-    print "The GEOS file you provided does not exist: ", geos5File
+    print("The GEOS file you provided does not exist: ", geos5File)
     sys.exit(0)
 
 if not os.path.exists (file2):
-    print "The GEOS file you provided does not exist: ", file2
+    print("The GEOS file you provided does not exist: ", file2)
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
-print geos5File
-print file2
+print(geos5File)
+print(file2)
 
 file2Flag = "GMI"
 
@@ -201,32 +201,32 @@ fileTitle = "." + modelConfig + ".inter."
 plotTitleFile2 = plotTitleFile2 + " " + sim2Name 
 
 
-print ""
-print "geos5SimName1: ", geos5SimName
-print "geos5SimName2: ", sim2Name
-print ""
+print("")
+print("geos5SimName1: ", geos5SimName)
+print("geos5SimName2: ", sim2Name)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 
 
 
-print ""
-print "Reading: ", geos5File
-print ""
+print("")
+print("Reading: ", geos5File)
+print("")
 geos5Object = GeosCtmPlotTools (geos5File, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
 
-print ""
-print "Reading: ", file2
-print ""
+print("")
+print("Reading: ", file2)
+print("")
 file2Object = GeosCtmPlotTools (file2, 'lat','lon',\
                                     'lev','time', 'lat', \
                                     'lon', 'lev', 'time' )
@@ -250,30 +250,30 @@ for field in fieldsToCompareAll[:]:
     if field[0:4] != "Var_" :
         fieldsToCompare.append(field)
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 
 
 foundField = False
-print ""
+print("")
 for fieldInList in fieldsToCompare[:]:
 
     if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
+        print("Success: ", fieldToCompare, " can be compared!")
         foundField = True
 
 if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 
 # Arrays (one time record, one field)
-print ""
-print "Processing: ", fieldToCompare
-print "Level size: ", file2Object.levelSize
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("Level size: ", file2Object.levelSize)
+print("")
 
 
 
@@ -283,56 +283,56 @@ geos5FieldArray = geos5Object.returnField (field, timeRecord)
 
 file2FieldArray = file2Object.returnField (field, timeRecord)
 
-print ""
-print "shapes of arrays: ", geos5FieldArray.shape, file2FieldArray.shape
-print ""
+print("")
+print("shapes of arrays: ", geos5FieldArray.shape, file2FieldArray.shape)
+print("")
 
 
 
 
-print ""
-print "File2 is assumed to be in GEOS format. Will not remap longitude coordinate"
-print ""
+print("")
+print("File2 is assumed to be in GEOS format. Will not remap longitude coordinate")
+print("")
     
 
-print ""
-print "min/max of geos1: ", geos5FieldArray.min(), geos5FieldArray.max()
-print "min/max of geos2: ", file2FieldArray.min(), file2FieldArray.max()
-print ""
+print("")
+print("min/max of geos1: ", geos5FieldArray.min(), geos5FieldArray.max())
+print("min/max of geos2: ", file2FieldArray.min(), file2FieldArray.max())
+print("")
 
 
 if file2FieldArray.shape != geos5FieldArray.shape:
-    print "Array shapes are different. Interpolation needed!"
+    print("Array shapes are different. Interpolation needed!")
     sys.exit(0)
     
 
 
-print ""
-print "lev2: ", 
-print file2Object.lev[:]
-print ""
+print("")
+print("lev2: ", end=' ') 
+print(file2Object.lev[:])
+print("")
 
 
 
 # find tropMaxLev and tropMinLev
 tropMinLev = findLevelFromArray (file2Object.lev, 100.00)
 
-print ""
-print "Trop min level: ", tropMinLev
-print ""
+print("")
+print("Trop min level: ", tropMinLev)
+print("")
 
-print ""
-print"Trop levels: ",  file2Object.lev[0:tropMinLev+1]
-print "Strat levels: '", file2Object.lev[tropMinLev::]
-print ""
+print("")
+print("Trop levels: ",  file2Object.lev[0:tropMinLev+1])
+print("Strat levels: '", file2Object.lev[tropMinLev::])
+print("")
 
 
 geos5Surface = 0
 geos5TropPause = tropMinLev + 1
 
-print ""
-print "GEOS surface and tropopause levels: ", geos5Surface, geos5TropPause
-print ""
+print("")
+print("GEOS surface and tropopause levels: ", geos5Surface, geos5TropPause)
+print("")
 
 
 
@@ -340,20 +340,20 @@ print ""
 tropGeosCtm = geos5FieldArray[0:geos5TropPause, :,:]
 zmGeosCtmTrop = numpy.mean (tropGeosCtm[:,:,:], axis=2)
 
-print ""
-print "size of tropGeosCtm1: ", tropGeosCtm.shape
+print("")
+print("size of tropGeosCtm1: ", tropGeosCtm.shape)
 
 
 tropFile2 = file2FieldArray[0:geos5TropPause, :, :]
 zmFile2Trop = numpy.mean (tropFile2[:, :, :], axis=2)
 
 
-print "" 
-print "Size, max, min of Trop ZM GEOS1: ", \
-    zmGeosCtmTrop.shape, zmGeosCtmTrop.max(), zmGeosCtmTrop.min()
-print "Size, max, min of Trop ZM GEOS2: ", \
-    zmFile2Trop.shape, zmFile2Trop.max(), zmFile2Trop.min()
-print ""
+print("") 
+print("Size, max, min of Trop ZM GEOS1: ", \
+    zmGeosCtmTrop.shape, zmGeosCtmTrop.max(), zmGeosCtmTrop.min())
+print("Size, max, min of Trop ZM GEOS2: ", \
+    zmFile2Trop.shape, zmFile2Trop.max(), zmFile2Trop.min())
+print("")
 
 
 
@@ -366,9 +366,9 @@ if zmFile2Trop.min() < minValueOfBoth:
 if zmFile2Trop.max() > maxValueOfBoth:
     maxValueOfBoth = zmFile2Trop.max()
 
-print ""
-print "min/max of both data sets: ", minValueOfBoth, "/", maxValueOfBoth
-print ""
+print("")
+print("min/max of both data sets: ", minValueOfBoth, "/", maxValueOfBoth)
+print("")
 
 
 
@@ -379,23 +379,23 @@ else:
     useLevels = file2Object.lev[:]
 
 
-print ""
-print "GEOS surface and tropopause levels: ", geos5Surface, geos5TropPause
-print useLevels[0:geos5TropPause]
-print ""
+print("")
+print("GEOS surface and tropopause levels: ", geos5Surface, geos5TropPause)
+print(useLevels[0:geos5TropPause])
+print("")
 
-print ""
+print("")
 levelsSize = size(useLevels[0:geos5TropPause])
-print "size of useLevels: ", levelsSize
+print("size of useLevels: ", levelsSize)
 #useLevels = arange(1,levelsSize+1)
-print useLevels
-print ""
+print(useLevels)
+print("")
 
 
-print "size of zmGeosCtmTrop: ", zmGeosCtmTrop.shape
-print useLevels[0:geos5TropPause].size
-print "size of lat: ", geos5Object.lat.size
-print ""
+print("size of zmGeosCtmTrop: ", zmGeosCtmTrop.shape)
+print(useLevels[0:geos5TropPause].size)
+print("size of lat: ", geos5Object.lat.size)
+print("")
 
 
 
@@ -428,9 +428,9 @@ plotZM (zmFile2Trop, file2Object.lat[:], \
 
 tropRatio = zmGeosCtmTrop[:,:]/zmFile2Trop[:,:]
 
-print ""
-print "tropRatio min/max: ", tropRatio.min(), tropRatio.max()
-print ""
+print("")
+print("tropRatio min/max: ", tropRatio.min(), tropRatio.max())
+print("")
 
 
 ax3 = fig.add_subplot(313)    
@@ -496,9 +496,9 @@ if zmFile2Strat.max() > maxValueOfBoth:
     maxValueOfBoth = zmFile2Strat.max()
 
 
-print "Strat min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth
-print "Strat min / max of GEOS ", field, zmGeosCtmStratRev.min(), " / ", zmGeosCtmStratRev.max()
-print "Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Strat.max()
+print("Strat min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth)
+print("Strat min / max of GEOS ", field, zmGeosCtmStratRev.min(), " / ", zmGeosCtmStratRev.max())
+print("Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Strat.max())
 
 
 fig = plt.figure(figsize=(20,20))
@@ -526,7 +526,7 @@ plotOpt['title'] = "Strat model ratio         " + variableExtractField + "_" + \
     field + " " + " ZM " + dateYearMonth
 
 zmStratRatio = zmGeosCtmStratRev/zmFile2Strat
-print "Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max()
+print("Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max())
 plotZM (zmStratRatio, file2Object.lat[:], \
 #            file2Object.lev[tropMinLev::], \
             useLevels[tropMinLev::], \
@@ -563,31 +563,31 @@ if fieldToCompare.lower() == "moistq" or \
 
 
     # These are for 2D slices (lat/lon) only! 
-    print ""
-    print "Creating GEOS plot objects..."
+    print("")
+    print("Creating GEOS plot objects...")
     geos5Object.createPlotObjects()
-    print "Creating File2 plot objects..."
+    print("Creating File2 plot objects...")
     file2Object.createPlotObjects()
-    print ""
+    print("")
 
 
 
 
 
-    print ""
-    print ""
-    print ""
-    print "Shape of GEOS troposphere: ", shape(tropGeosCtm)
+    print("")
+    print("")
+    print("")
+    print("Shape of GEOS troposphere: ", shape(tropGeosCtm))
     tropColGeosCtm = numpy.sum(tropGeosCtm[:,:,:], axis=0)
-    print "Shape of tropCol GEOS troposphere: ", shape (tropColGeosCtm)
-    print "" 
+    print("Shape of tropCol GEOS troposphere: ", shape (tropColGeosCtm))
+    print("") 
 
 
-    print ""
-    print "Shape of File2 troposphere: ", shape(tropFile2)
+    print("")
+    print("Shape of File2 troposphere: ", shape(tropFile2))
     tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
-    print "Shape of tropCol file2 : ", shape(tropColFile2)
-    print ""
+    print("Shape of tropCol file2 : ", shape(tropColFile2))
+    print("")
 
 
 
@@ -599,9 +599,9 @@ if fieldToCompare.lower() == "moistq" or \
     if tropColFile2.max() > maxValueOfBoth:
         maxValueOfBoth = tropColFile2.max()
 
-    print ""
-    print "Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
-    print ""
+    print("")
+    print("Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+    print("")
 
 
 
@@ -627,11 +627,11 @@ if fieldToCompare.lower() == "moistq" or \
 
     tropColDiff = tropColGeosCtm / tropColFile2
     for lat in range(0, size(geos5Object.lat)):
-        for long in range(0, size(geos5Object.long)):
+        for int in range(0, size(geos5Object.long)):
 
-            if tropColGeosCtm[lat, long] == 0 and tropColFile2[lat, long] == 0:
+            if tropColGeosCtm[lat, int] == 0 and tropColFile2[lat, int] == 0:
                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                tropColDiff[lat, long] = 1.0
+                tropColDiff[lat, int] = 1.0
 
 
     ax3 = fig.add_subplot(313)  
@@ -658,25 +658,25 @@ if fieldToCompare.lower() == "moistq" or \
 
 
 
-    print ""
+    print("")
 
 
-    print ""
-    print "Shape of GEOS stratosphere: ", shape(stratGeosCtm)
+    print("")
+    print("Shape of GEOS stratosphere: ", shape(stratGeosCtm))
     stratColGeosCtm = numpy.sum(stratGeosCtm[:,:,:], axis=0)
-    print "Shape of stratCol GEOS: ", shape(stratColGeosCtm)
-    print ""
+    print("Shape of stratCol GEOS: ", shape(stratColGeosCtm))
+    print("")
 
 
-    print ""
-    print "Shape of File2 stratesphere: ", shape(stratFile2)
+    print("")
+    print("Shape of File2 stratesphere: ", shape(stratFile2))
     stratColFile2 = numpy.sum(stratFile2[:,:,:], axis=0)
-    print "Shape of stratCol file2: ", shape(stratColFile2)
-    print ""
+    print("Shape of stratCol file2: ", shape(stratColFile2))
+    print("")
 
 
-    print""
-    print""
+    print("")
+    print("")
 
 
 
@@ -689,9 +689,9 @@ if fieldToCompare.lower() == "moistq" or \
     if stratColFile2.max() > maxValueOfBoth:
         maxValueOfBoth = stratColFile2.max()
 
-    print ""
-    print "Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
-    print ""
+    print("")
+    print("Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+    print("")
 
 
     fig = plt.figure(figsize=(20,20))
@@ -713,11 +713,11 @@ if fieldToCompare.lower() == "moistq" or \
                             
     stratColDiff = stratColGeosCtm / stratColFile2
     for lat in range(0, size(geos5Object.lat)):
-        for long in range(0, size(geos5Object.long)):
+        for int in range(0, size(geos5Object.long)):
 
-            if stratColGeosCtm[lat, long] == 0 and stratColFile2[lat, long] == 0:
+            if stratColGeosCtm[lat, int] == 0 and stratColFile2[lat, int] == 0:
                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                stratColDiff[lat, long] = 1.0
+                stratColDiff[lat, int] = 1.0
 
     ax3 = fig.add_subplot(313)    
     plotTitle = "Strat Column model ratio for         " + variableExtractField + "_" + \
@@ -742,17 +742,17 @@ if fieldToCompare.lower() == "moistq" or \
         plt.show()
     plt.clf
 
-    print ""
-    print "Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory"
-    print ""
+    print("")
+    print("Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory")
+    print("")
 
 
 else:
-    print fieldToCompare, " is not currently set for strat or trop column plotting!"
+    print(fieldToCompare, " is not currently set for strat or trop column plotting!")
 
 
-print ""
-print "Finished plotting: ", fieldToCompare, " to plots/ directory"
-print ""
+print("")
+print("Finished plotting: ", fieldToCompare, " to plots/ directory")
+print("")
     
 

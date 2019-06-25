@@ -42,14 +42,14 @@ from CreateTimeSeries_Class import CreateTimeSeries_Class
 NUM_ARGS = 5
 
 def usage ():
-    print ""
-    print "usage: CreateTimeSeriesPlot.py [-i] [-c] -[f] [-d] [-s]"
-    print "-i icartt file"
-    print "-c specified which chemical species to output"
-    print "-f specify f for file or s for screen (f/s)"
-    print "-d Date of NetCDF file"
-    print "-s file with list of species"
-    print ""
+    print("")
+    print("usage: CreateTimeSeriesPlot.py [-i] [-c] -[f] [-d] [-s]")
+    print("-i icartt file")
+    print("-c specified which chemical species to output")
+    print("-f specify f for file or s for screen (f/s)")
+    print("-d Date of NetCDF file")
+    print("-s file with list of species")
+    print("")
     sys.exit (0)
 
 #---------------------------------------------------------------
@@ -67,26 +67,26 @@ dateNcFile = optList[3][1]
 outputSpeciesFile = optList[4][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options"
-print""
+print("")
+print("Checking command line options")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (icarttFile): 
-    print "The file you provided does not exist: ", icarttFile
+    print(("The file you provided does not exist: ", icarttFile))
     sys.exit(0)
 
 file = file.strip()
 if file != "f" and file != "s":
-    print "Please specify -f f or -f s"
+    print("Please specify -f f or -f s")
     sys.exit(0)
 
 if len(dateNcFile) != 8:
-    print "The date you provided is not in the format YYYYMMDD"
+    print("The date you provided is not in the format YYYYMMDD")
     sys.exit(0)
 
 
 if not os.path.exists (outputSpeciesFile):
-    print "The file you provided does not exist: ", outputSpeciesFile
+    print(("The file you provided does not exist: ", outputSpeciesFile))
     sys.exit(0)
 
 
@@ -95,9 +95,9 @@ timeSeriesObject = CreateTimeSeries_Class(icarttFile, outputSpeciesFile, dateNcF
 
 
 
-print ""
-print "Flight begin time: ", timeSeriesObject.icarttOperations.beginTime
-print ""
+print("")
+print(("Flight begin time: ", timeSeriesObject.icarttOperations.beginTime))
+print("")
 
 
 timeSeriesObject.extractTimeSeriesArrays ()

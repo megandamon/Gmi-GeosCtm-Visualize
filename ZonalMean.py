@@ -50,16 +50,16 @@ FILE = "f"
 
 NUM_ARGS = 7
 def usage ():
-    print ""
-    print "usage: ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v] [-m]"
-    print "-c File1 (GEOS)"
-    print "-g File2 (GEOS)"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMMDD)"
-    print "-f field to compare"
-    print "-v which variable to extract field from"
-    print "-m model configuration (Replay, CCM, etc.)"
-    print ""
+    print("")
+    print("usage: ZonalMean.py [-c] [-g] [-r] [-d] [-f] [-v] [-m]")
+    print("-c File1 (GEOS)")
+    print("-g File2 (GEOS)")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMMDD)")
+    print("-f field to compare")
+    print("-v which variable to extract field from")
+    print("-m model configuration (Replay, CCM, etc.)")
+    print("")
     sys.exit (0)
 
 def find_nearest(array, value):
@@ -142,12 +142,12 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     subs = [1,2,5]
     subs = [1,2,3,4,5,6,7,8,9]
     
-    print ""
-    print "y_max, y_min = ", yMax, yMin
-    print ""
+    print("")
+    print("y_max, y_min = ", yMax, yMin)
+    print("")
 
     if yMax/yMin < 30.:
-        print "Setting subs"
+        print("Setting subs")
         subs = [1,2,3,4,5,6,7,8,9]
     loc = ticker.LogLocator(base=10., subs=subs)
     ax1.yaxis.set_major_locator(loc)
@@ -159,7 +159,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
 
 
 
-print "Start plotting zonal mean differences"
+print("Start plotting zonal mean differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -178,32 +178,32 @@ variableExtractField = optList[5][1]
 modelConfig = optList[6][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile):
-    print "The GEOS file you provided does not exist: ", geosCtmFile
+    print("The GEOS file you provided does not exist: ", geosCtmFile)
     sys.exit(0)
 
 if not os.path.exists (file2):
-    print "The GEOS file provided does not exist: ", file2
+    print("The GEOS file provided does not exist: ", file2)
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 8:
-    print "ERROR date must be in the format YYYYMMDD. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMMDD. Received: ", dateYearMonth)
     sys.exit(0)
 
 
-print geosCtmFile
-print file2
+print(geosCtmFile)
+print(file2)
 
 geosCtmSimName = geosCtmFile.split(".")[0]
 
@@ -216,17 +216,17 @@ fileTitle = ".GEOS.inter."
 plotTitleFile2 = plotTitleFile2 + " " + modelConfig + " " + sim2Name + "        " + variableExtractField
 
 
-print ""
-print "geosCtmSimName: ", geosCtmSimName
-print "sim2Name: ", sim2Name
-print ""
+print("")
+print("geosCtmSimName: ", geosCtmSimName)
+print("sim2Name: ", sim2Name)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -263,25 +263,25 @@ for field in fieldsToCompareAll[:]:
     if field[0:4] != "Var_":
         fieldsToCompare.append(field)
 
-print ""
-print "Order: ", order
-print ""
+print("")
+print("Order: ", order)
+print("")
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 
 foundField = False
-print ""
+print("")
 for fieldInList in fieldsToCompare[:]:
 
     if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
+        print("Success: ", fieldToCompare, " can be compared!")
         foundField = True
 
 if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 
@@ -311,9 +311,9 @@ geosCtmZonalArray = numpy.zeros ((geosCtmObject.levelSize, \
 
 
 
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
 
 
 field = fieldToCompare
@@ -325,26 +325,26 @@ else:
 
 file2FieldArray = file2Object.returnField (field, timeRecord, variableExtractField)
 
-print ""
-print "shapes of arrays: ", geosCtmFieldArray.shape, file2FieldArray.shape
-print ""
+print("")
+print("shapes of arrays: ", geosCtmFieldArray.shape, file2FieldArray.shape)
+print("")
 
-print "file 2: array max/min: ", file2FieldArray.max(), file2FieldArray.min()
-print""
+print("file 2: array max/min: ", file2FieldArray.max(), file2FieldArray.min())
+print("")
 
 
 lenFile2Long = len(file2Object.long[:])
 
-print ""
-print "File2 assumed to be in GEOS format. Will not remap longitude coordinate"
-print ""
+print("")
+print("File2 assumed to be in GEOS format. Will not remap longitude coordinate")
+print("")
     
 
 geosCtmSurface = geosCtmObject.levelSize
 
-print ""
-print "File1 surface:", geosCtmSurface
-print ""
+print("")
+print("File1 surface:", geosCtmSurface)
+print("")
 
 
 zmFile2 = numpy.mean(file2FieldArray[:, :, :], \
@@ -353,20 +353,20 @@ zmFile2 = numpy.mean(file2FieldArray[:, :, :], \
 zmGeosCtm = numpy.mean (geosCtmFieldArray[:, :, :], \
                             axis=2)
 
-print "zm file 2: array max/min: ", zmFile2.max(), zmFile2.min()
-print""
+print("zm file 2: array max/min: ", zmFile2.max(), zmFile2.min())
+print("")
 
 
 
 
-print ""
-print "No data flipping necessary"
-print ""
+print("")
+print("No data flipping necessary")
+print("")
 zmGeosCtmRev = zmGeosCtm[:,:]
 
-print "Size of ZM GEOS: ", zmGeosCtm.shape
-print "Size of ZM file2: ", zmFile2.shape
-print ""
+print("Size of ZM GEOS: ", zmGeosCtm.shape)
+print("Size of ZM file2: ", zmFile2.shape)
+print("")
 
 
 
@@ -387,10 +387,10 @@ plotOpt['title'] = modelConfig + " " + geosCtmSimName + "        " + variableExt
     + " " + field + " ZM " + dateYearMonth
 
 
-print""
-useLevels = range(1,geosCtmObject.lev.size+1)
-print ""
-print useLevels[:]
+print("")
+useLevels = list(range(1,geosCtmObject.lev.size+1))
+print("")
+print(useLevels[:])
 
 plotZM (zmGeosCtmRev, geosCtmObject.lat[:], \
             #useLevels[0:tropMinLev], \
@@ -400,10 +400,10 @@ plotZM (zmGeosCtmRev, geosCtmObject.lat[:], \
             plotOpt)
 
 
-print""
-useLevels = range(1,file2Object.lev.size+1)
-print ""
-print useLevels[:]
+print("")
+useLevels = list(range(1,file2Object.lev.size+1))
+print("")
+print(useLevels[:])
 
 
 
@@ -431,8 +431,8 @@ plt.clf
 
 
 
-print ""
-print "Finished plotting: ", fieldToCompare, " to plots/ directory"
-print ""
+print("")
+print("Finished plotting: ", fieldToCompare, " to plots/ directory")
+print("")
     
 

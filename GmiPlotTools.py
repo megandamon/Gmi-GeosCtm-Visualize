@@ -28,6 +28,8 @@ from GenericModelPlotTools import GenericModelPlotTools
 class GmiPlotTools (GenericModelPlotTools):
 
 
+
+
    #---------------------------------------------------------------------------  
    # AUTHORS: Megan Damon NASA GSFC 
    #
@@ -46,35 +48,35 @@ class GmiPlotTools (GenericModelPlotTools):
       self.gmiConstString = constString
 
       if self.gmiConstString == None:
-         print ""
-         print "Looking for standalone GMI variable"
-         print""
+         print("")
+         print("Looking for standalone GMI variable")
+         print("")
       
       elif 'dep_spc_labels' in self.gmiConstString:
-         print ""
-         print "Doing deposition field extraction"
-         print ""
+         print("")
+         print("Doing deposition field extraction")
+         print("")
 
       elif fileName.find('idaily') != -1:
 
-         print ""
-         print "Doing freq1 idaily field extraction"
-         print ""
+         print("")
+         print("Doing freq1 idaily field extraction")
+         print("")
          self.gmiConstString = 'freq1_labels'
 
       elif fileName.find('tracers') != -1:
 
-         print ""
-         print "Doing freq2 tracer field extraction"
-         print ""
+         print("")
+         print("Doing freq2 tracer field extraction")
+         print("")
 
          self.gmiConstString = 'freq2_labels'
 
       elif fileName.find('amonthly') != -1 or fileName.find('adaily') != -1:
 
-         print ""
-         print "Doing field extraction using const_labels"
-         print ""
+         print("")
+         print("Doing field extraction using const_labels")
+         print("")
 
 
          self.gmiConstString = 'const_labels'
@@ -82,7 +84,7 @@ class GmiPlotTools (GenericModelPlotTools):
       self.MODEL_NAME = "GMI"
 
 
-      print self.gmiConstString
+      print(self.gmiConstString)
 
 
       self.addSpeciesToFieldList (self.gmiConstString)
@@ -103,34 +105,58 @@ class GmiPlotTools (GenericModelPlotTools):
    def addSpeciesToFieldList (self, speciesVar):
 
       if speciesVar == None:
-         print ""
-         print "speciesVar is None"
-         print ""
+         print("")
+         print("speciesVar is None")
+         print("")
          return 
 
-      print "Will extract species names from: ", speciesVar
+      print("Will extract species names from: ", speciesVar)
       self.speciesVar = speciesVar
 
       speciesArray = self.hdfData.variables[speciesVar]
 
       self.speciesNames = []
       for sp in speciesArray[:]:
-         self.speciesNames.append(re.sub(r'\W+', '', str(sp)))
+
+         newSpecie = []
+         for char in range(0,len(sp)):
+            charSpecie = str(sp[char])
+#            print (charSpecie[2], charSpecie[2].isalnum(), ord(charSpecie[2]))
+            if charSpecie[2].isalnum() \
+                   and not ord(charSpecie[2]) == 32:
+               newSpecie.append(charSpecie[2])
+                       
+         s = [str(i) for i in newSpecie] 
+         res = "".join(s)
+         self.speciesNames.append(res)
+         
 
       for species in self.speciesNames[:]:
          self.fieldList.append(species)
+      
+
+   def convert(list): 
+      
+      # Converting integer list to string list 
+      s = [str(i) for i in list] 
+      
+      # Join list items using join() 
+      res = int("".join(s)) 
+      
+      return(res) 
+
 
 
 
    def returnConstantField (self, fieldName):
 
 
-      print fieldName
-      print fieldName.lower()
+      print(fieldName)
+      print(fieldName.lower())
 
-      print ""
-      print "Extracting field from GMI: ", fieldName
-      print ""
+      print("")
+      print("Extracting field from GMI: ", fieldName)
+      print("")
                
       fieldArray = self.hdfData.variables[fieldName]   
 
@@ -156,23 +182,23 @@ class GmiPlotTools (GenericModelPlotTools):
          self.constVarName = "const_freq1"
 
 
-      print fieldName
-      print fieldName.lower()
+      print(fieldName)
+      print(fieldName.lower())
 
       if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO" \
              or fieldName.lower() == "flashrate_nc" or fieldName.lower() == "lfr" \
              or fieldName.lower() == "mcor" or fieldName.lower() == "psf":
-         print ""
-         print "Extracting field from GMI: ", fieldName
-         print ""
+         print("")
+         print("Extracting field from GMI: ", fieldName)
+         print("")
                
          fieldArray = self.hdfData.variables[fieldName]   
 
          if fieldArray.shape[0] - 1 < timeRecord:
-            print ""
-            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
-                " Using rec dim 0"
-            print ""
+            print("")
+            print("WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0")
+            print("")
             returnTime = 0
          else:
             returnTime = timeRecord
@@ -186,14 +212,14 @@ class GmiPlotTools (GenericModelPlotTools):
 
       else:
 
-         print ""
-         print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
-         print ""
+         print("")
+         print("Extracting field from GMI: ", fieldName, " from ", self.constVarName)
+         print("")
 
          speciesArray = self.hdfData.variables[self.constVarName]
 
 
-         print self.speciesNames[:]
+         print(self.speciesNames[:])
 
          indexLocation = 0
          for speciesName in self.speciesNames[:]:
@@ -202,16 +228,16 @@ class GmiPlotTools (GenericModelPlotTools):
             indexLocation = indexLocation + 1
  
          if speciesArray.shape[0] - 1 < timeRecord: 
-            print ""
-            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
-                " Using rec dim 0"
-            print ""
+            print("")
+            print("WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0")
+            print("")
             returnTime = 0
          else:
             returnTime = timeRecord
       
-         print speciesArray.shape[:]
-         print "index loc: ", indexLocation
+         print(speciesArray.shape[:])
+         print("index loc: ", indexLocation)
 
       
          if len(speciesArray.shape[:]) == 5:
@@ -224,9 +250,9 @@ class GmiPlotTools (GenericModelPlotTools):
 
    def returnFlashRateData (self, fieldName, yearIndex, monthIndex):
 
-      print ""
-      print "in returnFlashRateData: ", yearIndex, monthIndex
-      print ""
+      print("")
+      print("in returnFlashRateData: ", yearIndex, monthIndex)
+      print("")
 
 
       fieldArray = self.hdfData.variables[fieldName]   
@@ -252,17 +278,17 @@ class GmiPlotTools (GenericModelPlotTools):
 
 
       if fieldName.lower() == "moistq" or fieldName.lower() == "EM_LGTNO":
-         print ""
-         print "Extracting field from GMI: ", fieldName
-         print ""
+         print("")
+         print("Extracting field from GMI: ", fieldName)
+         print("")
                
          fieldArray = self.hdfData.variables[fieldName]   
 
          if fieldArray.shape[0] - 1 < timeRecord:
-            print ""
-            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
-                " Using rec dim 0"
-            print ""
+            print("")
+            print("WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0")
+            print("")
             returnTime = 0
          else:
             returnTime = timeRecord
@@ -271,14 +297,14 @@ class GmiPlotTools (GenericModelPlotTools):
 
       else:
 
-         print ""
-         print "Extracting field from GMI: ", fieldName, " from ", self.constVarName
-         print ""
+         print("")
+         print("Extracting field from GMI: ", fieldName, " from ", self.constVarName)
+         print("")
 
          speciesArray = self.hdfData.variables[self.constVarName]
 
 
-         print self.speciesNames[:]
+         print(self.speciesNames[:])
 
          indexLocation = 0
          for speciesName in self.speciesNames[:]:
@@ -287,16 +313,16 @@ class GmiPlotTools (GenericModelPlotTools):
             indexLocation = indexLocation + 1
  
          if speciesArray.shape[0] - 1 < timeRecord: 
-            print ""
-            print "WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
-                " Using rec dim 0"
-            print ""
+            print("")
+            print("WARNING: time record: ", timeRecord, " is not avail. in GMI. ", \
+                " Using rec dim 0")
+            print("")
             returnTime = 0
          else:
             returnTime = timeRecord
       
-         print speciesArray.shape[:]
-         print "index loc: ", indexLocation
+         print(speciesArray.shape[:])
+         print("index loc: ", indexLocation)
 
       
          if len(speciesArray.shape[:]) == 5:

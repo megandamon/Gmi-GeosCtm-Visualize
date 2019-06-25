@@ -51,15 +51,15 @@ FILE = "f"
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotField_ZonalMean-DiffLev.py [-c] [-g] [-r] [-d] [-f] [-o]"
-    print "-c File1 (GEOS-CTM)"
-    print "-g File2 (GMI  or GEOS-CTM) [if GMI format is gmi*.nc]"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print "-o other field to compare"
-    print ""
+    print("")
+    print("usage: PlotField_ZonalMean-DiffLev.py [-c] [-g] [-r] [-d] [-f] [-o]")
+    print("-c File1 (GEOS-CTM)")
+    print("-g File2 (GMI  or GEOS-CTM) [if GMI format is gmi*.nc]")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("-o other field to compare")
+    print("")
     sys.exit (0)
 
 def find_nearest(array, value):
@@ -146,7 +146,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
 
 
 
-print "Start plotting zonal mean differences"
+print("Start plotting zonal mean differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -164,33 +164,33 @@ fieldToCompare = optList[4][1]
 otherFieldToCompare = optList[5][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile):
-    print "The GEOS-CTM file you provided does not exist: ", geosCtmFile
+    print("The GEOS-CTM file you provided does not exist: ", geosCtmFile)
     sys.exit(0)
 
 if not os.path.exists (file2):
-    print "The GEOS-CTM or GMI file you provided does not exist: ", file2
-    print "GMI format must be in gmi*.nc"
+    print("The GEOS-CTM or GMI file you provided does not exist: ", file2)
+    print("GMI format must be in gmi*.nc")
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
-print geosCtmFile
-print file2
+print(geosCtmFile)
+print(file2)
 
 geosCtmSimName = geosCtmFile.split(".")[0]
 
@@ -201,15 +201,15 @@ fileTitle = ".GEOS-CTM."
 
 
 
-print ""
-print "geosCtmSimName: ", geosCtmSimName
-print "sim2Name: ", sim2Name
-print ""
+print("")
+print("geosCtmSimName: ", geosCtmSimName)
+print("sim2Name: ", sim2Name)
+print("")
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -225,21 +225,21 @@ list1 = geosCtmObject.fieldList
 list2 = file2Object.fieldList
 
 
-print ""
-print "Fields to compare: ", fieldToCompare, otherFieldToCompare
-print ""
+print("")
+print("Fields to compare: ", fieldToCompare, otherFieldToCompare)
+print("")
 
 
 successFlag = False
-print ""
+print("")
 if fieldToCompare in list1[:]:
-    print "Success: ", fieldToCompare, " can be compared!"
+    print("Success: ", fieldToCompare, " can be compared!")
     if otherFieldToCompare in list2[:]:
-        print "Success: ", otherFieldToCompare, " can be compared!"
+        print("Success: ", otherFieldToCompare, " can be compared!")
         successFlag = True
 
 if successFlag == False:
-        print "ERROR: ", fieldToCompare, " or ", otherFieldToCompare, " cannot be compared!"
+        print("ERROR: ", fieldToCompare, " or ", otherFieldToCompare, " cannot be compared!")
         sys.exit(-1)
 
 
@@ -269,22 +269,22 @@ geosCtmZonalArray = numpy.zeros ((geosCtmObject.levelSize, \
 
 
 
-print ""
-print "Processing: ", fieldToCompare, " and ", otherFieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare, " and ", otherFieldToCompare)
+print("")
 
 
 
 geosCtmFieldArray = geosCtmObject.returnField (fieldToCompare, timeRecord)
 file2FieldArray = file2Object.returnField (otherFieldToCompare, timeRecord)
 
-print "shapes of arrays: ", geosCtmFieldArray.shape, file2FieldArray.shape
+print("shapes of arrays: ", geosCtmFieldArray.shape, file2FieldArray.shape)
 
 
 
-print ""
-print "File2 assumed to be in GEOS-CTM format. Will not remap longitude coordinate"
-print ""
+print("")
+print("File2 assumed to be in GEOS-CTM format. Will not remap longitude coordinate")
+print("")
     
 remappedFile2Array [:,:,:] = file2FieldArray[:,:,:]
 remappedLong  = file2Object.long[:]
@@ -296,10 +296,10 @@ zmGeosCtm = numpy.mean (geosCtmFieldArray[:, :, :], axis=2)
 zmFile2 = numpy.mean(newFile2Array[:, :, :],axis=2)
 
 
-print ""
-print "shape of zm from file1: ", shape(zmGeosCtm)
-print "shape of zm from file2: ", shape(zmFile2)
-print ""
+print("")
+print("shape of zm from file1: ", shape(zmGeosCtm))
+print("shape of zm from file2: ", shape(zmFile2))
+print("")
 
 minValueOfBoth = zmGeosCtm.min()
 maxValueOfBoth = zmGeosCtm.max()
@@ -310,8 +310,8 @@ if zmFile2.max() > maxValueOfBoth:
     maxValueOfBoth = zmFile2.max()
 
 
-print ""
-print "min/max of both: ", minValueOfBoth, "/", maxValueOfBoth
+print("")
+print("min/max of both: ", minValueOfBoth, "/", maxValueOfBoth)
 
 
 fig = plt.figure(figsize=(20,20))
@@ -337,9 +337,9 @@ plotZM (zmFile2, file2Object.lat[:], file2Object.lev[:], \
 
 
 if shape(file2Object.lev) == shape(geosCtmObject.lev):
-    print ""
-    print "Levels are the same across files, will plot ratio!"
-    print ""
+    print("")
+    print("Levels are the same across files, will plot ratio!")
+    print("")
     ax3 = fig.add_subplot(313)    
     plotOpt['title'] = "Model ratio " + " " + " ZM " + dateYearMonth
     plotZM (zmGeosCtm/zmFile2, file2Object.lat[:], \

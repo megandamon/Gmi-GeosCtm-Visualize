@@ -7,6 +7,8 @@
 #
 # DESCRIPTION:
 # Driver to plot differences in flashrate output between GEOS-5 and GMI-CTM.
+# Different output units are used among the above model, and are treated 
+# below.
 #---------------------------------------------------------------------------
 import re
 import os
@@ -40,19 +42,19 @@ from GmiPlotTools import GmiPlotTools
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotFlashrate_GEOS-GMI.py [-c] [-g] [-r] [-d] [-f] [-e]"
-    print "-c GEOS CTM file"
-    print "-g GMI file"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare for GEOS CTM"
-    print "-e field to cmopare for GMI"
-    print ""
+    print("")
+    print("usage: PlotFlashrate_GEOS-GMI.py [-c] [-g] [-r] [-d] [-f] [-e]")
+    print("-c GEOS CTM file")
+    print("-g GMI file")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare for GEOS CTM")
+    print("-e field to cmopare for GMI")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting flashrate differences."
+print("Start plotting flashrate differences.")
 
 
 #---------------------------------------------------------------
@@ -72,43 +74,43 @@ fieldToCompareGmi = optList[5][1]
 
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile):
-    print "The file you provided does not exist: ", geosCtmFile
+    print("The file you provided does not exist: ", geosCtmFile)
     sys.exit(0)
 
 if not os.path.exists (gmiFile):
-    print "The file you provided does not exist: ", gmiFile
+    print("The file you provided does not exist: ", gmiFile)
     sys.exit(0)
 
 
 if int(timeRecord) > 31: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
 
-print geosCtmFile
-print gmiFile
+print(geosCtmFile)
+print(gmiFile)
 
 geosCtmSimName = geosCtmFile.split(".")[0]
 gmiSimName = gmiFile.split("_")[1]
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -142,22 +144,25 @@ gmiFieldArray = gmiObject.returnField (fieldToCompareGmi, timeRecord, '')
 gmiMcorArray = gmiObject.returnConstantField ('mcor')
 
 
-print ""
-print "Shape of GEOS-CTM ", field, geosCtmFieldArray.shape[:]
-print "Shape of GMI ", fieldToCompareGmi, gmiFieldArray.shape[:]
-print ""
+print("")
+print("Shape of GEOS-CTM ", field, geosCtmFieldArray.shape[:])
+print("Shape of GMI ", fieldToCompareGmi, gmiFieldArray.shape[:])
+print("")
 
 
 
 # put GMI on -180 to 0 to 180
 lenGmiLong = len(gmiObject.long[:])
-remappedGmiArray [:,0:lenGmiLong/2] = gmiFieldArray[:,lenGmiLong/2:lenGmiLong]
-remappedGmiArray [:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,0:lenGmiLong/2]
-remappedMcorArray [:,0:lenGmiLong/2] = gmiMcorArray[:,lenGmiLong/2:lenGmiLong]
-remappedMcorArray [:,lenGmiLong/2:lenGmiLong] = gmiMcorArray[:,0:lenGmiLong/2]
+midGmiLong = int(lenGmiLong/2)
+
+
+remappedGmiArray [:,0:midGmiLong] = gmiFieldArray[:,midGmiLong:lenGmiLong]
+remappedGmiArray [:,midGmiLong:lenGmiLong] = gmiFieldArray[:,0:midGmiLong]
+remappedMcorArray [:,0:midGmiLong] = gmiMcorArray[:,midGmiLong:lenGmiLong]
+remappedMcorArray [:,midGmiLong:lenGmiLong] = gmiMcorArray[:,0:midGmiLong]
 remappedLong = numpy.zeros(lenGmiLong, float32)
-remappedLong [0:lenGmiLong/2] = gmiObject.long[lenGmiLong/2:lenGmiLong] - 360.0
-remappedLong [lenGmiLong/2:lenGmiLong] = gmiObject.long[0:lenGmiLong/2]
+remappedLong [0:midGmiLong] = gmiObject.long[midGmiLong:lenGmiLong] - 360.0
+remappedLong [midGmiLong:lenGmiLong] = gmiObject.long[0:midGmiLong]
 remappedLongPlus180 = numpy.zeros(lenGmiLong, float32)
 remappedLongPlus180[:] = remappedLong[:] + 180.0
 geosCtmLongPlus180 = numpy.zeros(geosCtmObject.longSize, float32)
@@ -166,34 +171,33 @@ geosCtmLongPlus180 [:] = geosCtmObject.long[:] + 180.0
 
 
 # Prepares basemap objects for plotting
-print ""
-print "Creating GEOS-CTM plot objects..."
+print("")
+print("Creating GEOS-CTM plot objects...")
 geosCtmObject.createPlotObjects()
-print "Creating GMI plot objects..."
+print("Creating GMI plot objects...")
 gmiObject.createPlotObjects()
-print ""
+print("")
 
 
-print ""
-print "shape of remappedGmiArray: ", shape(remappedGmiArray)
-print "shape of remappedMcorArray: ", shape(remappedMcorArray)
-print ""
+print("")
+print("shape of remappedGmiArray: ", shape(remappedGmiArray))
+print("shape of remappedMcorArray: ", shape(remappedMcorArray))
+print("")
 
 
 
 z_GeosCtm = geosCtmFieldArray[:, :]
 z_GeosCtm = z_GeosCtm  
 
-print "mcorArray min/max; ", remappedMcorArray.min(), remappedMcorArray.max()
+print("mcorArray min/max; ", remappedMcorArray.min(), remappedMcorArray.max())
 
-#z_Gmi = remappedGmiArray[:, :]  
-z_Gmi = remappedGmiArray[:, :]  / (remappedMcorArray[:,:] / 1e6)
+z_Gmi = remappedGmiArray[:, :]  / (remappedMcorArray[:,:] / 1e6) #convert to kg/s for compare
 z_Diff = z_GeosCtm / z_Gmi
 
-print ""
-print "Min/max of GMI: ", z_Gmi.min(), "/", z_Gmi.max()
-print "Min/max of GEOS: ", z_GeosCtm.min(), "/", z_GeosCtm.max()
-print "Min/max of Ratios: ", z_Diff.min(), "/",  z_Diff.max()
+print("")
+print("Min/max of GMI: ", z_Gmi.min(), "/", z_Gmi.max())
+print("Min/max of GEOS: ", z_GeosCtm.min(), "/", z_GeosCtm.max())
+print("Min/max of Ratios: ", z_Diff.min(), "/",  z_Diff.max())
 
 minValueOfBoth = z_GeosCtm.min()
 maxValueOfBoth = z_GeosCtm.max()
@@ -204,9 +208,9 @@ if z_Gmi.max() > maxValueOfBoth:
     maxValueOfBoth = z_Gmi.max()
 
 for lat in range(0, size(geosCtmObject.lat)):
-    for long in range(0, size(geosCtmObject.long)):        
-        if z_Gmi[lat, long] == 0 and z_GeosCtm[lat, long] == 0:
-            z_Diff[lat, long] = 1.0
+    for int in range(0, size(geosCtmObject.long)):        
+        if z_Gmi[lat, int] == 0 and z_GeosCtm[lat, int] == 0:
+            z_Diff[lat, int] = 1.0
 
 
 #-----------------------------------------------------#
@@ -232,21 +236,21 @@ geosCtmObject.create2dSlice2 (z_Gmi, [useMin, useMax], \
                                   dateYearMonth, "jet")
 
 
-print ""
-print "GEOS-CTM ", fieldToCompareGeos, " min/max/mean : ", z_GeosCtm.min(), " / ", z_GeosCtm.max(), " / ", z_GeosCtm.mean()
-print ""
-print ""
-print "GMI ", fieldToCompareGmi, " min/max/mean : ", z_Gmi.min(), " / ", z_Gmi.max(), " / ", z_Gmi.mean()
-print "" 
+print("")
+print("GEOS-CTM ", fieldToCompareGeos, " min/max/mean : ", z_GeosCtm.min(), " / ", z_GeosCtm.max(), " / ", z_GeosCtm.mean())
+print("")
+print("")
+print("GMI ", fieldToCompareGmi, " min/max/mean : ", z_Gmi.min(), " / ", z_Gmi.max(), " / ", z_Gmi.mean())
+print("") 
 
-print "" 
+print("") 
 geosCtmGlobalSum = sum(z_GeosCtm)
 gmiCtmGlobalSum = sum(z_Gmi)
-print "GEOS-CTM flashrate global sum: ", geosCtmGlobalSum 
-print "GMI flashrate global sum: ", gmiCtmGlobalSum
-print "Diff: ", (geosCtmGlobalSum/gmiCtmGlobalSum)
-print 
-print ""
+print("GEOS-CTM flashrate global sum: ", geosCtmGlobalSum) 
+print("GMI flashrate global sum: ", gmiCtmGlobalSum)
+print("Diff: ", (geosCtmGlobalSum/gmiCtmGlobalSum))
+print() 
+print("")
 
 
 
@@ -271,6 +275,6 @@ elif file == "s":
 plt.clf()
                                   
 
-print ""
-print "Plotted Flashrate differences to plots/directory"
-print ""
+print("")
+print("Plotted Flashrate differences to plots/directory")
+print("")

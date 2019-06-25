@@ -125,15 +125,15 @@ class GenericModelPlotTools:
    def create2dSlice2 (self,  z, minMaxVals, subplotNum, plotTitle, \
                           colorMap, normalize=False):
 
-      print ""
-      print "min/max field vals in create2dSlice: ", minMaxVals[:]
-      print ""
+      print("")
+      print("min/max field vals in create2dSlice: ", minMaxVals[:])
+      print("")
       
       plt.subplot(subplotNum)
 
-      print ""
-      print "Shape of field to plot: ", shape(z)
-      print ""
+      print("")
+      print("Shape of field to plot: ", shape(z))
+      print("")
       
 
       imSlice = self.baseMap.pcolor(self.X_grid, self.Y_grid, z, \
@@ -213,7 +213,7 @@ class GenericModelPlotTools:
 
    def populateFieldList (self):
 
-      print "Generic populateFieldList"
+      print("Generic populateFieldList")
       
 
 
@@ -238,8 +238,8 @@ class GenericModelPlotTools:
                
    def returnFieldsInCommon (self, list1, list2, order):
 
-      print order, " has more fields than the other model!"
-      print ""
+      print(order, " has more fields than the other model!")
+      print("")
 
 
       if order == "GEOS-CTM": # GEOS-CTM has more fields
@@ -247,7 +247,7 @@ class GenericModelPlotTools:
       else:
          scanList = list2 # GMI has more fields
 
-      print "Scanning GEOS-CTM fields- "
+      print("Scanning GEOS-CTM fields- ")
       count = 0
       for item in scanList[:]:
          if item[0:4] != "Var_" and \
@@ -262,13 +262,13 @@ class GenericModelPlotTools:
       else:
          list2 = scanList
 
-      print ""
-      print "Scanning ", order, " fields for matches in other model."
+      print("")
+      print("Scanning ", order, " fields for matches in other model.")
       
       if hasattr(self, 'fieldName'):
-         print "Field name is: ", self.fieldName
+         print("Field name is: ", self.fieldName)
       else:
-         print "Field name does not exist!"
+         print("Field name does not exist!")
          self.fieldName = None
 
 
@@ -277,8 +277,8 @@ class GenericModelPlotTools:
       for item in list1[:]:
 
          if self.fieldName == 'scav' and "SCAV_" in item:
-            print "found scav field: ", item
-            print "ERROR: Logic reversed. This code needs help"
+            print("found scav field: ", item)
+            print("ERROR: Logic reversed. This code needs help")
             sys.exit(-1)
             
 
@@ -288,7 +288,7 @@ class GenericModelPlotTools:
             if self.fieldName == 'scav' and "SCAV_" in item2:
                splitItem2 = item2.split("_")
                if item.lower() == splitItem2[1].lower():
-                  print "Found SCAV match: ", item
+                  print("Found SCAV match: ", item)
                   fieldsToCompare.append(item)
             
             if item.lower() == item2.lower():
@@ -302,31 +302,30 @@ class GenericModelPlotTools:
 
    def printMe (self) :
 
-      print ""
-      print "***************************************"
-      print ""
-      print self.MODEL_NAME, " information:"
-      print ""
+      print("")
+      print("***************************************")
+      print("")
+      print(self.MODEL_NAME, " information:")
+      print("")
 
-      print "file name : ", self.fileName
+      print("file name : ", self.fileName)
 
-      print ""
-      print "Dimensional information:"
-      print ""
-      print "   lat/lon and levels: ", self.latSize, "/", self.longSize, \
-          " ", self.levelSize
-      print "   time: ", self.timeLength
+      print("")
+      print("Dimensional information:")
+      print("")
+      print("   lat/lon and levels: ", self.latSize, "/", self.longSize, \
+          " ", self.levelSize)
+      print("   time: ", self.timeLength)
 
 
-      print ""
-      print "field list : "
-      for field in self.fieldList[:]:
-         print field, 
-      print ""
+      print("")
+      print("field list : ")
+      print(fieldList[:])
+      print("")
 
-      print ""
-      print "***************************************"
-      print ""
+      print("")
+      print("***************************************")
+      print("")
 
 
    def convertLatLonAltToGMI (self, convertLat, convertLong):
@@ -372,8 +371,8 @@ class GenericModelPlotTools:
     
 
          print ("")
-         print ("Shape of fieldDiff for percent difference: ", fieldDiff.shape)
-         print ("low end / high end: ", minDiff, maxDiff)
+         print(("Shape of fieldDiff for percent difference: ", fieldDiff.shape))
+         print(("low end / high end: ", minDiff, maxDiff))
          print ("")
 
 
@@ -381,9 +380,9 @@ class GenericModelPlotTools:
       # User requested absolute difference
       elif analysisType == "s":
          
-         print ""
-         print "Creating Absolute Differences"
-         print ""
+         print("")
+         print("Creating Absolute Differences")
+         print("")
 
          fieldDiff = field1 - field2
 
@@ -395,9 +394,9 @@ class GenericModelPlotTools:
          else:
             minDiff = -maxDiff
 
-         print ""
-         print "low end / high end for simple diffs: ", minDiff, " / ", maxDiff
-         print ""
+         print("")
+         print("low end / high end for simple diffs: ", minDiff, " / ", maxDiff)
+         print("")
 
 
       # User requested ratio
@@ -406,7 +405,7 @@ class GenericModelPlotTools:
          fieldDiff = field1/field2
 
          print ("")
-         print ("Ratios min / max: ", fieldDiff.min(), fieldDiff.max())
+         print(("Ratios min / max: ", fieldDiff.min(), fieldDiff.max()))
          print ("")
 
          for lev in range(0,levPoints):
@@ -425,7 +424,7 @@ class GenericModelPlotTools:
 
       else:
          print ("")
-         print ("Analysis type not supported: ", analysisType)
+         print(("Analysis type not supported: ", analysisType))
          print ("")
            
       

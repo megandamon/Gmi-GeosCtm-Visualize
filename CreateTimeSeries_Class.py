@@ -65,9 +65,9 @@ class CreateTimeSeries_Class:
 
    def __init__(self, icarttFile, fieldsFile, dateNcFile, field):
 
-      print ""
-      print "Create time series plot class initializing..."
-      print ""
+      print("")
+      print("Create time series plot class initializing...")
+      print("")
 
       self.icarttOperations = GmiIcarttOperations()
 
@@ -86,10 +86,10 @@ class CreateTimeSeries_Class:
 
 
       if fieldIndexNc == -1:
-         print "Field : ", field, " not available for plotting"
+         print("Field : ", field, " not available for plotting")
          sys.exit(-1)
       else:
-         print field, " found at : ", fieldIndexNc
+         print(field, " found at : ", fieldIndexNc)
          self.fieldIndexNc = fieldIndexNc
 
 
@@ -115,14 +115,14 @@ class CreateTimeSeries_Class:
       flightLength = flightInfoObject.lengthOfFlight.total_seconds()
       numValues = len(self.speciesArrayIcarttConvert)
 
-      print ""
-      print "length of flight: ", flightLength
-      print "number of values: ", numValues
+      print("")
+      print("length of flight: ", flightLength)
+      print("number of values: ", numValues)
       self.ratio = flightLength / numValues
-      print "ratio: ", self.ratio
+      print("ratio: ", self.ratio)
 
-      print "round ratio: ", round(self.ratio)
-      print ""
+      print("round ratio: ", round(self.ratio))
+      print("")
 
 
       if round(self.ratio) == 1:
@@ -181,17 +181,17 @@ class CreateTimeSeries_Class:
             missValue = (beforeVal + afterVal)/2.
             self.speciesArrayIcarttConvert[count] = missValue
 
-            print "Missing value for ", self.field, " = (", beforeVal, " + ", \
-                afterVal, ") / 2.", self.speciesArrayIcarttConvert[count]
+            print("Missing value for ", self.field, " = (", beforeVal, " + ", \
+                afterVal, ") / 2.", self.speciesArrayIcarttConvert[count])
 
          else:
             goodEntries = goodEntries + 1
          
          count = count + 1
 
-      print ""
-      print "Found ", badEntries, " bad entries out of ", goodEntries
-      print ""
+      print("")
+      print("Found ", badEntries, " bad entries out of ", goodEntries)
+      print("")
 
 
 
@@ -203,9 +203,9 @@ class CreateTimeSeries_Class:
       self.speciesArrayIcarttConvert = []
 
       utcCount = 0
-      print ""
-      print "Extracting arrays from ICARTT..."
-      print ""
+      print("")
+      print("Extracting arrays from ICARTT...")
+      print("")
 
 
       

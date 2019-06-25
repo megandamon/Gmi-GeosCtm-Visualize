@@ -10,7 +10,7 @@
 # On pressure levels. (not eta / terrain following)
 #------------------------------------------------------------------------------
 
-from __future__ import division
+
 
 import re
 import os
@@ -52,17 +52,17 @@ FILE = "f"
 
 NUM_ARGS = 8
 def usage ():
-    print ""
-    print "usage: PlotField_ZonalMeanPrs.py [-c] [-g] [-r] [-d] [-f] [-m] [-a] [-p]"
-    print "-c File1 (GEOS)"
-    print "-g File2 (GEOS)"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print "-m model configuration (Replay, CCM, etc.)" 
-    print "-a analysis type (d=perc diff, r=ratio, s=simple difference"
-    print "-p pressure level to plot to"
-    print ""
+    print("")
+    print("usage: PlotField_ZonalMeanPrs.py [-c] [-g] [-r] [-d] [-f] [-m] [-a] [-p]")
+    print("-c File1 (GEOS)")
+    print("-g File2 (GEOS)")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("-m model configuration (Replay, CCM, etc.)") 
+    print("-a analysis type (d=perc diff, r=ratio, s=simple difference")
+    print("-p pressure level to plot to")
+    print("")
     sys.exit (0)
 
 def find_nearest(array, value):
@@ -102,13 +102,13 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, numLevs
     # determine contour levels to be used; default: linear spacing
     clevs = plotOpt.get('levels', numpy.linspace(dataMin, dataMax, numLevs))
 
-    print ("clevs:", clevs)
+    print(("clevs:", clevs))
 
 
     # map contour values to colors
     norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
-    print "data min/ max: ", dataMin,  " / " , dataMax
+    print("data min/ max: ", dataMin,  " / " , dataMax)
 
     # draw the (filled) contours
     contour = ax1.contourf(x, y, pdata, levels=clevs, norm=norm, cmap=colorMap, \
@@ -149,7 +149,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, numLevs
     ax1.set_ylim(y.max(), y.min())
     subs = [1,2,5]
     ax1.set_yscale('log')
-    print "y_max, y_min = ", y.max(), y.min()
+    print("y_max, y_min = ", y.max(), y.min())
     if y.max()/y.min() < 30.:
         subs = [1,2,3,4,5,6,7,8,9]
 
@@ -163,7 +163,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, xAxisLabel, numLevs
 
 
 
-print "Start plotting zonal mean differences"
+print("Start plotting zonal mean differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -183,27 +183,27 @@ analysisType = str(optList[6][1])
 pressureLevelTop = optList[7][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (file1) or not os.path.exists (file2):
     print ("One of the files you provided did not exist!")
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 if analysisType != "r" and analysisType != "d" and analysisType != "s":
-    print "ERROR: analysis type must be r (ratios) or d (percent differences)"
+    print("ERROR: analysis type must be r (ratios) or d (percent differences)")
     sys.exit(0)
 
 
@@ -222,9 +222,9 @@ else:
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 file1Object = GeosCtmPlotTools (file1, 'lat','lon',\
                                     'lev','time', 'lat', \
@@ -243,13 +243,13 @@ genericPlotTools = GenericModelPlotTools (file1, 'lat','lon',\
 
 
 print ("")
-print ("Pressure level top: ", pressureLevelTop)
+print(("Pressure level top: ", pressureLevelTop))
 print ("")
 
 
 levelsFile1 = file1Object.lev[:]
 print ("")
-print ("Number of vertical levels in file: ", len(levelsFile1))
+print(("Number of vertical levels in file: ", len(levelsFile1)))
 print ("")
  
 
@@ -258,18 +258,18 @@ pressureTopIndex = None
 levCount = 0
 
 print ("")
-print ("Looking for: ", pressureLevelTop)
+print(("Looking for: ", pressureLevelTop))
 print ("")
 
 for lev in levelsFile1[:]:
 
-    print (lev, "=?", pressureLevelTop)
+    print((lev, "=?", pressureLevelTop))
 
     if float(lev) == float(pressureLevelTop) or foundPressureTop == True:
 
         if foundPressureTop == False:
             print ("")
-            print ("Start index of levels to plot: ", levCount)
+            print(("Start index of levels to plot: ", levCount))
             print ("")
             pressureTopIndex = levCount
             foundPressureTop = True
@@ -288,8 +288,8 @@ if foundPressureTop == False:
 numLevelsToPlot = size(levelsFile1) - pressureTopIndex
 
 print ("")
-print ("Pressure top index: ", pressureTopIndex)
-print ("Num levels to plot: ", numLevelsToPlot)
+print(("Pressure top index: ", pressureTopIndex))
+print(("Num levels to plot: ", numLevelsToPlot))
 print ("")
 
 
@@ -301,7 +301,7 @@ for lev in levelsFile1[pressureTopIndex:]:
 
 
 print ("")
-print ("pressures to plot: ", pressuresToPlot[:])
+print(("pressures to plot: ", pressuresToPlot[:]))
 print ("")
 
 
@@ -316,21 +316,21 @@ list2 = file2Object.fieldList
 fieldsToCompare = file2Object.returnFieldsInCommonNew (list1, list2)
 
 print ("")
-print ("Fields in common to both files: ", fieldsToCompare[:])
+print(("Fields in common to both files: ", fieldsToCompare[:]))
 print ("")
 
 
 
 foundField = False
-print ""
+print("")
 for fieldInList in fieldsToCompare[:]:
 
     if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
+        print("Success: ", fieldToCompare, " can be compared!")
         foundField = True
 
 if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 
@@ -348,7 +348,7 @@ file2FieldArray = numpy.zeros((file2Object.levelSize, \
 
 
 print ("")
-print ("Processing: ", fieldToCompare)
+print(("Processing: ", fieldToCompare))
 print ("")
 
 
@@ -361,7 +361,7 @@ file2FieldArray = file2Object.returnField (field, timeRecord)
 
 
 print ("")
-print ("Shapes of arrays: ", file1FieldArray.shape, file2FieldArray.shape)
+print(("Shapes of arrays: ", file1FieldArray.shape, file2FieldArray.shape))
 print ("")
 
 if (file1FieldArray.shape == file2FieldArray.shape) != True:
@@ -384,7 +384,7 @@ if zmFile2.max() > maxValueOfBoth:
 
 
 print ("")
-print ("Min/max values of the two fields: ", minValueOfBoth, maxValueOfBoth)
+print(("Min/max values of the two fields: ", minValueOfBoth, maxValueOfBoth))
 print ("")
 
 
@@ -410,9 +410,9 @@ ax1 = fig.add_subplot(311) # 3 rows, 1 colummn, position 1
 plotOpt['title'] = modelConfig + " " + file1SimName \
     + " " + field + " ZM " + dateYearMonth
 
-print zmFile1.shape
-print pressuresToPlot
-print type(pressuresToPlot), type(levelsFile1)
+print(zmFile1.shape)
+print(pressuresToPlot)
+print(type(pressuresToPlot), type(levelsFile1))
 
 plotZM (zmFile1[pressureTopIndex:,:], file1Object.lat[:], \
             pressuresToPlot[:], \
@@ -463,7 +463,7 @@ if analysisType == "d":
         field + " " + " ZM " + dateYearMonth
 
     print ("")
-    print ("Low / high ends for percent difference: ", lowEnd, highEnd)
+    print(("Low / high ends for percent difference: ", lowEnd, highEnd))
     print ("")
     
     if lowEnd == 0.0:
@@ -518,9 +518,9 @@ plt.clf
 
 
 
-print ""
-print "Finished plotting: ", fieldToCompare, " to plots/ directory"
-print "Zonal mean diff min/max/mean: ", zmDiffArray.min(), "/", zmDiffArray.max(), "/", zmDiff.mean()
-print ""
+print("")
+print("Finished plotting: ", fieldToCompare, " to plots/ directory")
+print("Zonal mean diff min/max/mean: ", zmDiffArray.min(), "/", zmDiffArray.max(), "/", zmDiff.mean())
+print("")
     
 

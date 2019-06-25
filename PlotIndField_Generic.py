@@ -47,19 +47,19 @@ from GenericModelPlotTools import GenericModelPlotTools
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotField_Generic.py [-c] [-l] [-r] [-d] [-u] [-f]"
-    print "-c Model file"
-    print "-l vertical level"
-    print "-r time record to plot"
-    print "-d date (YYYYMM)"
-    print "-u unit of vertical level (lev/hPa)"
-    print "-f field to plot"
-    print ""
+    print("")
+    print("usage: PlotField_Generic.py [-c] [-l] [-r] [-d] [-u] [-f]")
+    print("-c Model file")
+    print("-l vertical level")
+    print("-r time record to plot")
+    print("-d date (YYYYMM)")
+    print("-u unit of vertical level (lev/hPa)")
+    print("-f field to plot")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -78,48 +78,48 @@ fieldToPlot = str(optList[5][1])
 
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (modelFile):
-    print "The file you provided does not exist: ", modelFile
+    print("The file you provided does not exist: ", modelFile)
     sys.exit(0)
 
 if fileLevel < 0:
-    print "The level to plot must be >= 0 (check file 1 lev)"
+    print("The level to plot must be >= 0 (check file 1 lev)")
     sys.exit(0)
 
 if int(timeRecord) > 31: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
 
-print ""
-print modelFile
-print ""
+print("")
+print(modelFile)
+print("")
 
 modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
 
 
-print ""
-print modelSimName
-print ""
+print("")
+print(modelSimName)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 modelObject = GeosCtmPlotTools (modelFile, 'latitude','longitude',\
                                       'lev','time', 'latitude', \
@@ -129,9 +129,9 @@ modelObject = GeosCtmPlotTools (modelFile, 'latitude','longitude',\
 
 
 
-print ""
-print "Model vertical levels: ", modelObject.lev[:]
-print ""
+print("")
+print("Model vertical levels: ", modelObject.lev[:])
+print("")
 
 
 
@@ -153,14 +153,14 @@ baseMapModel = Basemap(llcrnrlon=minModelLong,llcrnrlat=minModelLat,\
                              projection='cyl', \
                              lat_0=cenModelLat,lon_0=cenModelLong)
 
-print ""
-print "Basemap info: "
-print "llcr lon: ", minModelLong
-print "llcr lat: ", minModelLat
-print "urc lon: ", maxModelLong
-print "urc lat: ", maxModelLat
-print "centers lat/long: ", cenModelLat, cenModelLong
-print ""
+print("")
+print("Basemap info: ")
+print("llcr lon: ", minModelLong)
+print("llcr lat: ", minModelLat)
+print("urc lon: ", maxModelLong)
+print("urc lat: ", maxModelLat)
+print("centers lat/long: ", cenModelLat, cenModelLong)
+print("")
 
 
 
@@ -177,9 +177,9 @@ plt.figure(figsize=(20,20))
 
 
 
-print ""
-print "Processing: ", fieldToPlot
-print ""
+print("")
+print("Processing: ", fieldToPlot)
+print("")
     
 
 
@@ -189,33 +189,33 @@ print ""
 
 modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord)
 
-print ""
-print "modelFieldArray shape: ", modelFieldArray.shape
-print ""
+print("")
+print("modelFieldArray shape: ", modelFieldArray.shape)
+print("")
 
-print ""
-print "Global sum of ", fieldToPlot, " : ", sum(modelFieldArray)
-print ""
+print("")
+print("Global sum of ", fieldToPlot, " : ", sum(modelFieldArray))
+print("")
 
 
 
 if len(modelFieldArray.shape) == 2:
-    print ""
-    print "WARNING!!! Field is 2D"
-    print ""
+    print("")
+    print("WARNING!!! Field is 2D")
+    print("")
     z_Model = modelFieldArray[:, :]
     fileLevel = 0
 
 elif len(modelFieldArray.shape) == 3:
-    print "Field is 3D (expected)"
+    print("Field is 3D (expected)")
     z_Model = modelFieldArray[fileLevel, :, :]
 else:
-    print ""
-    print "Unexpected rank of data!"
-    print ""
+    print("")
+    print("Unexpected rank of data!")
+    print("")
     sys.exit(0)
 
-print ""
+print("")
 
 
 
@@ -231,16 +231,16 @@ stringLevel = str(int(modelObject.lev[fileLevel]))
 
 
 
-print ""
-print "model level: ", fileLevel, stringLevel
-print ""
+print("")
+print("model level: ", fileLevel, stringLevel)
+print("")
 
 
-print ""
+print("")
 
-print "Model min / max : ", z_Model.min(), " / ", z_Model.max()
+print("Model min / max : ", z_Model.min(), " / ", z_Model.max())
 
-print ""
+print("")
 
 modelObject.create2dSlice (baseMapModel, X_Model, Y_Model, z_Model, \
                                 [z_Model.min(),z_Model.max()], \
@@ -266,9 +266,9 @@ plt.clf()
 
 
 
-print ""
-print "Plotted : ", fieldToPlot, " to plots/ directory"
-print "" 
+print("")
+print("Plotted : ", fieldToPlot, " to plots/ directory")
+print("") 
 
 
 

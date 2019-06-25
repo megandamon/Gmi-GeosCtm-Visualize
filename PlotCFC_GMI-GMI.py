@@ -51,13 +51,13 @@ CFC_FIELDS = ["CFCl3", "CF2Cl2", "CFC113", "CFC114", "CFC115", "CCl4", \
 
 
 def usage ():
-    print ""
-    print "usage: PlotCFC_GMI-GMI.py [-c] [-g] [-r] [-d]"
-    print "-c GMI NetCDF file 1"
-    print "-g GMI NetCDF file 2"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print ""
+    print("")
+    print("usage: PlotCFC_GMI-GMI.py [-c] [-g] [-r] [-d]")
+    print("-c GMI NetCDF file 1")
+    print("-g GMI NetCDF file 2")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("")
     sys.exit (0)
 
 
@@ -78,7 +78,7 @@ def createTimeSeriesSubPlot (plt, subPlotNum, xArray, yArray, \
     plt.grid(True)
 
 
-print "Start CFC zonal mean difference plotting"
+print("Start CFC zonal mean difference plotting")
 
 
 #---------------------------------------------------------------
@@ -95,28 +95,28 @@ timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (gmiFile1):
-    print "The file you provided does not exist: ", gmiFile1
+    print("The file you provided does not exist: ", gmiFile1)
     sys.exit(0)
 
 if not os.path.exists (gmiFile2):
-    print "The file you provided does not exist: ", gmiFile2
+    print("The file you provided does not exist: ", gmiFile2)
     sys.exit(0)
 
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
@@ -128,15 +128,15 @@ gmiSimName2 = gmiFile2.split("_")[1]
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 
 
-print "GMI sim 1: ", gmiSimName1
-print "GMI sim 2: ", gmiSimName2
-print ""
+print("GMI sim 1: ", gmiSimName1)
+print("GMI sim 2: ", gmiSimName2)
+print("")
 
 
 
@@ -158,16 +158,16 @@ list1 = gmiObject1.fieldList
 list2 = gmiObject2.fieldList
 
 
-print ""
+print("")
 # print "GMI list1: ", list1
 # print ""
 # print "GMI list2: ", list2
-print ""
+print("")
 
 
 
 if len(list1) != len(list2):
-    print "Error: field lists are not the same size! Will exit."
+    print("Error: field lists are not the same size! Will exit.")
     sys.exit(-1)
 
 
@@ -180,22 +180,22 @@ for field in fieldsToCompareAll[:]:
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 
 
 for CFC in CFC_FIELDS[:]:
     if CFC not in fieldsToCompare[:]:
-        print "ERROR! ", CFC, " not found"
+        print("ERROR! ", CFC, " not found")
         sys.exit(-1)
     else:
-        print CFC, " match found!"
+        print(CFC, " match found!")
 
-print ""
-print "GMI model level 0 ", gmiObject1.lev[0]
-print ""
+print("")
+print("GMI model level 0 ", gmiObject1.lev[0])
+print("")
 
 
 
@@ -217,9 +217,9 @@ for CFC in CFC_FIELDS[:]:
 
 
 
-    print ""
-    print "Processing: ", CFC
-    print ""
+    print("")
+    print("Processing: ", CFC)
+    print("")
 
     field = CFC
     plotTitle = CFC + " surface zonal mean "
@@ -266,6 +266,6 @@ for CFC in CFC_FIELDS[:]:
 #    if count == 0: sys.exit(0)
     count = count + 1
 
-    print ""
-    print "Plotted : ", field, " to plots/ directory"
-    print ""
+    print("")
+    print("Plotted : ", field, " to plots/ directory")
+    print("")

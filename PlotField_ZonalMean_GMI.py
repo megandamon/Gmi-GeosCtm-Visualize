@@ -50,15 +50,15 @@ FILE = "f"
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotField_GMI.py [-c] [-g] [-r] [-d] [-f] [-v]"
-    print "-c File1 (GMI)"
-    print "-g File2 (GMI)"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print "-v which variable to extract field from"
-    print ""
+    print("")
+    print("usage: PlotField_GMI.py [-c] [-g] [-r] [-d] [-f] [-v]")
+    print("-c File1 (GMI)")
+    print("-g File2 (GMI)")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("-v which variable to extract field from")
+    print("")
     sys.exit (0)
 
 def find_nearest(array, value):
@@ -97,14 +97,14 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     # determine contour levels to be used; default: linear spacing, 10 levels
     clevs = plotOpt.get('levels', numpy.linspace(dataMin, dataMax, 10))
 
-    print ""
-    print "clevs: ", clevs
-    print ""
+    print("")
+    print("clevs: ", clevs)
+    print("")
 
     # map contour values to colors
     norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
-    print "data min/ max: ", dataMin,  " / " , dataMax
+    print("data min/ max: ", dataMin,  " / " , dataMax)
 
     # draw the (filled) contours
     contour = ax1.contourf(x, y, pdata, levels=clevs, norm=norm, cmap=colorMap, \
@@ -138,7 +138,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
     #ax1.set_ylim(y.min(), y.max())
     subs = [1,2,5]
     
-    print "y_max, y_min = ", y.max(), y.min()
+    print("y_max, y_min = ", y.max(), y.min())
     if y.max()/y.min() < 30.:
         subs = [1,2,3,4,5,6,7,8,9]
     loc = ticker.LogLocator(base=10., subs=subs)
@@ -151,7 +151,7 @@ def plotZM(data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None):
 
 
 
-print "Start plotting zonal mean differences"
+print("Start plotting zonal mean differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -169,32 +169,32 @@ fieldToCompare = optList[4][1]
 variableExtractField = optList[5][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (gmiFile1):
-    print "The file you provided does not exist: ", gmiFile1
+    print("The file you provided does not exist: ", gmiFile1)
     sys.exit(0)
 
 if not os.path.exists (gmiFile2):
-    print "The file you provided does not exist: ", file2
+    print("The file you provided does not exist: ", file2)
     sys.exit(0)
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
-print gmiFile1
-print gmiFile2
+print(gmiFile1)
+print(gmiFile2)
 
 sim1Name = gmiFile1.split("_")[1]
 sim2Name = gmiFile2.split("_")[1]
@@ -208,21 +208,21 @@ plotTitleFile1 = plotTitleFile1 + sim1Name + "        " + variableExtractField
 plotTitleFile2 = plotTitleFile2 + sim2Name + "        " + variableExtractField
 
 
-print ""
-print "sim1Name: ", sim1Name
-print "sim2Name: ", sim2Name
-print ""
+print("")
+print("sim1Name: ", sim1Name)
+print("sim2Name: ", sim2Name)
+print("")
 
-print ""
-print "plot title 1 : ", plotTitleFile1
-print "plot title 2 : ", plotTitleFile2
-print ""
+print("")
+print("plot title 1 : ", plotTitleFile1)
+print("plot title 2 : ", plotTitleFile2)
+print("")
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 
 file1Object = GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
@@ -234,6 +234,7 @@ file2Object = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                                 'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
 
 
+
 list1 = file1Object.fieldList
 list2 = file2Object.fieldList
 
@@ -242,6 +243,8 @@ if len(file1Object.fieldList) >= len(file2Object.fieldList):
     list2 = file2Object.fieldList
     order = "GMI1"
 else: order = "GMI2"
+
+
         
 if variableExtractField != "":
     file2Object.fieldName = variableExtractField
@@ -251,6 +254,7 @@ else:
 fieldsToCompareAll = file2Object.returnFieldsInCommonNew (list1, list2)
 
 
+print (fieldsToCompareAll)
 fieldsToCompare = []
 for field in fieldsToCompareAll[:]:
 #    if field[0:4] != "Var_" and field[0:2] != "EM" and \
@@ -258,32 +262,33 @@ for field in fieldsToCompareAll[:]:
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
 
-print ""
-print "Order: ", order
-print ""
+print("")
+print("Order: ", order)
+print("")
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 foundField = False
-print ""
+print("")
 for fieldInList in fieldsToCompare[:]:
 
     if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
+        print("Success: ", fieldToCompare, " can be compared!")
         foundField = True
 
+
 if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 # Arrays (one time record, one species or field)
 
 
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
 
 
 field = fieldToCompare
@@ -292,11 +297,11 @@ field = fieldToCompare
 file1FieldArray = file1Object.returnField (field, timeRecord, variableExtractField)
 file2FieldArray = file2Object.returnField (field, timeRecord, variableExtractField)
 
-print "shapes of arrays: ", file1FieldArray.shape, file2FieldArray.shape
+print("shapes of arrays: ", file1FieldArray.shape, file2FieldArray.shape)
 
 
 if file2FieldArray.shape != file1FieldArray.shape:
-    print "Array shapes are different. Exiting!"
+    print("Array shapes are different. Exiting!")
     sys.exit(0)
     
 
@@ -304,23 +309,23 @@ if file2FieldArray.shape != file1FieldArray.shape:
 # find tropMaxLev and tropMinLev
 tropMinLev = findLevelFromArray (file2Object.lev, 100.00)
 
-print ""
-print "Trop min level: ", tropMinLev
-print ""
+print("")
+print("Trop min level: ", tropMinLev)
+print("")
 
-print ""
-print"Trop levels: ",  file2Object.lev[0:tropMinLev+1]
-print "Strat levels: '", file2Object.lev[tropMinLev+1::]
-print ""
+print("")
+print("Trop levels: ",  file2Object.lev[0:tropMinLev+1])
+print("Strat levels: '", file2Object.lev[tropMinLev+1::])
+print("")
 
 
 
 gmiSurface = file1Object.levelSize
 gmiTropPause = (file1Object.levelSize) - tropMinLev
 
-print ""
-print "GMI surface and tropopause levels: ", gmiSurface, gmiTropPause
-print ""
+print("")
+print("GMI surface and tropopause levels: ", gmiSurface, gmiTropPause)
+print("")
 
 
 tropFile1 = file1FieldArray[0:tropMinLev+1, :, :]
@@ -330,10 +335,10 @@ zmFile2Trop = numpy.mean (file2FieldArray[0:tropMinLev+1, :, :], axis=2)
 
 
 
-print ""
-print "Size of Top ZM file1: ", zmFile1Trop.shape
-print "Size of Top ZM file2: ", zmFile2Trop.shape
-print ""
+print("")
+print("Size of Top ZM file1: ", zmFile1Trop.shape)
+print("Size of Top ZM file2: ", zmFile2Trop.shape)
+print("")
 
 
 minValueOfBoth = zmFile1Trop.min()
@@ -352,9 +357,9 @@ plotOpt = {}
 ax1 = fig.add_subplot(311)
 
 
-print ""
-print file2Object.lev[0]
-print ""
+print("")
+print(file2Object.lev[0])
+print("")
 
 if file2Object.lev[0] == 0:
     useLevels = file2Object.lev[:] + 1
@@ -362,16 +367,16 @@ else:
     useLevels = file2Object.lev[:]
 
 
-print ""
-print "GMI surface and tropopause levels: ", gmiSurface, gmiTropPause
-print useLevels[gmiTropPause:gmiSurface]
-print ""
+print("")
+print("GMI surface and tropopause levels: ", gmiSurface, gmiTropPause)
+print(useLevels[gmiTropPause:gmiSurface])
+print("")
 
-print ""
-print "Shape of zmFile1Trop: ", shape(zmFile1Trop)
-print "Len of file2Ojbect.lat: ", len(file1Object.lat)
-print "len UseLevels: ", len(useLevels[0:tropMinLev+1])
-print ""
+print("")
+print("Shape of zmFile1Trop: ", shape(zmFile1Trop))
+print("Len of file2Ojbect.lat: ", len(file1Object.lat))
+print("len UseLevels: ", len(useLevels[0:tropMinLev+1]))
+print("")
 
 plotOpt['title'] = "Trop " + plotTitleFile1 + " " + field + " ZM " + dateYearMonth
 plotZM (zmFile1Trop, file1Object.lat[:], \
@@ -436,9 +441,9 @@ if zmFile2Strat.max() > maxValueOfBoth:
     maxValueOfBoth = zmFile2Strat.max()
 
 
-print "Strat min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth
-print "Strat min / max of File1 ", field, zmFile1Strat.min(), " / ", zmFile1Strat.max()
-print "Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Strat.max()
+print("Strat min / max of ", field, minValueOfBoth, " / ", maxValueOfBoth)
+print("Strat min / max of File1 ", field, zmFile1Strat.min(), " / ", zmFile1Strat.max())
+print("Strat min / max of File2 ", field, zmFile2Strat.min(), " / ", zmFile2Strat.max())
 
 
 fig = plt.figure(figsize=(20,20))
@@ -469,7 +474,7 @@ plotOpt['title'] = "Strat model ratio         " + variableExtractField + "_" + \
     field + " " + " ZM " + dateYearMonth
 
 zmStratRatio = zmFile1Strat/zmFile2Strat
-print "Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max()
+print("Min / max of ", field, " ratios ", zmStratRatio.min(), " / " , zmStratRatio.max())
 plotZM (zmStratRatio, file2Object.lat[:], \
 #            file2Object.lev[tropMinLev::], \
             useLevels[tropMinLev::], \
@@ -503,30 +508,30 @@ if fieldToCompare.lower() == "moistq" or \
 
 
     # These are for 2D slices (lat/lon) only! 
-    print ""
-    print "Creating GMI plot objects..."
+    print("")
+    print("Creating GMI plot objects...")
     file1Object.createPlotObjects()
     file2Object.createPlotObjects()
-    print ""
+    print("")
 
 
 
 
 
-    print ""
-    print ""
-    print ""
-    print "Shape of GMI troposphere 1: ", shape(tropFile1)
+    print("")
+    print("")
+    print("")
+    print("Shape of GMI troposphere 1: ", shape(tropFile1))
     tropColFile1 = numpy.sum(tropFile1[:,:,:], axis=0)
-    print "Shape of tropCol GMI troposphere 1: ", shape (tropColFile1)
-    print "" 
+    print("Shape of tropCol GMI troposphere 1: ", shape (tropColFile1))
+    print("") 
 
 
-    print ""
-    print "Shape of GMI troposphere 2: ", shape(tropFile2)
+    print("")
+    print("Shape of GMI troposphere 2: ", shape(tropFile2))
     tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
-    print "Shape of tropCol file2 : ", shape(tropColFile2)
-    print ""
+    print("Shape of tropCol file2 : ", shape(tropColFile2))
+    print("")
 
 
 
@@ -538,9 +543,9 @@ if fieldToCompare.lower() == "moistq" or \
     if tropColFile2.max() > maxValueOfBoth:
         maxValueOfBoth = tropColFile2.max()
 
-    print ""
-    print "Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
-    print ""
+    print("")
+    print("Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+    print("")
 
 
 
@@ -568,11 +573,11 @@ if fieldToCompare.lower() == "moistq" or \
 
     tropColDiff = tropColFile1 / tropColFile2
     for lat in range(0, size(file1Object.lat)):
-        for long in range(0, size(file1Object.long)):
+        for int in range(0, size(file1Object.long)):
 
-            if tropColFile1[lat, long] == 0 and tropColFile2[lat, long] == 0:
+            if tropColFile1[lat, int] == 0 and tropColFile2[lat, int] == 0:
                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                tropColDiff[lat, long] = 1.0
+                tropColDiff[lat, int] = 1.0
 
 
     ax3 = fig.add_subplot(313)  
@@ -597,22 +602,22 @@ if fieldToCompare.lower() == "moistq" or \
 
 
 
-    print ""
-    print "Shape of GMI stratosphere 1: ", shape(stratFile1)
+    print("")
+    print("Shape of GMI stratosphere 1: ", shape(stratFile1))
     stratColFile1 = numpy.sum(stratFile1[:,:,:], axis=0)
-    print "Shape of stratCol GMI 1: ", shape(stratColFile1)
-    print ""
+    print("Shape of stratCol GMI 1: ", shape(stratColFile1))
+    print("")
 
 
-    print ""
-    print "Shape of GMI stratesphere 2: ", shape(stratFile2)
+    print("")
+    print("Shape of GMI stratesphere 2: ", shape(stratFile2))
     stratColFile2 = numpy.sum(stratFile2[:,:,:], axis=0)
-    print "Shape of stratCol GMI 2: ", shape(stratColFile2)
-    print ""
+    print("Shape of stratCol GMI 2: ", shape(stratColFile2))
+    print("")
 
 
-    print""
-    print""
+    print("")
+    print("")
 
 
 
@@ -624,9 +629,9 @@ if fieldToCompare.lower() == "moistq" or \
     if stratColFile2.max() > maxValueOfBoth:
         maxValueOfBoth = stratColFile2.max()
 
-    print ""
-    print "Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth
-    print ""
+    print("")
+    print("Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+    print("")
 
 
     fig = plt.figure(figsize=(20,20))
@@ -648,11 +653,11 @@ if fieldToCompare.lower() == "moistq" or \
                             
     stratColDiff = stratColFile1 / stratColFile2
     for lat in range(0, size(file1Object.lat)):
-        for long in range(0, size(file1Object.long)):
+        for int in range(0, size(file1Object.long)):
 
-            if stratColFile1[lat, long] == 0 and stratColFile2[lat, long] == 0:
+            if stratColFile1[lat, int] == 0 and stratColFile2[lat, int] == 0:
                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                stratColDiff[lat, long] = 1.0
+                stratColDiff[lat, int] = 1.0
 
     ax3 = fig.add_subplot(313)    
     plotTitle = "Strat Column model ratio for         " + variableExtractField + "_" + \
@@ -677,18 +682,18 @@ if fieldToCompare.lower() == "moistq" or \
         plt.show()
     plt.clf
 
-    print ""
-    print "Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory"
-    print ""
+    print("")
+    print("Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory")
+    print("")
 
 
 else:
-    print fieldToCompare, " is not currently set for strat or trop column plotting!"
+    print(fieldToCompare, " is not currently set for strat or trop column plotting!")
 
 
-print ""
-print "Finished plotting: ", fieldToCompare, " to plots/ directory"
-print ""
+print("")
+print("Finished plotting: ", fieldToCompare, " to plots/ directory")
+print("")
 
 sys.stdout.flush()
     

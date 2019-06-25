@@ -46,15 +46,15 @@ from GmiPlotTools import GmiPlotTools
 
 NUM_ARGS = 2
 def usage ():
-    print ""
-    print "usage: RemapLongToGEOS.py [-c] [-f]"
-    print "-c model file"
-    print "-f field to remap"
-    print ""
+    print("")
+    print("usage: RemapLongToGEOS.py [-c] [-f]")
+    print("-c model file")
+    print("-f field to remap")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 
 #---------------------------------------------------------------
@@ -70,16 +70,16 @@ fieldToRemap = optList[1][1]
 
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (modelFile):
-    print "The file you provided does not exist: ", modelFile
+    print("The file you provided does not exist: ", modelFile)
     sys.exit(0)
 
 
-print modelFile
+print(modelFile)
 
 
 
@@ -88,9 +88,9 @@ modelSimName = modelFile.split(".")[0]
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -109,10 +109,10 @@ field = fieldToRemap
 
 modelFieldArray = modelObject.returnField (field, 0)
 
-print ""
-print "Shape of field: ", modelFieldArray.shape[:]
+print("")
+print("Shape of field: ", modelFieldArray.shape[:])
 levelSize = modelFieldArray.shape[0]
-print ""
+print("")
 
 
 modelFieldArray = modelObject.returnField (field, 0)
@@ -126,9 +126,10 @@ else:
                                           modelObject.latSize, \
                                           modelObject.longSize), numpy.float32)
 
+midLong = int(lenLong/2)
 remappedLong = numpy.zeros(lenLong, float32)
-remappedLong [0:lenLong/2] = modelObject.long[lenLong/2:lenLong] - 360.0
-remappedLong [lenLong/2:lenLong] = modelObject.long[0:lenLong/2]
+remappedLong [0:midLong] = modelObject.long[midLong:lenLong] - 360.0
+remappedLong [midLong:lenLong] = modelObject.long[0:midLong]
 
 
 
@@ -139,9 +140,9 @@ newModelArray = numpy.zeros((modelObject.latSize, \
 
 
                              
-print ""
-print "Processing: ", fieldToRemap, " with longitude of length: ", lenLong
-print ""
+print("")
+print("Processing: ", fieldToRemap, " with longitude of length: ", lenLong)
+print("")
 
 
 
@@ -150,33 +151,33 @@ for timeRecord in range(0, size(modelObject.time)):
 
     modelFieldArray = modelObject.returnField (field, timeRecord)
 
-    print ""
-    print "Shape of field: ", modelFieldArray.shape[:], " time: ", timeRecord
-    print ""
+    print("")
+    print("Shape of field: ", modelFieldArray.shape[:], " time: ", timeRecord)
+    print("")
 
     if len(modelFieldArray.shape) == 2:
-        remappedModelArray [:, 0:lenLong/2] = modelFieldArray[:,lenLong/2:lenLong]
-        remappedModelArray [:, lenLong/2:lenLong] = modelFieldArray[:,0:lenLong/2]
+        remappedModelArray [:, 0:midLong] = modelFieldArray[:,midLong:lenLong]
+        remappedModelArray [:, midLong:lenLong] = modelFieldArray[:,0:midLong]
 
     else:
-        remappedModelArray [timeRecord,:,:, 0:lenLong/2] = modelFieldArray[:,:,lenLong/2:lenLong]
-        remappedModelArray [timeRecord,:,:, lenLong/2:lenLong] = modelFieldArray[:,:,0:lenLong/2]
+        remappedModelArray [timeRecord,:,:, 0:midLong] = modelFieldArray[:,:,midLong:lenLong]
+        remappedModelArray [timeRecord,:,:, midLong:lenLong] = modelFieldArray[:,:,0:midLong]
 
 
     
 
-print ""
-print "Min/max ", field, " values ", remappedModelArray.min(), "/", remappedModelArray.max()
-print ""
+print("")
+print("Min/max ", field, " values ", remappedModelArray.min(), "/", remappedModelArray.max())
+print("")
 
                                   
-print ""
-print "Remapped longitude coordinate for : ", fieldToRemap
-print ""
+print("")
+print("Remapped longitude coordinate for : ", fieldToRemap)
+print("")
 
-print ""
-print remappedLong[:]
-print ""
+print("")
+print(remappedLong[:])
+print("")
 
 
 rootgrp = Dataset("test.nc", "w", format="NETCDF4")
@@ -198,7 +199,7 @@ lonVar = rootgrp.createVariable("lon","f8",("lon",))
 
 lonVar[:] = remappedLong[:]
 latVar[:] = modelObject.lat[:]
-levVar[:] = range(1,levelSize+1)
+levVar[:] = list(range(1,levelSize+1))
 #timeVar[:] = modelObject.time[:]
 
 if len(modelFieldArray.shape) == 2:

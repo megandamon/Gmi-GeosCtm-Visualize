@@ -89,7 +89,7 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
    def returnField (self, fieldName, timeRecord, prefix=''):
 
-      print "Return time record: ", timeRecord, " for : ", fieldName
+      print(("Return time record: ", timeRecord, " for : ", fieldName))
 
       fieldName = prefix + fieldName
 
@@ -104,10 +104,10 @@ class GeosCtmPlotTools (GenericModelPlotTools):
       #print fieldAllTime.shape[:], len(fieldAllTime.shape[:])
 
       if fieldAllTime.shape[0] - 1 < timeRecord:
-         print ""
-         print "WARNING: time record: ", timeRecord, " is not avail. in GEOS-CTM. ", \
-             " Using rec dim 0"
-         print ""
+         print("")
+         print(("WARNING: time record: ", timeRecord, " is not avail. in GEOS-CTM. ", \
+             " Using rec dim 0"))
+         print("")
          returnTime = 0
       else:
          returnTime = timeRecord
@@ -115,11 +115,11 @@ class GeosCtmPlotTools (GenericModelPlotTools):
       #(1, 181, 360) - GEOS-CTM "2D field"
       #(1, 72, 181, 360) - GEOS-CTM "3d field"xs
 
-      print ""
-      print "Dims of array: ", len(fieldAllTime.shape)
-      print "No Time? ", self.time==None
-      print "Shape: ", fieldAllTime.shape 
-      print ""
+      print("")
+      print(("Dims of array: ", len(fieldAllTime.shape)))
+      print(("No Time? ", self.time==None))
+      print(("Shape: ", fieldAllTime.shape)) 
+      print("")
 
       if len(fieldAllTime.shape[:]) == 4:                                         
          return fieldAllTime[returnTime, :, :, :]

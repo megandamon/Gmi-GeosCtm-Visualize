@@ -54,26 +54,26 @@ from GenericModelPlotTools import GenericModelPlotTools
 
 
 def worker (command):
-    print "I will execute: ", command
+    print("I will execute: ", command)
     return os.system(command)
 
 
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotCommonFields_GEOS-CTM.py [-c] [-g] [-r] [-d] [-n] [-p]"
-    print "-c GEOS CTM file 1"
-    print "-g GEOS CTM file 2"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-n PBS_NODEFILE"
-    print "-p number of processes to use per node"
-    print ""
+    print("")
+    print("usage: PlotCommonFields_GEOS-CTM.py [-c] [-g] [-r] [-d] [-n] [-p]")
+    print("-c GEOS CTM file 1")
+    print("-g GEOS CTM file 2")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-n PBS_NODEFILE")
+    print("-p number of processes to use per node")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences"
+print("Start plotting field differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -93,64 +93,64 @@ numProcesses = int(optList[5][1])
 
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile1):
-    print "The file you provided does not exist: ", geosCtmFile1
+    print("The file you provided does not exist: ", geosCtmFile1)
     sys.exit(0)
 
 if not os.path.exists (geosCtmFile2):
-    print "The file you provided does not exist: ", geosCtmFile2
+    print("The file you provided does not exist: ", geosCtmFile2)
     sys.exit(0)
 
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM"
-    print "Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM")
+    print("Received: ", dateYearMonth)
     sys.exit(0)
 
 if not os.path.exists (pbsNodeFile): 
-    print "The file you provided does not exist: ", pbsNodeFile
+    print("The file you provided does not exist: ", pbsNodeFile)
     sys.exit(0)
 
 if numProcesses <= 0:
-    print "Number of processes must be larger than 0! "
-    print "Given: ", numProcesses
+    print("Number of processes must be larger than 0! ")
+    print("Given: ", numProcesses)
     sys.exit(0)
 
 
 
 
-print ""
-print geosCtmFile1
-print geosCtmFile2
-print ""
+print("")
+print(geosCtmFile1)
+print(geosCtmFile2)
+print("")
 
 geosCtmSimName1 = geosCtmFile1.split(".")[0]
 geosCtmSimName2 = geosCtmFile2.split(".")[0]
 
 
-print ""
-print "Sim names: "
-print geosCtmSimName1
-print geosCtmSimName2
-print ""
+print("")
+print("Sim names: ")
+print(geosCtmSimName1)
+print(geosCtmSimName2)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -162,12 +162,12 @@ geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 
 
-print ""
-print "geos ctm 1: ", geosCtmObject1.DATE
-print "geos ctm 2: ", geosCtmObject2.DATE
-print ""
+print("")
+print("geos ctm 1: ", geosCtmObject1.DATE)
+print("geos ctm 2: ", geosCtmObject2.DATE)
+print("")
 
-print ""
+print("")
 
 
 order = "GEOS-CTM"
@@ -188,13 +188,13 @@ for field in fieldsToCompareAll[:]:
         fieldsToCompare.append(field)
 
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print "GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:])
+print("")
 
 nodes = geosCtmObject1.readNodesIntoArray (pbsNodeFile)
-print "nodes: ", nodes
+print("nodes: ", nodes)
 
 # print ""
 # print "*******************************"
@@ -214,7 +214,7 @@ print "nodes: ", nodes
 
 
 cwd = os.getcwd()
-print "current working directory: ", cwd
+print("current working directory: ", cwd)
 
 
 
@@ -230,24 +230,24 @@ pythonCommand = "PlotField_GEOS-CTM.py -c  " + geosCtmFile1 \
 for field in fieldsToCompare[:]:
 
     if procCount == numProcesses: 
-        print "node count exceeds num processes per node: ", procCount
+        print("node count exceeds num processes per node: ", procCount)
         procCount = 0
         nodeCount = nodeCount + 1
 
         if nodeCount >= len(nodes):
-            print ""
-            print "ERROR: nodeCount cannot be > len(nodes): ", nodeCount, \
-                " > ", len(nodes)
-            print "Use more processes or more nodes"
-            print "Number of processes per node: ", numProcesses
-            print ""
+            print("")
+            print("ERROR: nodeCount cannot be > len(nodes): ", nodeCount, \
+                " > ", len(nodes))
+            print("Use more processes or more nodes")
+            print("Number of processes per node: ", numProcesses)
+            print("")
             sys.exit(-1)
 
     field = fieldsToCompare[fieldCount]
 
-    print ""
-    print "Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount
-    print ""
+    print("")
+    print("Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount)
+    print("")
     
 
     sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
@@ -264,22 +264,22 @@ for field in fieldsToCompare[:]:
     fieldCount = fieldCount + 1
 
 
-print ""
+print("")
 for command in commands[:]:
-    print command
-print ""
+    print(command)
+print("")
 
 
 pool = multiprocessing.Pool(processes=len(commands))
 
-print ""
-print "Calling pool.map"
+print("")
+print("Calling pool.map")
 pool.map(worker, commands)
-print ""
+print("")
 
-print ""
-print "Calling pool.close"
+print("")
+print("Calling pool.close")
 pool.close()
-print ""
+print("")
 
 
