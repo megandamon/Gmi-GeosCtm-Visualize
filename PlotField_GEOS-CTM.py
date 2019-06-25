@@ -13,6 +13,7 @@
 
 
 
+
 import re
 import os
 import sys
@@ -51,18 +52,18 @@ from GenericModelPlotTools import GenericModelPlotTools
 
 NUM_ARGS = 5
 def usage ():
-    print ""
-    print "usage: PlotField_GEOS-CTM.py [-c] [-g] [-r] [-d] [-f]"
-    print "-c GEOS CTM file 1"
-    print "-g GEOS CTM file 2"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print ""
+    print("")
+    print("usage: PlotField_GEOS-CTM.py [-c] [-g] [-r] [-d] [-f]")
+    print("-c GEOS CTM file 1")
+    print("-g GEOS CTM file 2")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -79,52 +80,52 @@ dateYearMonth = optList[3][1]
 fieldToCompare = optList[4][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile1):
-    print "The file you provided does not exist: ", geosCtmFile1
+    print("The file you provided does not exist: ", geosCtmFile1)
     sys.exit(0)
 
 if not os.path.exists (geosCtmFile2):
-    print "The file you provided does not exist: ", geosCtmFile2
+    print("The file you provided does not exist: ", geosCtmFile2)
     sys.exit(0)
 
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
-print ""
-print geosCtmFile1
-print geosCtmFile2
-print ""
+print("")
+print(geosCtmFile1)
+print(geosCtmFile2)
+print("")
 
 geosCtmSimName1 = geosCtmFile1.split(".")[0]
 geosCtmSimName2 = geosCtmFile2.split(".")[0]
 
 
-print ""
-print "Sim names: "
-print geosCtmSimName1
-print geosCtmSimName2
-print ""
+print("")
+print("Sim names: ")
+print(geosCtmSimName1)
+print(geosCtmSimName2)
+print("")
 
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -146,11 +147,11 @@ if len(geosCtmObject1.fieldList) >= len(geosCtmObject2.fieldList):
     list2 = geosCtmObject1.fieldList
     order = "GEOS-CTM"
 
-print ""
-print list1
-print ""
-print list2
-print ""
+print("")
+print(list1)
+print("")
+print(list2)
+print("")
 
 
 # Does not matter which object to use - this is weird code. :/
@@ -164,17 +165,17 @@ for field in fieldsToCompareAll[:]:
 
 
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print "GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("GEOS-CTM 1 model levels: ", geosCtmObject1.lev[:])
+print("")
 
 
-print ""
+print("")
 if fieldToCompare in fieldsToCompare[:]:
-    print "Success: ", fieldToCompare, " can be compared!"
+    print("Success: ", fieldToCompare, " can be compared!")
 else:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 
@@ -184,9 +185,9 @@ modelLevsToPlot.append(49)
 modelLevsToPlot.append(41)
 
 
-print ""
-print "Model levs to plot: ", modelLevsToPlot[:]
-print ""
+print("")
+print("Model levs to plot: ", modelLevsToPlot[:])
+print("")
 
 
 
@@ -208,14 +209,14 @@ baseMapGeosCtm = Basemap(llcrnrlon=minGeosCtmLong,llcrnrlat=minGeosCtmLat,\
                              projection='cyl', \
                              lat_0=cenGeosCtmLat,lon_0=cenGeosCtmLong)
 
-print ""
-print "Basemap info: "
-print "llcr lon: ", minGeosCtmLong
-print "llcr lat: ", minGeosCtmLat
-print "urc lon: ", maxGeosCtmLong
-print "urc lat: ", maxGeosCtmLat
-print "centers lat/long: ", cenGeosCtmLat, cenGeosCtmLong
-print ""
+print("")
+print("Basemap info: ")
+print("llcr lon: ", minGeosCtmLong)
+print("llcr lat: ", minGeosCtmLat)
+print("urc lon: ", maxGeosCtmLong)
+print("urc lat: ", maxGeosCtmLat)
+print("centers lat/long: ", cenGeosCtmLat, cenGeosCtmLong)
+print("")
 
 
 
@@ -229,9 +230,9 @@ plt.figure(figsize=(20,20))
 
 
     
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
     
 
 geosCtmFieldArray1 = geosCtmObject1.returnField (fieldToCompare, timeRecord)
@@ -242,32 +243,32 @@ for modelLev in modelLevsToPlot:
         
 
 
-    print ""
-    print "GEOS-CTM level : ", modelLev
-    print ""
+    print("")
+    print("GEOS-CTM level : ", modelLev)
+    print("")
 
 
 
     if geosCtmFieldArray1.shape != geosCtmFieldArray2.shape:
-        print "Array shapes are different. Interpolation needed!"
-        print "This feature is currently not supported for inter GEOS-CTM runs"
+        print("Array shapes are different. Interpolation needed!")
+        print("This feature is currently not supported for inter GEOS-CTM runs")
         sys.exit(0)
 
     else:
-        print "Array shapes are the same, will continue with plotting..."
+        print("Array shapes are the same, will continue with plotting...")
 
 
 
 
     if len(geosCtmFieldArray1.shape) == 2:
-        print "Field is 2D"
+        print("Field is 2D")
         found2DArray = True
         z_GeosCtm1 = geosCtmFieldArray1[:, :]
         z_GeosCtm2 = geosCtmFieldArray2[:, :]
         modelLev = 0
 
     else:
-        print "Field is 3D"
+        print("Field is 3D")
         z_GeosCtm1 = geosCtmFieldArray1[modelLev, :, :]
         z_GeosCtm2 = geosCtmFieldArray2[modelLev, :, :]
 
@@ -282,20 +283,20 @@ for modelLev in modelLevsToPlot:
         maxValueOfBoth = z_GeosCtm2.max()
 
 
-    print range(0, size(geosCtmObject1.long))
-    print range(0, size(geosCtmObject1.lat))
+    print(list(range(0, size(geosCtmObject1.long))))
+    print(list(range(0, size(geosCtmObject1.lat))))
 
-    print shape(z_GeosCtm1)
-    print shape(z_GeosCtm2)
-    print shape(z_Diff)
+    print(shape(z_GeosCtm1))
+    print(shape(z_GeosCtm2))
+    print(shape(z_Diff))
 
 
     for lat in range(0, size(geosCtmObject1.lat)):
-        for long in range(0, size(geosCtmObject1.long)):
+        for int in range(0, size(geosCtmObject1.long)):
 
-            if z_GeosCtm1[lat, long] == 0 and z_GeosCtm2[lat, long] == 0:
+            if z_GeosCtm1[lat, int] == 0 and z_GeosCtm2[lat, int] == 0:
                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                z_Diff[lat, long] = 1.0
+                z_Diff[lat, int] = 1.0
 
 
 
@@ -304,12 +305,12 @@ for modelLev in modelLevsToPlot:
     #-----------------------------------------------------#
     # GEOS-CTM 1
 
-    print ""
-    print "Min/max ", fieldToCompare, " values at level: ", modelLev
-    print ""
+    print("")
+    print("Min/max ", fieldToCompare, " values at level: ", modelLev)
+    print("")
 
 
-    print "GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max()
+    print("GEOS-CTM 1: ", z_GeosCtm1.min(), " / ", z_GeosCtm1.max())
 
     geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm1, \
                                       #[z_GeosCtm1.min(),z_GeosCtm1.max()], \
@@ -320,7 +321,7 @@ for modelLev in modelLevsToPlot:
                                       fieldToCompare + " @ " + str(modelLev) + \
                                       "lev " + geosCtmObject1.DATE, "jet")
 
-    print "GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max()
+    print("GEOS-CTM 2: ", z_GeosCtm2.min(), " / ", z_GeosCtm2.max())
 
     geosCtmObject2.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, \
                                       #[z_GeosCtm2.min(),z_GeosCtm2.max()], \
@@ -358,8 +359,8 @@ for modelLev in modelLevsToPlot:
     if found2DArray == True:
         break
 
-print ""
-print "Plotted : ", fieldToCompare, " to plots/ directory"
+print("")
+print("Plotted : ", fieldToCompare, " to plots/ directory")
 
 
 

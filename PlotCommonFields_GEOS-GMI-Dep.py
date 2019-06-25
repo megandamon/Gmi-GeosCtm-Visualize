@@ -50,35 +50,35 @@ from GmiPlotTools import GmiPlotTools
 
 
 def workerLocal (command):
-    print "I will execute: ", command
+    print("I will execute: ", command)
     return os.system(command)
 
 def returnFieldsInCommon (gmiList, geosCtmList, fieldPrefixIn):
     
     fieldsToCompare = []
 
-    print ""
-    print "Scanning GEOS-CTM fields- "
-    print geosCtmList[:]
-    print ""
+    print("")
+    print("Scanning GEOS-CTM fields- ")
+    print(geosCtmList[:])
+    print("")
 
     count = 0
     for item in geosCtmList[:]:
 
         if fieldPrefixIn in item:
 
-            print ""
-            print "Found Dep field: ", item
+            print("")
+            print("Found Dep field: ", item)
             itemSplit = item.split("_")
-            print "item split: ", itemSplit[1]
+            print("item split: ", itemSplit[1])
 
             for itemGmi in gmiList[:]:
 
 
                 if itemGmi == itemSplit[1]:
-                    print "Found GMI match: ", itemGmi
+                    print("Found GMI match: ", itemGmi)
                     fieldsToCompare.append (itemGmi)
-                    print ""
+                    print("")
 
 
         count = count + 1
@@ -91,20 +91,20 @@ def returnFieldsInCommon (gmiList, geosCtmList, fieldPrefixIn):
 
 NUM_ARGS = 7
 def usage ():
-    print ""
-    print "usage: PlotCommonFields_GEOS-GMI-Dep.py [-c] [-g] [-r] [-d] [-n] [-p] [-f]"
-    print "-c GEOS CTM restart file"
-    print "-g GMI restart file"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-n PBS_NODEFILE"
-    print "-p number of processes to use per node"
-    print "-f field prefix"
-    print ""
+    print("")
+    print("usage: PlotCommonFields_GEOS-GMI-Dep.py [-c] [-g] [-r] [-d] [-n] [-p] [-f]")
+    print("-c GEOS CTM restart file")
+    print("-g GMI restart file")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-n PBS_NODEFILE")
+    print("-p number of processes to use per node")
+    print("-f field prefix")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting restart field differences"
+print("Start plotting restart field differences")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -123,37 +123,37 @@ numProcesses = int(optList[5][1])
 fieldPrefix = optList[6][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile):
-    print "The file you provided does not exist: ", geosCtmFile
+    print("The file you provided does not exist: ", geosCtmFile)
     sys.exit(0)
 
 if not os.path.exists (gmiFile):
-    print "The file you provided does not exist: ", gmiFile
+    print("The file you provided does not exist: ", gmiFile)
     sys.exit(0)
 
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 if not os.path.exists (pbsNodeFile): 
-    print "The file you provided does not exist: ", pbsNodeFile
+    print("The file you provided does not exist: ", pbsNodeFile)
     sys.exit(0)
 
 if numProcesses <= 0:
-    print "Number of processes must be larger than 0! "
-    print "Given: ", numProcesses
+    print("Number of processes must be larger than 0! ")
+    print("Given: ", numProcesses)
     sys.exit(0)
 
 
@@ -166,30 +166,30 @@ elif fieldPrefix == "DD_":
 elif fieldPrefix == "SCAV_":
     gmiCharString = "const_labels"
 else:
-    print "Fieldp prefix: ", fieldPrefix, " not supported!"
+    print("Fieldp prefix: ", fieldPrefix, " not supported!")
     sys.exit(0)
 
 
 fieldNameArrayGMI = gmiCharString
 
-print ""
-print "Will be looking at GMI fields in: ", fieldNameArrayGMI
-print ""
+print("")
+print("Will be looking at GMI fields in: ", fieldNameArrayGMI)
+print("")
 
 
 
-print geosCtmFile
-print gmiFile
-print ""
+print(geosCtmFile)
+print(gmiFile)
+print("")
 
 geosCtmSimName = geosCtmFile.split(".")[0]
 gmiSimName = gmiFile.split("_")[1]
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 
 
@@ -201,7 +201,7 @@ geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
 gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
-print ""
+print("")
 
 
 
@@ -212,14 +212,14 @@ fieldsToCompare = returnFieldsInCommon (gmiObject.fieldList, \
 
 
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 
 
 nodes = gmiObject.readNodesIntoArray (pbsNodeFile)
-print "nodes: ", nodes
+print("nodes: ", nodes)
 
 # print ""
 # print "*******************************"
@@ -239,7 +239,7 @@ print "nodes: ", nodes
 
 
 cwd = os.getcwd()
-print "current working directory: ", cwd
+print("current working directory: ", cwd)
 
 
 commands = []
@@ -255,27 +255,27 @@ pythonCommand1 = "PlotField_GEOS-GMI_Dep.py -c  " + geosCtmFile \
 for field in fieldsToCompare[:]:
 
     if procCount == numProcesses: 
-        print "node count exceeds num processes per node: ", procCount
+        print("node count exceeds num processes per node: ", procCount)
         procCount = 0
         nodeCount = nodeCount + 1
 
         if nodeCount >= len(nodes):
-            print ""
-            print "ERROR: nodeCount cannot be > len(nodes): ", nodeCount, \
-                " > ", len(nodes)
-            print "Use more processes or more nodes"
-            print "Number of processes per node: ", numProcesses
-            print ""
+            print("")
+            print("ERROR: nodeCount cannot be > len(nodes): ", nodeCount, \
+                " > ", len(nodes))
+            print("Use more processes or more nodes")
+            print("Number of processes per node: ", numProcesses)
+            print("")
             sys.exit(-1)
 
     
     field = fieldsToCompare[fieldCount]
 
 
-    print ""
-    print "Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount, \
-        " and " , procCount+1
-    print ""
+    print("")
+    print("Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount, \
+        " and " , procCount+1)
+    print("")
 
     sysCommand = "ssh -XYqt " + nodes[nodeCount] + \
         " \'. " + cwd + "/setup_env ; " + \
@@ -291,22 +291,22 @@ for field in fieldsToCompare[:]:
 
 
     
-print ""
+print("")
 for command in commands[:]:
-    print command
-print "len of commands: ", len(commands)
-print ""
+    print(command)
+print("len of commands: ", len(commands))
+print("")
 
 pool = multiprocessing.Pool(processes=len(commands))
 
-print ""
-print "Calling pool.map"
+print("")
+print("Calling pool.map")
 pool.map(workerLocal, commands)
-print ""
+print("")
 
-print ""
-print "Calling pool.close"
+print("")
+print("Calling pool.close")
 pool.close()
-print ""
+print("")
 
 

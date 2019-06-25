@@ -37,6 +37,7 @@ from mpl_toolkits.basemap import Basemap
 
 
 
+
 sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 
 from GeosCtmPlotTools import GeosCtmPlotTools
@@ -46,19 +47,19 @@ from GmiPlotTools import GmiPlotTools
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotField_GMI-GMI.py [-c] [-g] [-r] [-d] [-f] [-v]"
-    print "-c GMI file1"
-    print "-g GMI file2"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-f field to compare"
-    print "-v which variable to extract field from"
-    print ""
+    print("")
+    print("usage: PlotField_GMI-GMI.py [-c] [-g] [-r] [-d] [-f] [-v]")
+    print("-c GMI file1")
+    print("-g GMI file2")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-f field to compare")
+    print("-v which variable to extract field from")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 
 #---------------------------------------------------------------
@@ -77,46 +78,46 @@ fieldToCompare = optList[4][1]
 variableExtractField = optList[5][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (gmiFile1):
-    print "The file you provided does not exist: ", gmiFile1
+    print("The file you provided does not exist: ", gmiFile1)
     sys.exit(0)
 
 if not os.path.exists (gmiFile2):
-    print "The file you provided does not exist: ", gmiFile2
+    print("The file you provided does not exist: ", gmiFile2)
     sys.exit(0)
 
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 
 
-print gmiFile1
-print gmiFile2
+print(gmiFile1)
+print(gmiFile2)
 
 gmiSimName1 = gmiFile1.split("_")[1]
 gmiSimName2 = gmiFile2.split("_")[1]
 
 
-print gmiSimName1
-print gmiSimName2
+print(gmiSimName1)
+print(gmiSimName2)
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 gmiObject1 = GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
@@ -131,11 +132,11 @@ order = "GMI"
 list1 = gmiObject2.fieldList
 list2 = gmiObject1.fieldList
 
-print ""
-print "GMI field list: ", list1
-print ""
-print "GMI field list2: ", list2
-print ""
+print("")
+print("GMI field list: ", list1)
+print("")
+print("GMI field list2: ", list2)
+print("")
 
 if len(gmiObject1.fieldList) >= len(gmiObject2.fieldList):
     list1 = gmiObject1.fieldList
@@ -153,27 +154,27 @@ for field in fieldsToCompareAll[:]:
             field[0:3] != "GMI":
         fieldsToCompare.append(field)
 
-print ""
-print "Fields to compare: ", fieldsToCompare[:]
-print ""
+print("")
+print("Fields to compare: ", fieldsToCompare[:])
+print("")
 
 
 
 foundField = False
-print ""
+print("")
 for fieldInList in fieldsToCompare[:]:
 
     if fieldToCompare.lower() == fieldInList.lower():
-        print "Success: ", fieldToCompare, " can be compared!"
+        print("Success: ", fieldToCompare, " can be compared!")
         foundField = True
 
 if foundField == False:
-    print "ERROR: ", fieldToCompare, " cannot be compared!"
+    print("ERROR: ", fieldToCompare, " cannot be compared!")
     sys.exit(-1)
 
 
 
-print "GMI model levels: ", gmiObject2.lev[:]
+print("GMI model levels: ", gmiObject2.lev[:])
 modelLevsToPlotGmi = {}
 levCount = 0
 for lev in gmiObject2.lev[:]:
@@ -196,9 +197,9 @@ newGmiArray2 = numpy.zeros((gmiObject2.latSize, \
 
 plt.figure(figsize=(20,20))
 
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
 
 field = fieldToCompare
 
@@ -211,24 +212,24 @@ rankArray2 = size(gmiFieldArray1.shape[:])
 
 
 if rankArray1 != rankArray2: 
-    print ""
-    print field, " is not the same rank in each file!"
-    print ""
+    print("")
+    print(field, " is not the same rank in each file!")
+    print("")
     sys.exit(0)
 
 
-print ""
-print "Shape of GMI field 1 : ", gmiFieldArray1.shape[:]
-print "Shape of GMI field 2 : ", gmiFieldArray2.shape[:]
-print ""
+print("")
+print("Shape of GMI field 1 : ", gmiFieldArray1.shape[:])
+print("Shape of GMI field 2 : ", gmiFieldArray2.shape[:])
+print("")
 
 
 # Prepares basemap objects for plotting
-print ""
-print "Creating GMI plot objects..."
+print("")
+print("Creating GMI plot objects...")
 gmiObject1.createPlotObjects()
 gmiObject2.createPlotObjects()
-print ""
+print("")
 
 
 
@@ -236,19 +237,19 @@ print ""
 levCount = 0
 for modelLev in modelLevsToPlotGmi:
         
-    print ""
-    print "GMI : ", modelLev, " mb at index: ", modelLevsToPlotGmi[modelLev]
-    print ""
+    print("")
+    print("GMI : ", modelLev, " mb at index: ", modelLevsToPlotGmi[modelLev])
+    print("")
 
 
     if gmiFieldArray2.shape != gmiFieldArray1.shape:
-        print "Array shapes are different. Exiting."
+        print("Array shapes are different. Exiting.")
         sys.exit(-1)
 
     levCount = levCount + 1
 
     extractLevel = modelLevsToPlotGmi[modelLev]
-    print "Extracting Gmi level: ", extractLevel
+    print("Extracting Gmi level: ", extractLevel)
     
     if rankArray1 == 3: 
         z_Gmi1 = gmiFieldArray1[extractLevel,:,:]
@@ -260,27 +261,27 @@ for modelLev in modelLevsToPlotGmi:
 
     z_Diff = z_Gmi1 / z_Gmi2
 
-    print ""
-    print "Min/max of GMI1 : ", z_Gmi2.min(), "/", z_Gmi2.max()
-    print "Min/max of GMI2: ", z_Gmi1.min(), "/", z_Gmi1.max()
-    print "Differences: ", z_Gmi2.min() - z_Gmi1.min(), "/", z_Gmi2.max() - z_Gmi1.max()
-    print ""
+    print("")
+    print("Min/max of GMI1 : ", z_Gmi2.min(), "/", z_Gmi2.max())
+    print("Min/max of GMI2: ", z_Gmi1.min(), "/", z_Gmi1.max())
+    print("Differences: ", z_Gmi2.min() - z_Gmi1.min(), "/", z_Gmi2.max() - z_Gmi1.max())
+    print("")
 
     zRangeGMI1 = z_Gmi2.max() - z_Gmi2.min()
     zRangeGMI2 = z_Gmi1.max() - z_Gmi1.min()
 
-    print ""
-    print "Ranges: ", zRangeGMI1, "/", zRangeGMI2
-    print ""
+    print("")
+    print("Ranges: ", zRangeGMI1, "/", zRangeGMI2)
+    print("")
 
     orderGMI2 = 1
     orderGMI1 = 1
     if zRangeGMI1 != 0 and zRangeGMI2 !=0:
-        orderGMI2 = int(math.log10(zRangeGMI1))
-        orderGMI1 = int(math.log10(zRangeGMI2))
+        orderGMI2 = math.log10(zRangeGMI1)
+        orderGMI1 = math.log10(zRangeGMI2)
 
-    print "Orders: ", orderGMI2, "/", orderGMI1
-    print "" 
+    print("Orders: ", orderGMI2, "/", orderGMI1)
+    print("") 
 
 
     minValueOfBoth = z_Gmi1.min()
@@ -294,33 +295,33 @@ for modelLev in modelLevsToPlotGmi:
 
     # play with ratios a little
     for lat in range(0, size(gmiObject1.lat)):
-        for long in range(0, size(gmiObject1.long)):
+        for int in range(0, size(gmiObject1.long)):
 
-            if z_Gmi1[lat, long] == 0.0 and z_Gmi2[lat, long] == 0.0:
-                z_Diff[lat, long] = 1.0
-            elif z_Gmi1[lat, long] != 0.0 and z_Gmi2[lat,long] == 0.0:
-                if z_Gmi1[lat, long] > 0.0: z_Diff[lat,long] = 1.5 #saturate
-                if z_Gmi1[lat, long] < 0.0: z_Diff[lat,long] = .5 #saturate
+            if z_Gmi1[lat, int] == 0.0 and z_Gmi2[lat, int] == 0.0:
+                z_Diff[lat, int] = 1.0
+            elif z_Gmi1[lat, int] != 0.0 and z_Gmi2[lat,int] == 0.0:
+                if z_Gmi1[lat, int] > 0.0: z_Diff[lat,int] = 1.5 #saturate
+                if z_Gmi1[lat, int] < 0.0: z_Diff[lat,int] = .5 #saturate
 
 
     #-----------------------------------------------------#
     # GMI1
 
-    print ""
-    print "Min/max ", field, " values at level: ", modelLev
-    print ""
+    print("")
+    print("Min/max ", field, " values at level: ", modelLev)
+    print("")
 
 
-    print ""
-    print "GMI1: ", z_Gmi1.min(), " / ", z_Gmi1.max()
-    print ""
+    print("")
+    print("GMI1: ", z_Gmi1.min(), " / ", z_Gmi1.max())
+    print("")
 
 
     if z_Gmi1.max() - z_Gmi1.min() == 0.0 or orderGMI1 < -13:
 
-        print ""
-        print "Constant field found for GMI1!"
-        print ""
+        print("")
+        print("Constant field found for GMI1!")
+        print("")
 
         useMin = z_Gmi1.min()
         useMax = z_Gmi1.max()
@@ -342,12 +343,12 @@ for modelLev in modelLevsToPlotGmi:
                                       "mb " + dateYearMonth, "jet")
 
 
-    print ""
-    print "GMI: ", z_Gmi2.min(), " / ", z_Gmi2.max()
-    print "" 
+    print("")
+    print("GMI: ", z_Gmi2.min(), " / ", z_Gmi2.max())
+    print("") 
 
     if z_Gmi2.max() - z_Gmi2.min() == 0.0 or orderGMI2 < -13:
-        print "Constant field found for GMI2!"
+        print("Constant field found for GMI2!")
         useMin = z_Gmi2.min()
         useMax = z_Gmi2.max()
 
@@ -390,9 +391,9 @@ for modelLev in modelLevsToPlotGmi:
     elif file == "s":
         plt.show()
         
-    print ""
-    print "Plotted : ", fieldToCompare, " @ ", str(modelLev), " to plots/directory"
-    print ""
+    print("")
+    print("Plotted : ", fieldToCompare, " @ ", str(modelLev), " to plots/directory")
+    print("")
 
 
     plt.clf()

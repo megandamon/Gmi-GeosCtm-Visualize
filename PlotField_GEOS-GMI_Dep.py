@@ -47,19 +47,19 @@ from GmiPlotTools import GmiPlotTools
 
 NUM_ARGS = 6
 def usage ():
-    print ""
-    print "usage: PlotField_GEOS-GMI_Dep.py [-c] [-g] [-r] [-d] [-p] [-f]"
-    print "-c GEOS CTM restart file"
-    print "-g GMI restart file"
-    print "-r time record to plot"
-    print "-d date of comparision (YYYYMM)"
-    print "-p field prefix"
-    print "-f field to compare"
-    print ""
+    print("")
+    print("usage: PlotField_GEOS-GMI_Dep.py [-c] [-g] [-r] [-d] [-p] [-f]")
+    print("-c GEOS CTM restart file")
+    print("-g GMI restart file")
+    print("-r time record to plot")
+    print("-d date of comparision (YYYYMM)")
+    print("-p field prefix")
+    print("-f field to compare")
+    print("")
     sys.exit (0)
 
 
-print "Start plotting field differences."
+print("Start plotting field differences.")
 
 
 #---------------------------------------------------------------
@@ -78,28 +78,28 @@ fieldPrefix = optList[4][1]
 fieldToCompare = optList[5][1]
 
 #---------------------------------------------------------------
-print ""
-print "Checking command line options... "
-print""
+print("")
+print("Checking command line options... ")
+print("")
 #---------------------------------------------------------------
 if not os.path.exists (geosCtmFile):
-    print "The file you provided does not exist: ", geosCtmFile
+    print("The file you provided does not exist: ", geosCtmFile)
     sys.exit(0)
 
 if not os.path.exists (gmiFile):
-    print "The file you provided does not exist: ", gmiFile
+    print("The file you provided does not exist: ", gmiFile)
     sys.exit(0)
 
 
 if int(timeRecord) > 30: 
-    print "WARNING: time record is more than a typical daily file!"
+    print("WARNING: time record is more than a typical daily file!")
 
 if int(timeRecord) < 0: 
-    print "ERROR: time record needs to be positive!"
+    print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
 if len(dateYearMonth) != 6:
-    print "ERROR date must be in the format YYYYMM. Received: ", dateYearMonth
+    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
 if fieldPrefix == "WD_":
@@ -115,18 +115,18 @@ elif fieldPrefix == "flash_":
     gmiCharString = None
     titleString = ""
 else:
-    print "Warning - unknown field prefix!!"
-    print ""
-    print "..."
+    print("Warning - unknown field prefix!!")
+    print("")
+    print("...")
     time.sleep(2)
-    print ""
+    print("")
 
 
-print geosCtmFile
-print gmiFile
-print ""
-print fieldPrefix + fieldToCompare
-print ""
+print(geosCtmFile)
+print(gmiFile)
+print("")
+print(fieldPrefix + fieldToCompare)
+print("")
 
 
 
@@ -136,9 +136,9 @@ gmiSimName = gmiFile.split("_")[1]
 
 
 #---------------------------------------------------------------
-print ""
-print "Command line options look good."
-print""
+print("")
+print("Command line options look good.")
+print("")
 #--------------------------------------------------------------
 geosCtmObject = GeosCtmPlotTools (geosCtmFile, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -150,7 +150,7 @@ gmiObject = GmiPlotTools (gmiFile, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
                              'longitude_dim', 'eta_dim', 'hdr', \
                               gmiCharString)
-print ""
+print("")
 
 
 
@@ -182,14 +182,14 @@ baseMapGeosCtm = Basemap(llcrnrlon=minGeosCtmLong,llcrnrlat=minGeosCtmLat,\
 
 cenGmiLong = (gmiObject.long[:].min() + gmiObject.long[:].max()) / 2.0
 
-print ""
-print "Basemap info: "
-print "llcr lon: ", minGeosCtmLong
-print "llcr lat: ", minGeosCtmLat
-print "urc lon: ", maxGeosCtmLong
-print "urc lat: ", maxGeosCtmLat
-print "centers lat/long: ", cenGeosCtmLat, cenGeosCtmLong
-print ""
+print("")
+print("Basemap info: ")
+print("llcr lon: ", minGeosCtmLong)
+print("llcr lat: ", minGeosCtmLat)
+print("urc lon: ", maxGeosCtmLong)
+print("urc lat: ", maxGeosCtmLat)
+print("centers lat/long: ", cenGeosCtmLat, cenGeosCtmLong)
+print("")
 
 
 gridLonsGeosCtm,gridLatsGeosCtm = baseMapGeosCtm.makegrid(geosCtmObject.longSize, geosCtmObject.latSize)
@@ -198,9 +198,9 @@ X_GeosCtm, Y_GeosCtm = baseMapGeosCtm(gridLonsGeosCtm,gridLatsGeosCtm)
 
 plt.figure(figsize=(20,20))
 
-print ""
-print "Processing: ", fieldToCompare
-print ""
+print("")
+print("Processing: ", fieldToCompare)
+print("")
 
 field = fieldToCompare
 
@@ -209,20 +209,20 @@ if fieldPrefix != "flash_": # flashrate does not have prefix
 else:
     geosCtmFieldArray = geosCtmObject.returnField (field, timeRecord)
 
-print field
-print timeRecord
-print fieldPrefix
+print(field)
+print(timeRecord)
+print(fieldPrefix)
 gmiFieldArray = gmiObject.returnField (field, timeRecord, fieldPrefix)
 
-print ""
-print "Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:]
-print "Shape of GMI field: ", gmiFieldArray.shape[:]
-print ""
+print("")
+print("Shape of GEOS-CTM field: ", geosCtmFieldArray.shape[:])
+print("Shape of GMI field: ", gmiFieldArray.shape[:])
+print("")
 
 # put GMI on -180 to 0 to 180
 lenGmiLong = len(gmiObject.long[:])
 
-print "remapping: ", remappedGmiArray.shape, " to " , gmiFieldArray.shape
+print("remapping: ", remappedGmiArray.shape, " to " , gmiFieldArray.shape)
 
         
 remappedGmiArray [:,0:lenGmiLong/2] = gmiFieldArray[:,lenGmiLong/2:lenGmiLong]
@@ -241,7 +241,7 @@ geosCtmLongPlus180 [:] = geosCtmObject.long[:] + 180.0
 
 
 if gmiFieldArray.shape != geosCtmFieldArray.shape:
-    print "Array shapes are different. Interpolation needed!"
+    print("Array shapes are different. Interpolation needed!")
 
     latCount = 0
     for lat in gmiObject.lat[:]:
@@ -278,23 +278,23 @@ if z_Gmi.max() > maxValueOfBoth:
 
 
 for lat in range(0, size(geosCtmObject.lat)):
-    for long in range(0, size(geosCtmObject.long)):
+    for int in range(0, size(geosCtmObject.long)):
 
-        if z_Gmi[lat, long] == 0 and z_GeosCtm[lat, long] == 0:
+        if z_Gmi[lat, int] == 0 and z_GeosCtm[lat, int] == 0:
             #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-            z_Diff[lat, long] = 1.0
+            z_Diff[lat, int] = 1.0
 
 
 #-----------------------------------------------------#
 # GEOS-CTM
 
-print ""
-print "Min/max ", field, " " 
-print ""
+print("")
+print("Min/max ", field, " ") 
+print("")
 
 
 
-print "GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max()
+print("GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max())
 
 
 
@@ -308,8 +308,8 @@ geosCtmObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
                                  geosCtmObject.DATE, "jet")
 
 
-print "GMI: ", z_Gmi.min(), " / ", z_Gmi.max()
-print "" 
+print("GMI: ", z_Gmi.min(), " / ", z_Gmi.max())
+print("") 
 
 # GMI lev0 is surface
 gmiObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
@@ -344,5 +344,5 @@ elif file == "s":
 plt.clf()
 
 
-print ""
-print "Plotted dep of : ", fieldToCompare, " to plots/directory"
+print("")
+print("Plotted dep of : ", fieldToCompare, " to plots/directory")
