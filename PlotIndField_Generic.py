@@ -121,9 +121,13 @@ print("")
 print("Command line options look good.")
 print("")
 #--------------------------------------------------------------
-modelObject = GeosCtmPlotTools (modelFile, 'latitude','longitude',\
-                                      'lev','time', 'latitude', \
-                                      'longitude', 'lev', 'time' )
+#modelObject = GeosCtmPlotTools (modelFile, 'latitude','longitude',\
+#                                      'lev','time', 'latitude', \
+#                                      'longitude', 'lev', 'time' )
+
+modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
+                                      'lev','time', 'lat', \
+                                      'lon', 'lev', 'time' )
 
 
 
@@ -242,13 +246,12 @@ print("Model min / max : ", z_Model.min(), " / ", z_Model.max())
 
 print("")
 
-modelObject.create2dSlice (baseMapModel, X_Model, Y_Model, z_Model, \
+modelObject.create2dSliceContours (baseMapModel, X_Model, Y_Model, z_Model, \
                                 [z_Model.min(),z_Model.max()], \
                                 [minModelLat,maxModelLat], \
                                 [minModelLong, maxModelLong], 311, \
-                                modelSimName + " " + \
                                 fieldToPlot + " @ " + stringLevel + \
-                                " " + str(levUnit) + " " + str(dateYearMonth), \
+                                " " + str(levUnit), \
                                 "jet")
 
 

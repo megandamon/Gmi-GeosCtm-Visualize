@@ -7,7 +7,6 @@
 #
 # DESCRIPTION:
 # Driver to plot zonal mean differences for one field between two GMI files
-# Driver will always plot tropCol and stratCol 
 #------------------------------------------------------------------------------
 
 import re
@@ -225,13 +224,20 @@ print("Command line options look good.")
 print("")
 #--------------------------------------------------------------
 
+
+if "amonthly" in gmiFile1: 
+    gmiTimeVar = "hdr"
+else:
+    gmiTimeVar = "nymd"
+
+
 file1Object = GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
                                 'eta_dim', 'rec_dim', 'latitude_dim', \
-                                'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
+                                'longitude_dim', 'eta_dim', gmiTimeVar, 'const_labels')
 
 file2Object = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                                 'eta_dim', 'rec_dim', 'latitude_dim', \
-                                'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
+                                'longitude_dim', 'eta_dim', gmiTimeVar, 'const_labels')
 
 
 
@@ -361,10 +367,11 @@ print("")
 print(file2Object.lev[0])
 print("")
 
-if file2Object.lev[0] == 0:
-    useLevels = file2Object.lev[:] + 1
-else:
-    useLevels = file2Object.lev[:]
+# if file2Object.lev[0] == 0:
+#     useLevels = file2Object.lev[:] + 1
+# else:
+
+useLevels = file2Object.lev[:]
 
 
 print("")
@@ -500,195 +507,282 @@ plt.clf
 # Only certain species/fields need this 
 
 
-#O3, NO2, and CH2O
-if fieldToCompare.lower() == "moistq" or \
-        fieldToCompare.lower() == "o3" or \
-        fieldToCompare.lower() == "no2" or \
-        fieldToCompare.lower() == "ch2o":
+# #O3, NO2, and CH2O
+# if fieldToCompare.lower() == "moistq" or \
+#         fieldToCompare.lower() == "o3" or \
+#         fieldToCompare.lower() == "no2" or \
+#         fieldToCompare.lower() == "ch2o":
 
 
-    # These are for 2D slices (lat/lon) only! 
-    print("")
-    print("Creating GMI plot objects...")
-    file1Object.createPlotObjects()
-    file2Object.createPlotObjects()
-    print("")
-
-
-
-
-
-    print("")
-    print("")
-    print("")
-    print("Shape of GMI troposphere 1: ", shape(tropFile1))
-    tropColFile1 = numpy.sum(tropFile1[:,:,:], axis=0)
-    print("Shape of tropCol GMI troposphere 1: ", shape (tropColFile1))
-    print("") 
-
-
-    print("")
-    print("Shape of GMI troposphere 2: ", shape(tropFile2))
-    tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
-    print("Shape of tropCol file2 : ", shape(tropColFile2))
-    print("")
-
-
-
-    minValueOfBoth = tropColFile1.min()
-    maxValueOfBoth = tropColFile1.max()
-
-    if tropColFile2.min() < minValueOfBoth:
-        minValueOfBoth = tropColFile2.min()
-    if tropColFile2.max() > maxValueOfBoth:
-        maxValueOfBoth = tropColFile2.max()
-
-    print("")
-    print("Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
-    print("")
+#     # These are for 2D slices (lat/lon) only! 
+#     print("")
+#     print("Creating GMI plot objects...")
+#     file1Object.createPlotObjects()
+#     file2Object.createPlotObjects()
+#     print("")
 
 
 
 
-    fig = plt.figure(figsize=(20,20))
 
-    plotOpt = {}
-    ax1 = fig.add_subplot(311)
-    plotTitle = "Trop Column GMI" + sim1Name + "         " \
-        + variableExtractField + \
-        "_" + field + " " + dateYearMonth
-    file1Object.create2dSlice2 (tropColFile1, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      311, plotTitle, "jet")
+#     print("")
+#     print("")
+#     print("")
+#     print("Shape of GMI troposphere 1: ", shape(tropFile1))
+#     tropColFile1 = numpy.sum(tropFile1[:,:,:], axis=0)
+#     print("Shape of tropCol GMI troposphere 1: ", shape (tropColFile1))
+#     print("") 
 
-    ax2 = fig.add_subplot(312)
-    plotTitle = "Trop Column GMI" + sim2Name + "         " \
-        + variableExtractField + \
-        "_" + field + " " + dateYearMonth
 
-    file1Object.create2dSlice2 (tropColFile2, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      312, plotTitle, "jet")
+#     print("")
+#     print("Shape of GMI troposphere 2: ", shape(tropFile2))
+#     tropColFile2 = numpy.sum(tropFile2[:,:,:], axis=0)
+#     print("Shape of tropCol file2 : ", shape(tropColFile2))
+#     print("")
+
+
+
+#     minValueOfBoth = tropColFile1.min()
+#     maxValueOfBoth = tropColFile1.max()
+
+#     if tropColFile2.min() < minValueOfBoth:
+#         minValueOfBoth = tropColFile2.min()
+#     if tropColFile2.max() > maxValueOfBoth:
+#         maxValueOfBoth = tropColFile2.max()
+
+#     print("")
+#     print("Trop Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+#     print("")
+
+
+
+
+#     fig = plt.figure(figsize=(20,20))
+
+#     plotOpt = {}
+#     ax1 = fig.add_subplot(311)
+#     plotTitle = "Trop Column GMI" + sim1Name + "         " \
+#         + variableExtractField + \
+#         "_" + field + " " + dateYearMonth
+#     file1Object.create2dSlice2 (tropColFile1, \
+#                                       [minValueOfBoth, maxValueOfBoth], \
+#                                       311, plotTitle, "jet")
+
+#     ax2 = fig.add_subplot(312)
+#     plotTitle = "Trop Column GMI" + sim2Name + "         " \
+#         + variableExtractField + \
+#         "_" + field + " " + dateYearMonth
+
+#     file1Object.create2dSlice2 (tropColFile2, \
+#                                       [minValueOfBoth, maxValueOfBoth], \
+#                                       312, plotTitle, "jet")
                             
 
-    tropColDiff = tropColFile1 / tropColFile2
-    for lat in range(0, size(file1Object.lat)):
-        for int in range(0, size(file1Object.long)):
+#     tropColDiff = tropColFile1 / tropColFile2
+#     for lat in range(0, size(file1Object.lat)):
+#         for int in range(0, size(file1Object.long)):
 
-            if tropColFile1[lat, int] == 0 and tropColFile2[lat, int] == 0:
-                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                tropColDiff[lat, int] = 1.0
+#             if tropColFile1[lat, int] == 0 and tropColFile2[lat, int] == 0:
+#                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+#                 tropColDiff[lat, int] = 1.0
 
 
-    ax3 = fig.add_subplot(313)  
-    plotTitle = "Trop Column model ratio for         " + variableExtractField + "_" + \
-        field + " " + dateYearMonth  
-    file1Object.create2dSlice2(tropColDiff, \
-                                     [.9, 1.1], \
-                                     313, plotTitle, "nipy_spectral", \
-                                     normalize=True)
+#     ax3 = fig.add_subplot(313)  
+#     plotTitle = "Trop Column model ratio for         " + variableExtractField + "_" + \
+#         field + " " + dateYearMonth  
+#     file1Object.create2dSlice2(tropColDiff, \
+#                                      [.9, 1.1], \
+#                                      313, plotTitle, "nipy_spectral", \
+#                                      normalize=True)
                                  
 
 
-    FILE = "f"
-    if FILE == "f":
-        plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                         + "tropColumn.", bbox_inches='tight')
-    else:
-        plt.show()
-    plt.clf
+#     FILE = "f"
+#     if FILE == "f":
+#         plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
+#                          + "tropColumn.", bbox_inches='tight')
+#     else:
+#         plt.show()
+#     plt.clf
 
 
 
+#     if fieldToCompare.lower() == "o3":
+   
+#         print("")
+#         totalColFile1 = numpy.sum(file1FieldArray[:,:,:], axis=0)
+#         print("Shape of totalCol GMI 1: ", shape(totalColFile1))
+#         print("")
 
 
-    print("")
-    print("Shape of GMI stratosphere 1: ", shape(stratFile1))
-    stratColFile1 = numpy.sum(stratFile1[:,:,:], axis=0)
-    print("Shape of stratCol GMI 1: ", shape(stratColFile1))
-    print("")
+#         print("")
+#         totalColFile2 = numpy.sum(file2FieldArray[:,:,:], axis=0)
+#         print("Shape of totalCol GMI 2: ", shape(totalColFile2))
+#         print("")
 
 
-    print("")
-    print("Shape of GMI stratesphere 2: ", shape(stratFile2))
-    stratColFile2 = numpy.sum(stratFile2[:,:,:], axis=0)
-    print("Shape of stratCol GMI 2: ", shape(stratColFile2))
-    print("")
+#         print("")
+#         print("")
+
+#         minValueOfBoth = totalColFile1.min()
+#         maxValueOfBoth = totalColFile1.max()
+
+#         if totalColFile2.min() < minValueOfBoth:
+#             minValueOfBoth = totalColFile2.min()
+#             if totalColFile2.max() > maxValueOfBoth:
+#                 maxValueOfBoth = totalColFile2.max()
+
+#         print("")
+#         print("Total O3 Column min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+#         print("")
 
 
-    print("")
-    print("")
+#         fig = plt.figure(figsize=(20,20))
 
+#         plotOpt = {}
+#         ax1 = fig.add_subplot(311)
+#         plotTitle = "Total Column GMI 1 " + sim1Name + "         " + \
+#             variableExtractField + "_" + field + " " + dateYearMonth
+#         file1Object.create2dSlice2 (totalColFile1, \
+#                                         [minValueOfBoth, maxValueOfBoth], \
+#                                         311, plotTitle, "jet")
 
-
-    minValueOfBoth = stratColFile1.min()
-    maxValueOfBoth = stratColFile1.max()
-
-    if stratColFile2.min() < minValueOfBoth:
-        minValueOfBoth = stratColFile2.min()
-    if stratColFile2.max() > maxValueOfBoth:
-        maxValueOfBoth = stratColFile2.max()
-
-    print("")
-    print("Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
-    print("")
-
-
-    fig = plt.figure(figsize=(20,20))
-
-    plotOpt = {}
-    ax1 = fig.add_subplot(311)
-    plotTitle = "Strat Column GMI 1 " + sim1Name + "         " + \
-        variableExtractField + "_" + field + " " + dateYearMonth
-    file1Object.create2dSlice2 (stratColFile1, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      311, plotTitle, "jet")
-
-    ax2 = fig.add_subplot(312)
-    plotTitle = "Strat Column GMI 2 " + sim2Name + "         " + \
-        variableExtractField + "_" + field + " " + dateYearMonth
-    file1Object.create2dSlice2 (stratColFile2, \
-                                      [minValueOfBoth, maxValueOfBoth], \
-                                      312, plotTitle, "jet")
+#         ax2 = fig.add_subplot(312)
+#         plotTitle = "Total Column GMI 2 " + sim2Name + "         " + \
+#             variableExtractField + "_" + field + " " + dateYearMonth
+#         file1Object.create2dSlice2 (totalColFile2, \
+#                                         [minValueOfBoth, maxValueOfBoth], \
+#                                         312, plotTitle, "jet")
                             
-    stratColDiff = stratColFile1 / stratColFile2
-    for lat in range(0, size(file1Object.lat)):
-        for int in range(0, size(file1Object.long)):
+#         totalColDiff = totalColFile1 / totalColFile2
+#         for lat in range(0, size(file1Object.lat)):
+#             for int in range(0, size(file1Object.long)):
 
-            if stratColFile1[lat, int] == 0 and stratColFile2[lat, int] == 0:
-                #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-                stratColDiff[lat, int] = 1.0
+#                 if totalColFile1[lat, int] == 0 and totalColFile2[lat, int] == 0:
+#                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+#                     totalColDiff[lat, int] = 1.0
 
-    ax3 = fig.add_subplot(313)    
-    plotTitle = "Strat Column model ratio for         " + variableExtractField + "_" + \
-        field + " " + dateYearMonth
-    file1Object.create2dSlice2(stratColDiff, \
-                                     [.9, 1.1], \
-                                     313, plotTitle, "nipy_spectral", \
-                                     normalize=True)
+#         ax3 = fig.add_subplot(313)    
+#         plotTitle = "Total Column model ratio for         " + variableExtractField + "_" + \
+#             field + " " + dateYearMonth
+#         file1Object.create2dSlice2(totalColDiff, \
+#                                        [.9, 1.1], \
+#                                        313, plotTitle, "nipy_spectral", \
+#                                        normalize=True)
 
 
-
-    FILE = "f"
-    if FILE == "f":
-        if variableExtractField != "":
-            plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
-                             + "stratColumn.", bbox_inches='tight')
-        else:
-            plt.savefig ("plots/" + field + fileTitle \
-                             + "stratColumn.", bbox_inches='tight')
+#         FILE = "f"
+#         if FILE == "f":
+#             if variableExtractField != "":
+#                 plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
+#                                  + "totalColumn.", bbox_inches='tight')
+#             else:
+#                 plt.savefig ("plots/" + field + fileTitle \
+#                                  + "totalColumn.", bbox_inches='tight')
             
-    else:
-        plt.show()
-    plt.clf
+#         else:
+#             plt.show()
 
-    print("")
-    print("Finished plotting strat/trop columns for : ", fieldToCompare, " to plots/ directory")
-    print("")
+#         plt.clf
+
+#     else:
+#         print("Wil plot strat column")
+
+#         print("")
+#         print("Shape of GMI stratosphere 1: ", shape(stratFile1))
+#         stratColFile1 = numpy.sum(stratFile1[:,:,:], axis=0)
+#         print("Shape of stratCol GMI 1: ", shape(stratColFile1))
+#         print("")
 
 
-else:
-    print(fieldToCompare, " is not currently set for strat or trop column plotting!")
+#         print("")
+#         print("Shape of GMI stratesphere 2: ", shape(stratFile2))
+#         stratColFile2 = numpy.sum(stratFile2[:,:,:], axis=0)
+#         print("Shape of stratCol GMI 2: ", shape(stratColFile2))
+#         print("")
+
+
+#         print("")
+#         print("")
+
+
+#         print(useLevels[:])
+#         print(len(useLevels))
+#         print(useLevels[tropMinLev::])
+
+
+
+
+#         minValueOfBoth = stratColFile1.min()
+#         maxValueOfBoth = stratColFile1.max()
+
+#         if stratColFile2.min() < minValueOfBoth:
+#             minValueOfBoth = stratColFile2.min()
+#             if stratColFile2.max() > maxValueOfBoth:
+#                 maxValueOfBoth = stratColFile2.max()
+
+#         print("")
+#         print("Strat Column  min/max value of both: ", minValueOfBoth, "/", maxValueOfBoth)
+#         print("")
+
+
+#         fig = plt.figure(figsize=(20,20))
+
+#         plotOpt = {}
+#         ax1 = fig.add_subplot(311)
+#         plotTitle = "Strat Column GMI 1 " + sim1Name + "         " + \
+#             variableExtractField + "_" + field + " " + dateYearMonth
+#         file1Object.create2dSlice2 (stratColFile1, \
+#                                         [minValueOfBoth, maxValueOfBoth], \
+#                                         311, plotTitle, "jet")
+
+#         ax2 = fig.add_subplot(312)
+#         plotTitle = "Strat Column GMI 2 " + sim2Name + "         " + \
+#             variableExtractField + "_" + field + " " + dateYearMonth
+#         file1Object.create2dSlice2 (stratColFile2, \
+#                                         [minValueOfBoth, maxValueOfBoth], \
+#                                         312, plotTitle, "jet")
+                            
+#         stratColDiff = stratColFile1 / stratColFile2
+#         for lat in range(0, size(file1Object.lat)):
+#             for int in range(0, size(file1Object.long)):
+
+#                 if stratColFile1[lat, int] == 0 and stratColFile2[lat, int] == 0:
+#                 #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+#                     stratColDiff[lat, int] = 1.0
+
+#         ax3 = fig.add_subplot(313)    
+#         plotTitle = "Strat Column model ratio for         " + variableExtractField + "_" + \
+#             field + " " + dateYearMonth
+#         file1Object.create2dSlice2(stratColDiff, \
+#                                        [.9, 1.1], \
+#                                        313, plotTitle, "nipy_spectral", \
+#                                        normalize=True)
+
+
+#         FILE = "f"
+#         if FILE == "f":
+#             if variableExtractField != "":
+#                 plt.savefig ("plots/" + variableExtractField + "_" + field + fileTitle \
+#                                  + "stratColumn.", bbox_inches='tight')
+#             else:
+#                 plt.savefig ("plots/" + field + fileTitle \
+#                                  + "stratColumn.", bbox_inches='tight')
+            
+#         else:
+#             plt.show()
+
+#         plt.clf
+
+
+
+#     print("")
+#     print("Finished plotting columns for : ", fieldToCompare, " to plots/ directory")
+#     print("")
+
+
+# else:
+#     print(fieldToCompare, " is not currently set column plotting!")
 
 
 print("")

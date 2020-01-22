@@ -132,14 +132,14 @@ print("")
 print("Command line options look good.")
 print("")
 #--------------------------------------------------------------
-geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'latitude','longitude',\
-                                      'lev','time', 'latitude', \
-                                      'longitude', 'lev', 'time' )
+geosCtmObject1 = GeosCtmPlotTools (geosCtmFile1, 'lat','lon',\
+                                      'lev','time', 'lat', \
+                                      'lon', 'lev', 'time' )
 
 
-geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'latitude','longitude',\
-                                      'lev','time', 'latitude', \
-                                      'longitude', 'lev', 'time' )
+geosCtmObject2 = GeosCtmPlotTools (geosCtmFile2, 'lat','lon',\
+                                      'lev','time', 'lat', \
+                                      'lon', 'lev', 'time' )
 
 
 
@@ -189,7 +189,7 @@ modelLevsToPlot = []
 #modelLevsToPlot.append(34)
 #modelLevsToPlot.append(50)
 #modelLevsToPlot.append(60)
-modelLevsToPlot.append(35)
+modelLevsToPlot.append(21)
 
 
 

@@ -207,6 +207,10 @@ if analType != "r" and analType != "d" and analType != "s":
 print(geos5File)
 print(file2)
 
+
+if variableExtractField == "None": 
+    variableExtractField = ''
+
 file2Flag = "GMI"
 
 # known GMI prefixes

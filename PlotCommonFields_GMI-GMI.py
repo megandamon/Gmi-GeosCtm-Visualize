@@ -153,14 +153,38 @@ print("GMI2 simulation name: ", gmiSimName2)
 print("")
 #--------------------------------------------------------------
 
+simType1 = gmiFile1.split(".")[1]
+simType2 = gmiFile2.split(".")[1]
+
+#---------------------------------------------------------------
+print("")
+print("GMI1 simulation type: ", simType1)
+print("GMI2 simulation type: ", simType2)
+print("")
+#--------------------------------------------------------------
+
+if simType1.strip() == "amonthly":
+    timeVarName1 = "hdr"
+else:
+    timeVarName1 = "nymd"
+
+if simType2.strip() == "amonthly":
+    timeVarName2 = "hdr"
+else:
+    timeVarName2 = "nymd"
+
+
+
+# here we can select nymd or hdr based on simType1,2 above
+
 gmiObject1 =  GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
+                             'longitude_dim', 'eta_dim', timeVarName1, fieldNameArrayGMI)
 print("")
 
 gmiObject2 = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', fieldNameArrayGMI)
+                             'longitude_dim', 'eta_dim', timeVarName2, fieldNameArrayGMI)
 print("")
 print("Field to extract species names from: ", fieldNameArrayGMI)
 print("")
@@ -193,7 +217,6 @@ nodes = gmiObject2.readNodesIntoArray (pbsNodeFile)
 print("")
 print("nodes: ", nodes)
 print("")
-
 
 
 # print("")
@@ -334,6 +357,8 @@ for field in fieldsToCompare[:]:
 print("")
 for command in commands[:]:
     print(command)
+
+
 
 print("")
 print("len of commands: ", len(commands))

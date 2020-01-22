@@ -160,14 +160,14 @@ print("")
 print("Command line options look good.")
 print("")
 #--------------------------------------------------------------
-modelObject1 = GeosCtmPlotTools (modelFile1, 'latitude','longitude',\
-                                      'lev','time', 'latitude', \
-                                      'longitude', 'lev', 'time' )
+modelObject1 = GeosCtmPlotTools (modelFile1, 'lat','lon',\
+                                      'lev','time', 'lat', \
+                                      'lon', 'lev', 'time' )
 
 
-modelObject2 = GeosCtmPlotTools (modelFile2, 'latitude','longitude',\
-                                      'lev','time', 'latitude', \
-                                      'longitude', 'lev', 'time' )
+modelObject2 = GeosCtmPlotTools (modelFile2, 'lat','lon',\
+                                      'lev','time', 'lat', \
+                                      'lon', 'lev', 'time' )
 
 
 

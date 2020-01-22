@@ -180,9 +180,12 @@ else:
 
 
 modelLevsToPlot = []
-modelLevsToPlot.append(71)
-modelLevsToPlot.append(49)
-modelLevsToPlot.append(41)
+#modelLevsToPlot.append(71)
+#modelLevsToPlot.append(49)
+#modelLevsToPlot.append(41)
+modelLevsToPlot.append(9)
+modelLevsToPlot.append(12)
+modelLevsToPlot.append(13)
 
 
 print("")

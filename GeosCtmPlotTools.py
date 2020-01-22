@@ -95,7 +95,7 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
 
       if fieldName not in self.KNOWN_TRACERS:
-         fieldAllTime = self.hdfData.variables[fieldName.upper()]
+         fieldAllTime = self.hdfData.variables[fieldName]
       else:
          fieldAllTime = self.hdfData.variables[fieldName]
 

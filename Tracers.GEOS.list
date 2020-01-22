@@ -1,0 +1,24 @@
+aoa:Age of air (uniform source) tracer:50,500,1000:1000:0.1:0.002737850787132:years:0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0
+aoa_bl:Age of air above boundary layer:50,500,1000:1000:10:0.002737850787132:years:0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0
+aoa_nh:Age of air northern hemisphere tracer:50,500,1000:1000:100:0.002737850787132:years:0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4
+Be10:Beryllium radionuclide 10:200,500,1000:1000:10:1:mol mol-1
+Be10s:Beryllium radionuclide 10 strat-source:200,500,1000:1000:10:1:mol mol-1
+Be7:Beryllium radionuclide 7:200,500,1000:1000:10:1:mol mol-1
+Be7s:Beryllium radionuclide 7 strat-source:200,500,1000:1000:10:1:mol mol-1
+CH3I:Methyl iodide:200,500,1000:1000:100:1000000000000.0:ppt
+co_25:Anthro CO 25 day tracer:200,500,1000:1000:10:100000000.0:ppb:0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0
+co_50:Anthro CO 50 day tracer:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
+co_50_ea:Anthro CO 50 day tracer East Asia:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
+co_50_eu:Anthro CO 50 day tracer Europe:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
+co_50_na:Anthro CO 50 day tracer North America:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
+co_50_sa:Anthro CO 50 day tracer South Asia:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
+e90:Constant burden 90 day tracer:200,500,1000:1000:10:1:mol mol-1
+e90_n:Constant burden 90 day tracer 40N-pole emiss:200,500,1000:1000:10:1:mol mol-1
+e90_s:Constant burden 90 day tracer 40S-pole emiss:200,500,1000:1000:10:1:mol mol-1
+nh_5:Northern Hemisphere 5 day tracer:500,1000:1000:100:1:mol mol-1
+nh_50:Northern Hemisphere 50 day tracer:500,1000:1000:100:1:mol mol-1
+Pb210:Lead-210:200,500,1000:1000:10:1:mol mol-1
+Pb210s:Lead-210 strat-source:200,500,1000:1000:10:1:mol mol-1
+Rn222:Radon-222:200,500,1000:1000:100:1:mol mol-1
+sf6:Sulfur Hexafluoride tracer:50,500,1000:1000:0.1:1000000000000.0:ppt
+st80_25:Stratospheric source 25 day tracer:200,500,1000:1000:10:1:mol mol-1

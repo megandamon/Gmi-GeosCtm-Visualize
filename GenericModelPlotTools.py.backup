@@ -372,13 +372,21 @@ class GenericModelPlotTools:
 
       plt.subplot(subplotNum)
 
+      print ("")
+      print("min/max field vals in create2dSlice: ", minMaxVals[:])
+      print ("")
+
       minVal = minMaxVals[0]
       maxVal = minMaxVals[1]
 
+
+
+      # Here, we set up the contourLeveling
       if contourLevels != []:
          print ("User provided contour levels")
          clevs = contourLevels
-      else:         
+      else:
+         
          clevs = linspace(minVal, maxVal, 10)
 
 
@@ -386,23 +394,34 @@ class GenericModelPlotTools:
       print ("Contour levels: ", clevs)
       print ("")
 
+
+
+      print ("max val = ", maxVal)
+
       stringMaxVal = str(maxVal)
       splitStrings = stringMaxVal.split("e")
+      print (splitStrings)
+
+
       if len(splitStrings) != 1:
-         formatString = "%1.1e"+splitStrings[1]         
+         formatString = "%1.1e"+splitStrings[1]
+         
       else:
          formatString = "%1.1e"
+
+      print (formatString)
+      
+
 
 
       CS = plt.contour(X_model, Y_model, z, levels=clevs, cmap=colorMap)
       plt.clabel(CS, inline=1, colors="black", fmt="%1.1e")
+
       # draw the filled contours
       CF = plt.contourf(X_model, Y_model, z, levels=clevs, cmap=colorMap)
 
-      if subplotNum == 111: # single image on a page
-         cbar = plt.colorbar(orientation='horizontal')
-      else: # several images on a page
-         cbar = plt.colorbar(orientation='vertical')
+      #cbar = plt.colorbar(orientation='horizontal')
+      cbar = plt.colorbar()
 
       if units != None:
          cbar.set_label(units)        

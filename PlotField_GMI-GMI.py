@@ -119,13 +119,51 @@ print("")
 print("Command line options look good.")
 print("")
 #--------------------------------------------------------------
+
+simType1 = gmiFile1.split(".")[1]
+simType2 = gmiFile2.split(".")[1]
+
+#---------------------------------------------------------------
+print("")
+print("GMI1 simulation type: ", simType1)
+print("GMI2 simulation type: ", simType2)
+print("")
+#--------------------------------------------------------------
+
+if simType1.strip() == "amonthly":
+    timeVarName1 = "hdr"
+else:
+    timeVarName1 = "nymd"
+
+if simType2.strip() == "amonthly":
+    timeVarName2 = "hdr"
+else:
+    timeVarName2 = "nymd"
+
+if simType1.strip() == "idaily" and \
+	simType2.strip() == "idaily":
+    timeVarName2 = "hdr"
+    timeVarName1 = timeVarName2
+
+print ("Variable to extract: ", variableExtractField)
+
+print ("Time var: ", timeVarName2)
+
+if variableExtractField == None or len(variableExtractField) == 0:
+    print ("Equals None!")
+    labelVar = None
+else:
+    labelVar = 'const_labels'
+
+
 gmiObject1 = GmiPlotTools (gmiFile1, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
+                             'longitude_dim', 'eta_dim', timeVarName1, labelVar)
+
 
 gmiObject2 = GmiPlotTools (gmiFile2, 'latitude_dim', 'longitude_dim', \
                              'eta_dim', 'rec_dim', 'latitude_dim', \
-                             'longitude_dim', 'eta_dim', 'hdr', 'const_labels')
+                             'longitude_dim', 'eta_dim', timeVarName2, labelVar)
 
 
 order = "GMI"
@@ -157,7 +195,6 @@ for field in fieldsToCompareAll[:]:
 print("")
 print("Fields to compare: ", fieldsToCompare[:])
 print("")
-
 
 
 foundField = False
