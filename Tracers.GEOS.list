@@ -6,12 +6,12 @@ Be10s:Beryllium radionuclide 10 strat-source:200,500,1000:1000:10:1:mol mol-1
 Be7:Beryllium radionuclide 7:200,500,1000:1000:10:1:mol mol-1
 Be7s:Beryllium radionuclide 7 strat-source:200,500,1000:1000:10:1:mol mol-1
 CH3I:Methyl iodide:200,500,1000:1000:100:1000000000000.0:ppt
-co_25:Anthro CO 25 day tracer:200,500,1000:1000:10:100000000.0:ppb:0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0
-co_50:Anthro CO 50 day tracer:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
-co_50_ea:Anthro CO 50 day tracer East Asia:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
-co_50_eu:Anthro CO 50 day tracer Europe:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
-co_50_na:Anthro CO 50 day tracer North America:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
-co_50_sa:Anthro CO 50 day tracer South Asia:200,500,1000:1000:10:100000000.0:ppb:0,20,40,60,80,100,120,140,160,180,200
+co_25:Anthro CO 25 day tracer:200,500,1000:1000:10:100000000.0:ppb
+co_50:Anthro CO 50 day tracer:200,500,1000:1000:10:100000000.0:ppb
+co_50_ea:Anthro CO 50 day tracer East Asia:200,500,1000:1000:10:100000000.0:ppb
+co_50_eu:Anthro CO 50 day tracer Europe:200,500,1000:1000:10:100000000.0:ppb
+co_50_na:Anthro CO 50 day tracer North America:200,500,1000:1000:10:100000000.0:ppb
+co_50_sa:Anthro CO 50 day tracer South Asia:200,500,1000:1000:10:100000000.0:ppb
 e90:Constant burden 90 day tracer:200,500,1000:1000:10:1:mol mol-1
 e90_n:Constant burden 90 day tracer 40N-pole emiss:200,500,1000:1000:10:1:mol mol-1
 e90_s:Constant burden 90 day tracer 40S-pole emiss:200,500,1000:1000:10:1:mol mol-1

@@ -61,7 +61,7 @@ def plotZM (data, x, y, fig, ax1, colorMap, dataMin, dataMax, plotOpt=None, cont
     ax1.clabel(CS,inline=1, fontsize=10, colors="black", fmt="%1.1e")
 
     print ("vmin/vmax: ", dataMin, dataMax)
-    print ("vmin/vmax of contours: ", clevs[0], clevs[-1])
+    print ("vmin/vmax of contours: ", clevs[0], clevs[-1], type(clevs[0]), type(clevs[-1]))
 
 
 

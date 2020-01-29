@@ -130,19 +130,9 @@ if numProcesses <= 0:
     sys.exit(0)
 
 
-
-
-print("")
-print(geosFile)
-print("")
-
 geosSimName1 = geosFile.split(".")[0] + "-" + geosFile.split(".")[1]
 
 
-print("")
-print("Sim name: ")
-print(geosSimName1)
-print("")
 
 
 #---------------------------------------------------------------
@@ -161,17 +151,6 @@ print("")
 
 
 tracerTools = TracerPlotTools (keyFile)
-count = 0
-for tracer in range(len(tracerTools.tracerDict)):
-   print (tracerTools.tracerDict[count]['name'], tracerTools.tracerDict[count]['long_name'], 
-          tracerTools.tracerDict[count]['slices'], tracerTools.tracerDict[count]['lowLevel'], 
-          tracerTools.tracerDict[count]['highLevel'])
-   count = count + 1
-
-
-
-
-print("")
 
 fieldList = geosObject1.fieldList
 
@@ -181,15 +160,8 @@ for field in fieldList[:]:
         fieldsToCompare.append(field)
 
 
-print("")
-print("Fields to compare: ", fieldsToCompare[:])
-print("GEOS model levels: ", geosObject1.lev[:])
-print("")
-
 
 nodes = geosObject1.readNodesIntoArray (pbsNodeFile)
-print("nodes: ", nodes)
-
 # print ""
 # print "*******************************"
 # print "Testing nodes for access..."
@@ -218,6 +190,8 @@ procCount = 0
 nodeCount = 0
 
 
+print (fieldsToCompare)
+
 
 for field in fieldsToCompare[:]:
 
@@ -241,40 +215,40 @@ for field in fieldsToCompare[:]:
     field = fieldsToCompare[fieldCount]
 
     tCount = 0
+    found = False
     for tracer in range(len(tracerTools.tracerDict)): 
         if tracerTools.tracerDict[tCount]['name'].lower() == field.lower():
             print ("Found tracer: ", field, " at index: ", tCount)
-            print ("Breaking")
-            break
-            
-
+            found = True
+            break       
+        else: print (tracer, field)
+        
         print ("Increment counter")
         tCount = tCount + 1
 
-
-    print ("Out of loop: ", tCount)
+    if found == False: 
+        fieldCount = fieldCount + 1
+        continue
 
     pythonCommand = "PlotTracerSlice.py -c  " + geosFile \
         + " -l " + tracerTools.tracerDict[tCount]['slices'][0] \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -u lev -n \"" + tracerTools.tracerDict[tCount]['long_name'] + "\" " 
+        + " -n \"" + tracerTools.tracerDict[tCount]['long_name'] + "\" " \
+        + " -k " + keyFile
 
     pythonCommand2 = "PlotTracerSlice.py -c  " + geosFile \
         + " -l " + tracerTools.tracerDict[tCount]['slices'][1] \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -u lev -n \"" + tracerTools.tracerDict[tCount]['long_name'] + "\" " 
+        + " -n \"" + tracerTools.tracerDict[tCount]['long_name'] + "\" "  \
+        + " -k " + keyFile
 
     pythonCommand3 = "PlotTracerZM.py -g " + geosFile \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -l " + tracerTools.tracerDict[tCount]['lowLevel'] \
-        + " -u " + tracerTools.tracerDict[tCount]['highLevel']
-
+        + " -k " + keyFile
 
     print("")
     print("Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount)
     print("")
-
-
 
     sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
         "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
@@ -302,8 +276,6 @@ print("")
 for command in commands[:]:
     print(command)
 print("")
-
-
 
 pool = multiprocessing.Pool(processes=len(commands))
 

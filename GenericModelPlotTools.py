@@ -144,6 +144,24 @@ class GenericModelPlotTools:
    # DESCRIPTION: 
    # This routine returns pressure levels and inverts them. 
    #---------------------------------------------------------------------------  
+   def return2DSliceAndConvert (self, field, timeRecord, fileLevel, unitConvert):
+
+
+      modelFieldArray = self.returnField (field, timeRecord)
+      newModelFieldArray = self.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
+      modelFieldArray = None
+      modelFieldArray = newModelFieldArray[:,:] * float(unitConvert)
+      newModelFieldArray = None
+
+      return modelFieldArray
+
+
+   #---------------------------------------------------------------------------  
+   # AUTHORS: Megan Damon NASA GSFC / SSAI
+   #
+   # DESCRIPTION: 
+   # This routine returns pressure levels and inverts them. 
+   #---------------------------------------------------------------------------  
 
    def returnPressureLevels (self):
 
@@ -598,11 +616,7 @@ class GenericModelPlotTools:
          slice = fieldArray[:, :]
 
       elif len(fieldArray.shape) == 3:
-         print("")
-         print("Field is 3D (expected)")
-         print("")
          modelLev = self.findLevelFromArray(self.lev[:], refPressure)
-         print("Using model level ", modelLev, " for reference pressure: ", refPressure, " hPa")
          slice = fieldArray[modelLev, :, :]
 
       else:

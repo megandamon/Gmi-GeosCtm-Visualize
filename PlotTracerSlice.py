@@ -133,124 +133,33 @@ print("")
 
 tracerTools = TracerPlotTools (keyFile)
 tracerTools.setUnitInfo(fieldToPlot)
-
-print("")
-print("File name: ", modelFile)
-print("")
-
-modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
-
-
-print("")
-print("Simulation name:", modelSimName)
-print("")
-
-
-print("")
-print("Field to plot: ", fieldToPlot)
-print("")
-
-
-
 modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
+modelFieldArray = modelObject.return2DSliceAndConvert (fieldToPlot, timeRecord, \
+                                                           fileLevel, tracerTools.unitConvert)
 
-
-fillValue = modelObject.hdfData.variables[fieldToPlot].getncattr('_FillValue')
-
-print ("")
-print ("Fill value: ", fillValue)
-print ("")
-
-levs = modelObject.returnPressureLevels()
-
-
-print("")
-print("Model eta levels: ", levs)
-print("")
-
-
-
-modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord)
-
-print("")
-print("Model min / max raw: ", modelFieldArray.min(), " / ", modelFieldArray.max())
-print("")
-
-
-newModelFieldArray = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
-
-print ()
-print (type(newModelFieldArray))
-print ()
-
-
-print (tracerTools.unitConvert)
-
-modelFieldArray = None
-modelFieldArray = newModelFieldArray[:,:] * float(tracerTools.unitConvert)
-newModelFieldArray = None
-
-print("")
-print("modelFieldArray shape: ", modelFieldArray.shape)
-print("")
-
-print("")
-print("Model  2D min / max: ", modelFieldArray.min(), " / ", modelFieldArray.max())
-print("")
-
-
-print("")
-print("Global sum of ", fieldToPlot, " : ", sum(modelFieldArray))
-print("")
-
-
-
-
-         
 #-----------------------------------------------------#
 # Model  Plotting
-
-
-minModelLat = modelObject.lat[:].min()
-maxModelLat = modelObject.lat[:].max()
-minModelLong = modelObject.long[:].min()
-maxModelLong = modelObject.long[:].max()
-
 
 plt.figure(figsize=(20,20))
 
 modelObject.createPlotObjects()
-
-
-print("")
-print("Model min / max : ", modelFieldArray.min(), " / ", modelFieldArray.max())
-print("")
-
-
-stringLevel = str(fileLevel)
-
-print("")
-print("Level: ", stringLevel)
-print("")
-
-
-plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(float(stringLevel))) \
+modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
+plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(fileLevel) \
     + " hPa (" + longName + ") " + dateYearMonth
-
 modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, modelFieldArray, \
                                        [modelFieldArray.min(),modelFieldArray.max()], \
-                                       [minModelLat,maxModelLat], \
-                                       [minModelLong, maxModelLong], 111, \
+                                       [modelObject.lat[:].min(),modelObject.lat[:].max()], \
+                                       [modelObject.long[:].min(), modelObject.long[:].max()], 111, \
                                        plotTitle, COLORMAP, tracerTools.units, \
                                        contourLevels=tracerTools.contourLevels)
 
 
 file = "f"
 if file == "f":
-    plt.savefig("plots/" + fieldToPlot + "-" + modelSimName + "_" + str(int(float(stringLevel))) \
+    plt.savefig("plots/" + fieldToPlot + "-" + modelSimName + "_" + str(fileLevel) \
                     + "hPa.", \
                     bbox_inches='tight')
 elif file == "s":

@@ -53,6 +53,35 @@ class TracerPlotTools:
          self.tracerDict = self.createTracerDictFromKeyFile(keyFile)
 
 
+   def setLevelInfo (self, fieldToPlot):
+
+      count = 0
+      found = False
+      for tracer in range(len(self.tracerDict)):
+    
+         if fieldToPlot.lower() == self.tracerDict[count]["name"].lower():
+
+            self.lowerLevel = self.tracerDict[count]['lowLevel']
+            self.upperLevel = self.tracerDict[count]['highLevel']
+
+            print ()
+            print ("Found ", fieldToPlot, ", using levels: ", self.lowerLevel, \
+                      self.upperLevel)
+            print ()
+
+            found = True
+            break
+
+         count = count + 1
+
+      if found == False:
+         print ()
+         print ("ERROR: did not find: ", fieldToPlot, " in the key file: ", self.keyFile)
+         print ()
+         sys.exit(0)
+
+
+
    def setUnitInfo (self, fieldToPlot):
       
       count = 0
@@ -64,7 +93,7 @@ class TracerPlotTools:
             self.contourLevels = self.tracerDict[count]['contourLevels']
             self.unitConvert = self.tracerDict[count]['unitConvert']
             self.newUnit = self.tracerDict[count]['newUnit']
-
+            self.longName = self.tracerDict[count]['long_name']
             print ()
             print ("Found ", fieldToPlot, ", using units: ", self.newUnit, \
                       " with conversion: ", self.unitConvert)

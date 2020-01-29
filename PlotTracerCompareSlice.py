@@ -139,93 +139,20 @@ tracerTools = TracerPlotTools (keyFile)
 tracerTools.setUnitInfo(fieldToPlot)
 
 
-print("")
-print("File1 name: ", model1File)
-print("File2 name: ", model1File)
-print("")
-
-model1SimName = model1File.split(".")[0] + "-" + model1File.split(".")[1]
-model2SimName = model2File.split(".")[0] + "-" + model2File.split(".")[1]
-
-
-print("")
-print("Simulation 1 name:", model1SimName)
-print("Simulation 2 name:", model2SimName)
-print("")
-
-
-print("")
-print("Field to plot: ", fieldToPlot)
-print(longName)
-print("")
-
-
-
-
-
 model1Object = GeosCtmPlotTools (model1File, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
+fillValue1 = model1Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
+model1FieldArray = model1Object.return2DSliceAndConvert (fieldToPlot, timeRecord, \
+                                                             fileLevel, float(tracerTools.unitConvert))
+
 
 model2Object = GeosCtmPlotTools (model2File, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
-
-
-
-fillValue1 = model1Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
 fillValue2 = model2Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
-
-
-print ("")
-print ("Fill value1: ", fillValue1)
-print ("Fill value2: ", fillValue2)
-print ("")
-
-
-
-levs1 = model1Object.returnPressureLevels()
-levs2 = model2Object.returnPressureLevels()
-
-print ()
-print ("levs1: ", levs1)
-print ("levs2: ", levs2)
-print ()
-
-
-model1FieldArray = model1Object.returnField (fieldToPlot, timeRecord)
-model2FieldArray = model2Object.returnField (fieldToPlot, timeRecord)
-
-print("")
-print("Model 1 min / max raw: ", model1FieldArray.min(), " / ", model1FieldArray.max())
-print("")
-print("")
-print("Model 2 min / max raw: ", model2FieldArray.min(), " / ", model2FieldArray.max())
-print("")
-
-
-newModel1FieldArray = model1Object.return2DSliceFromRefPressure (model1FieldArray, fileLevel)
-newModel2FieldArray = model1Object.return2DSliceFromRefPressure (model2FieldArray, fileLevel)
-
-print ()
-print (type(newModel1FieldArray))
-print (type(newModel2FieldArray))
-print ()
-
-model1FieldArray = None
-model1FieldArray = newModel1FieldArray * float(tracerTools.unitConvert)
-newModel1FieldArray = None
-
-model2FieldArray = None
-model2FieldArray = newModel2FieldArray * float(tracerTools.unitConvert)
-newModel2FieldArray = None
-
-
-print("")
-print("model1FieldArray shape: ", model1FieldArray.shape)
-print("model2FieldArray shape: ", model2FieldArray.shape)
-print("")
-
+model2FieldArray = model2Object.return2DSliceAndConvert (fieldToPlot, timeRecord, \
+                                                             fileLevel, float(tracerTools.unitConvert))
 
 
 #***********************************************
@@ -269,19 +196,7 @@ if model1FieldArray.shape != model2FieldArray.shape:
 
         model2FieldArray[model2FieldArray>=fillValue2] = 0.0
 
-#***********************************************
 
-print("")
-print("Model 1 2D min / max interp: ", model1FieldArray.min(), " / ", model1FieldArray.max())
-print("")
-
-print("")
-print("Model 2 2D min / max interp: ", model2FieldArray.min(), " / ", model2FieldArray.max())
-print("")
-
-
-
-#***********************************************
 minValueBoth = model1FieldArray.min()
 maxValueBoth = model1FieldArray.max()
 
@@ -292,13 +207,12 @@ if model2FieldArray.max() > maxValueBoth:
 #***********************************************
 
 
-
-
-
 print("")
 print("Global sum 1 of ", fieldToPlot, " : ", sum(model1FieldArray))
 print("Global sum 2 of ", fieldToPlot, " : ", sum(model2FieldArray))
 print("")
+
+
 
 #***********************************************
 if tracerTools.units.find("days") != -1:
@@ -322,91 +236,53 @@ if tracerTools.units.find("mol-1") != -1:
 
 
 z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray, analType)
-
-
-print ()
-print ("min/max Z values at pressure ", fileLevel, " are: ", z_Model.min(), z_Model.max())
-print ()
 #***********************************************
-
-
-
-
-
-
-
-
 
 
 #-----------------------------------------------------#
 # Model  Plotting
 
-
-minModelLat = modelObject.lat[:].min()
-maxModelLat = modelObject.lat[:].max()
-minModelLong = modelObject.long[:].min()
-maxModelLong = modelObject.long[:].max()
-
-
 plt.figure(figsize=(20,20))
+modelObject.createPlotObjects()
 
-
-model1Object.createPlotObjects()
-model2Object.createPlotObjects()
-
-
-print ()
-print ("Min / max values of both model 1 and 2: ", minValueBoth, maxValueBoth)
-print ()
-
-stringLevel = str(fileLevel)
-
-print("")
-print("Level: ", stringLevel)
-print("")
-
-
-plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(int(float(stringLevel))) \
+model1SimName = model1File.split(".")[0] + "-" + model1File.split(".")[1]
+plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(fileLevel) \
     + " hPa (" + longName + ") " + dateYearMonth
-
-
-
 modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, model1FieldArray, \
                                        [minValueBoth, maxValueBoth], \
-                                       [minModelLat,maxModelLat], \
-                                       [minModelLong, maxModelLong], 311, \
+                                       [modelObject.lat[:].min(),modelObject.lat[:].max()], \
+                                       [modelObject.long[:].min(), modelObject.long[:].max()], 311, \
                                        plotTitle1, COLORMAP, tracerTools.units, \
                                        contourLevels=tracerTools.contourLevels)
 
 
-plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(int(float(stringLevel))) \
+model2SimName = model2File.split(".")[0] + "-" + model2File.split(".")[1]
+plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(fileLevel) \
      + " hPa (" + longName + ") " + dateYearMonth
-
 modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, model2FieldArray, \
                                        [minValueBoth, maxValueBoth], \
-                                       [minModelLat,maxModelLat], \
-                                       [minModelLong, maxModelLong], 312, \
+                                       [modelObject.lat[:].min(),modelObject.lat[:].max()], \
+                                       [modelObject.long[:].min(), modelObject.long[:].max()], 312, \
                                        plotTitle2, COLORMAP, tracerTools.units, \
                                        contourLevels=tracerTools.contourLevels)
 
 
 
 
-plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(float(stringLevel))) \
+plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(fileLevel) \
      + " hPa (" + longName + ") " + dateYearMonth
-
 modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, z_Model, \
                                        [.5,1.5], \
-                                       [minModelLat,maxModelLat], \
-                                       [minModelLong, maxModelLong], 313, \
+                                       [modelObject.lat[:].min(),modelObject.lat[:].max()], \
+                                       [modelObject.long[:].min(), modelObject.long[:].max()], 313, \
                                        plotTitle3, "nipy_spectral", units=None, contourLevels=[])
 
 file = "f"
 if file == "f":
-    plt.savefig("plots/" + fieldToPlot + "-" + model1SimName + "_" + str(int(float(stringLevel))) \
+    plt.savefig("plots/" + fieldToPlot + "-" + model1SimName + "_" + str(fileLevel) \
                     + "hPa.", \
                     bbox_inches='tight')
 elif file == "s":
@@ -416,5 +292,5 @@ plt.clf()
 
 
 print("")
-print("Plotted : ", fieldToPlot, " to plots/ directory")
+print("Plotted slice for : ", fieldToPlot, " to plots/ directory")
 print("") 
