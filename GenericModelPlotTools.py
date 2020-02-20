@@ -31,6 +31,7 @@ from matplotlib.colors import BoundaryNorm
 import matplotlib.colors as colors
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.basemap import Basemap
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import vertLevels_GEOS5 as pressLevels
 
@@ -381,14 +382,14 @@ class GenericModelPlotTools:
 
    # X_model, Y_model, and min/maxes 
    # can be members of the class
-   def create2dSliceContours (self, baseMap, X_model, Y_model, z, \
+   def create2dSliceContours (self, fig, baseMap, X_model, Y_model, z, \
                          minMaxVals, minMaxLat, \
                          minMaxLong, subplotNum, plotTitle, \
                          colorMap, units, \
                          normalize=False, contourLevels=None):
 
 
-      plt.subplot(subplotNum)
+      axPlot = fig.add_subplot(subplotNum)
 
       minVal = minMaxVals[0]
       maxVal = minMaxVals[1]
@@ -404,34 +405,76 @@ class GenericModelPlotTools:
       print ("Contour levels: ", clevs)
       print ("")
 
-      stringMaxVal = str(maxVal)
-      splitStrings = stringMaxVal.split("e")
-      if len(splitStrings) != 1:
-         formatString = "%1.1e"+splitStrings[1]         
+      numClevs = len(clevs)
+      midClev = int(numClevs/2)
+      print ("midClev: ", midClev)
+      clevsString = str(float(clevs[midClev]))
+      print ("clevsString: ", clevsString)
+      print ("len: ", clevsString.split('.')[1])
+      digits = clevsString.split('.')[1]
+
+
+      if len(digits) <= 3:
+         formatString = "%1." + str(len(digits)) + "f"
       else:
          formatString = "%1.1e"
 
+      if subplotNum == 111: # single image on a page
+         cLabelSize = 14
+      else:
+         cLabelSize = 10
 
-      CS = plt.contour(X_model, Y_model, z, levels=clevs, cmap=colorMap)
-      plt.clabel(CS, inline=1, colors="black", fmt="%1.1e")
+      CS = plt.contour(X_model, Y_model, z, levels=clevs, cmap=colorMap, extend='both')
+      plt.clabel(CS, inline=1, colors="black", fmt=formatString, fontsize=cLabelSize)
       # draw the filled contours
-      CF = plt.contourf(X_model, Y_model, z, levels=clevs, cmap=colorMap)
+      CF = plt.contourf(X_model, Y_model, z, levels=clevs, cmap=colorMap, extend='both')
 
       if subplotNum == 111: # single image on a page
-         cbar = plt.colorbar(orientation='horizontal')
+         orientation = 'horizontal'
+         pad = .05
+         fraction = 0.4
+#         cbar = fig.colorbar(CF, ax=axPlot, orientation='horizontal', pad=.05, fraction=0.4)
+         fontSize = "xx-large"
+         titleFontSize = 20
+         latLonFontSize = 20
+
       else: # several images on a page
-         cbar = plt.colorbar(orientation='vertical')
+         print ("Mutliple images on page")
+         orientation = 'vertical'
+         pad = .05
+         fraction = 0.4
+#         cbar = fig.colorbar(CF, ax=axplot, orientation='vertical', pad=.05)
+         fontSize = "large"
+         titleFontSize = 16
+         latLonFontSize = 14
+
+      cbar = fig.colorbar(CF, ax=axPlot, orientation=orientation, pad=pad, fraction=fraction)
 
       if units != None:
-         cbar.set_label(units)        
+         cbar.set_label(label=units,size=16)
+
+
+
+
+
+
+      for t in cbar.ax.get_xticklabels():
+         t.set_fontsize(fontSize)
       
-      plt.title(plotTitle)
+      plt.title(plotTitle, fontsize=titleFontSize)
       plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])
 
-      baseMap.drawparallels(numpy.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0], color='grey')
-      baseMap.drawmeridians(numpy.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1], color='grey')
+
+      latLabels = [-90, -60, -30, 0, 30, 60, 90]
+      lonLabels = [-120, -60, 0, 60, 120, 180]
+
+
+      baseMap.drawparallels(latLabels,labels=[1,0,0,0], color='grey', \
+                               fontsize=latLonFontSize)
+      baseMap.drawmeridians(lonLabels,labels=[0,1,0,1], color='grey', \
+                               fontsize=latLonFontSize)
       baseMap.drawcoastlines()
-      baseMap.drawstates()
+      baseMap.drawcountries()
 
 
 

@@ -53,6 +53,8 @@ from TracerPlotTools import TracerPlotTools
 
 #*********************
 COLORMAP = "rainbow"
+RATIO_COLORMAP = "bwr"
+RATIO_CONTOUR_LEVELS = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
 NUM_ARGS = 8
 #*********************
 
@@ -72,9 +74,8 @@ def usage ():
     print("-f tracer to plot")
     print("")
     sys.exit (0)
+#*********************
 
-
-print("Start plotting field differences.")
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -93,11 +94,6 @@ longName = str(optList[5][1])
 keyFile = str(optList[6][1])
 fieldToPlot = str(optList[7][1])
 
-#---------------------------------------------------------------
-print("")
-print("Checking command line options... ")
-print("")
-#---------------------------------------------------------------
 if not os.path.exists (model1File):
     print("The file you provided does not exist: ", model1File)
     sys.exit(0)
@@ -124,7 +120,7 @@ if not os.path.exists (keyFile):
 if fileLevel < 0.1 and fileLevel > 1300.: 
     print("GEOS-5 pressure levels should be < 1300 and > 0.1 mb/hPa")
     sys.exit(0)
-#*********************
+
 
 
 #---------------------------------------------------------------
@@ -134,17 +130,16 @@ print("")
 #---------------------------------------------------------------
 
 
-
-tracerTools = TracerPlotTools (keyFile)
-tracerTools.setUnitInfo(fieldToPlot)
-
-
 model1Object = GeosCtmPlotTools (model1File, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
+
+tracerTools = TracerPlotTools (keyFile, model1Object)
+
+
 fillValue1 = model1Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
 model1FieldArray = model1Object.return2DSliceAndConvert (fieldToPlot, timeRecord, \
-                                                             fileLevel, float(tracerTools.unitConvert))
+                                                             fileLevel, float(tracerTools.tracerDict[fieldToPlot].unitConvert))
 
 
 model2Object = GeosCtmPlotTools (model2File, 'lat','lon',\
@@ -152,7 +147,7 @@ model2Object = GeosCtmPlotTools (model2File, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 fillValue2 = model2Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
 model2FieldArray = model2Object.return2DSliceAndConvert (fieldToPlot, timeRecord, \
-                                                             fileLevel, float(tracerTools.unitConvert))
+                                                             fileLevel, float(tracerTools.tracerDict[fieldToPlot].unitConvert))
 
 
 #***********************************************
@@ -215,22 +210,22 @@ print("")
 
 
 #***********************************************
-if tracerTools.units.find("days") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("years") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("years") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("kg-1") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("kg-1") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("ppt") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("ppt") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("ppb") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("ppb") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("mol-1") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("mol-1") != -1:
     analType = "r"
     analString = "ratio"
 
@@ -242,47 +237,61 @@ z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray
 #-----------------------------------------------------#
 # Model  Plotting
 
-plt.figure(figsize=(20,20))
+if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
+
+    step = (maxValueBoth - minValueBoth) / 10.
+    contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax (minValueBoth, maxValueBoth, \
+                                                               step=float('{:0.2e}'.format(step)))
+    print (contours)
+else:
+    contours = []
+    for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
+        contours.append(float(contour))
+
+
+
+
+
+fig = plt.figure(figsize=(20,20))
 modelObject.createPlotObjects()
 
 model1SimName = model1File.split(".")[0] + "-" + model1File.split(".")[1]
-plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(fileLevel) \
-    + " hPa (" + longName + ") " + dateYearMonth
-modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
+plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
+    + " hPa  " + dateYearMonth
+modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, model1FieldArray, \
                                        [minValueBoth, maxValueBoth], \
                                        [modelObject.lat[:].min(),modelObject.lat[:].max()], \
                                        [modelObject.long[:].min(), modelObject.long[:].max()], 311, \
-                                       plotTitle1, COLORMAP, tracerTools.units, \
-                                       contourLevels=tracerTools.contourLevels)
+                                       plotTitle1, COLORMAP, tracerTools.tracerDict[fieldToPlot].units, \
+                                       contourLevels=contours)
 
 
 model2SimName = model2File.split(".")[0] + "-" + model2File.split(".")[1]
-plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(fileLevel) \
-     + " hPa (" + longName + ") " + dateYearMonth
-modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
+plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
+    + " hPa  " + dateYearMonth
+modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, model2FieldArray, \
                                        [minValueBoth, maxValueBoth], \
                                        [modelObject.lat[:].min(),modelObject.lat[:].max()], \
                                        [modelObject.long[:].min(), modelObject.long[:].max()], 312, \
-                                       plotTitle2, COLORMAP, tracerTools.units, \
-                                       contourLevels=tracerTools.contourLevels)
+                                       plotTitle2, COLORMAP, tracerTools.tracerDict[fieldToPlot].units, \
+                                       contourLevels=contours)
 
 
-
-
-plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(fileLevel) \
+ratioContourLevels = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
+plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
      + " hPa (" + longName + ") " + dateYearMonth
-modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
+modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, z_Model, \
                                        [.5,1.5], \
                                        [modelObject.lat[:].min(),modelObject.lat[:].max()], \
                                        [modelObject.long[:].min(), modelObject.long[:].max()], 313, \
-                                       plotTitle3, "nipy_spectral", units=None, contourLevels=[])
+                                       plotTitle3, "bwr", units=None, contourLevels=ratioContourLevels)
 
 file = "f"
 if file == "f":
-    plt.savefig("plots/" + fieldToPlot + "-" + model1SimName + "_" + str(fileLevel) \
+    plt.savefig("plots/" + fieldToPlot + "-" + model1SimName + "_" + str(int(fileLevel)) \
                     + "hPa.", \
                     bbox_inches='tight')
 elif file == "s":

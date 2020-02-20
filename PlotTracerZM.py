@@ -100,30 +100,20 @@ print("")
 
 
 
-tracerTools = TracerPlotTools (keyFile)
-tracerTools.setUnitInfo(fieldToPlot)
-tracerTools.setLevelInfo(fieldToPlot)
-
-contourLevelsFloat = zeros(len(tracerTools.contourLevels), dtype=float)
-count = 0
-for lev in tracerTools.contourLevels:
-    contourLevelsFloat[count] = float(lev)
-    count = count + 1
-
-if len(contourLevelsFloat) == 0:
-    contourLevelsFloat = []
-
 
 modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
+
+tracerTools = TracerPlotTools (keyFile, modelObject)
+
 modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord)
-newModelFieldArray = modelFieldArray * float(tracerTools.unitConvert)
+newModelFieldArray = modelFieldArray * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
 modelFieldArray = newModelFieldArray
 newModelFieldArray = None
 
-llIndex = modelObject.findLevelFromArray(modelObject.lev, float(tracerTools.lowerLevel))
-ulIndex = modelObject.findLevelFromArray(modelObject.lev, float(tracerTools.upperLevel))
+llIndex = modelObject.findLevelFromArray(modelObject.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
+ulIndex = modelObject.findLevelFromArray(modelObject.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
 
 zmArray = mean(modelFieldArray[llIndex:ulIndex+1, :, :], axis=2)
 
@@ -133,7 +123,7 @@ zmArray = mean(modelFieldArray[llIndex:ulIndex+1, :, :], axis=2)
 #-----------------------------------------------------#
 # Model  Plotting
 
-fig = plt.figure(figsize=(20,20))
+fig = plt.figure(figsize=(18,20))
 
 plotOpt = {}
 
@@ -141,15 +131,30 @@ modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
 
 
 plotOpt['title'] = modelSimName + "    " + fieldToPlot +  " Zonal Mean " + \
-    " (" + tracerTools.longName + ") " + str(dateYearMonth )
-plotOpt['units'] = tracerTools.units
+    " (" + tracerTools.tracerDict[fieldToPlot].long_name + ") " + str(dateYearMonth )
+plotOpt['units'] = tracerTools.tracerDict[fieldToPlot].units
 
 
 ax1 = fig.add_subplot(111)
+
+contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(zmArray, step=(zmArray.max()-zmArray.min())/10.)
+    
+
+if tracerTools.tracerDict[fieldToPlot].zmContours == None:
+    print ("Calling createTracerContours")
+    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(zmArray, step=(zmArray.max()-zmArray.min())/10.)
+else:
+    contours = []
+    for contour in tracerTools.tracerDict[fieldToPlot].zmContours:
+        contours.append(float(contour))
+    print ("Received contours from input file")
+
+
+
 plotZM (zmArray, modelObject.lat[:], modelObject.lev[llIndex:ulIndex+1], \
             fig, ax1, COLORMAP, \
             zmArray.min(), zmArray.max(), \
-            plotOpt=plotOpt, contourLevels=contourLevelsFloat)
+            plotOpt=plotOpt, contourLevels=contours)
 
 fileTitle = "-" + modelSimName + "_ZM."
 plt.savefig ("plots/" + fieldToPlot + fileTitle \

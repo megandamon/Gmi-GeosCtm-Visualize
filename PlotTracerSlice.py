@@ -84,7 +84,7 @@ if len (optList) != NUM_ARGS:
    sys.exit (0)
 
 modelFile = str(optList[0][1])
-fileLevel = int(optList[1][1])
+fileLevel = float(optList[1][1])
 timeRecord = int(optList[2][1])
 dateYearMonth = optList[3][1]
 longName = str(optList[4][1])
@@ -101,7 +101,7 @@ if not os.path.exists (modelFile):
     print("The file you provided does not exist: ", modelFile)
     sys.exit(0)
 
-if fileLevel < 0:
+if fileLevel < 0.0:
     print("The level to plot must be >= 0 (check file 1 lev)")
     sys.exit(0)
 
@@ -131,35 +131,54 @@ print("")
 
 
 
-tracerTools = TracerPlotTools (keyFile)
-tracerTools.setUnitInfo(fieldToPlot)
 modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
+
+tracerTools = TracerPlotTools (keyFile, modelObject)
 modelFieldArray = modelObject.return2DSliceAndConvert (fieldToPlot, timeRecord, \
-                                                           fileLevel, tracerTools.unitConvert)
+                                                           fileLevel, tracerTools.tracerDict[fieldToPlot].unitConvert)
+
 
 #-----------------------------------------------------#
 # Model  Plotting
 
-plt.figure(figsize=(20,20))
+fig = plt.figure(figsize=(20,20))
 
 modelObject.createPlotObjects()
 modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
-plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(fileLevel) \
+plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
     + " hPa (" + longName + ") " + dateYearMonth
-modelObject.create2dSliceContours (modelObject.baseMap, modelObject.X_grid, \
+
+
+
+if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
+    print ("Calling createTracerContours")
+    print ((modelFieldArray.max() - modelFieldArray.min())/10)
+    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, step=.5)
+    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, \
+                                                    step=(modelFieldArray.max() - modelFieldArray.min())/10)
+    print (contours)
+else:
+    contours = []
+    for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
+        contours.append(float(contour))
+    print ("Received contours from input file")
+
+
+
+modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, modelFieldArray, \
                                        [modelFieldArray.min(),modelFieldArray.max()], \
                                        [modelObject.lat[:].min(),modelObject.lat[:].max()], \
                                        [modelObject.long[:].min(), modelObject.long[:].max()], 111, \
-                                       plotTitle, COLORMAP, tracerTools.units, \
-                                       contourLevels=tracerTools.contourLevels)
+                                       plotTitle, COLORMAP, tracerTools.tracerDict[fieldToPlot].units, \
+                                       contourLevels=contours)
 
 
 file = "f"
 if file == "f":
-    plt.savefig("plots/" + fieldToPlot + "-" + modelSimName + "_" + str(fileLevel) \
+    plt.savefig("plots/" + fieldToPlot + "-" + modelSimName + "_" + str(int(fileLevel)) \
                     + "hPa.", \
                     bbox_inches='tight')
 elif file == "s":

@@ -33,6 +33,7 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.basemap import Basemap
 
 from GenericModelPlotTools import GenericModelPlotTools
+from GenericTracer import GenericTracer
 
 
 class TracerPlotTools:
@@ -45,79 +46,32 @@ class TracerPlotTools:
    # Constructor routine.
    #---------------------------------------------------------------------------  
 
-   def __init__(self, keyFile=None):
+   def __init__(self, modelObject, keyFile):
       
       self.init = True 
       self.tracerDict = None
       if keyFile != None:
-         self.tracerDict = self.createTracerDictFromKeyFile(keyFile)
+         self.tracerDict = self.createTracerDictFromKeyFileObjects(keyFile, modelObject)
 
+   def createTracerDictFromKeyFileObjects (self, modelObject, keyFile):
 
-   def setLevelInfo (self, fieldToPlot):
+      keyLines = GenericModelPlotTools.readFileAndReturnFileLines(GenericModelPlotTools, keyFile)
 
-      count = 0
-      found = False
-      for tracer in range(len(self.tracerDict)):
-    
-         if fieldToPlot.lower() == self.tracerDict[count]["name"].lower():
+      self.tracerDict = {}
+      lineCount = 0
+      while lineCount < len(keyLines)-1:
 
-            self.lowerLevel = self.tracerDict[count]['lowLevel']
-            self.upperLevel = self.tracerDict[count]['highLevel']
+         tracerMetData = keyLines[lineCount].split(':') # split this line into metdata tokens
 
-            print ()
-            print ("Found ", fieldToPlot, ", using levels: ", self.lowerLevel, \
-                      self.upperLevel)
-            print ()
-
-            found = True
-            break
-
-         count = count + 1
-
-      if found == False:
-         print ()
-         print ("ERROR: did not find: ", fieldToPlot, " in the key file: ", self.keyFile)
-         print ()
-         sys.exit(0)
-
-
-
-   def setUnitInfo (self, fieldToPlot):
+         if 'slice' not in tracerMetData[0]:
+         
+            tracerName = tracerMetData[0]
+            self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject, keyFile)# create new tracer info
+            
+         lineCount = lineCount + 1
       
-      count = 0
-      found = False
-      for tracer in range(len(self.tracerDict)):
-    
-         if fieldToPlot.lower() == self.tracerDict[count]["name"].lower():
+      return self.tracerDict
 
-            self.contourLevels = self.tracerDict[count]['contourLevels']
-            self.unitConvert = self.tracerDict[count]['unitConvert']
-            self.newUnit = self.tracerDict[count]['newUnit']
-            self.longName = self.tracerDict[count]['long_name']
-            print ()
-            print ("Found ", fieldToPlot, ", using units: ", self.newUnit, \
-                      " with conversion: ", self.unitConvert)
-            print ()
-
-            found = True
-            break
-
-         count = count + 1
-
-      if found == False:
-         print ()
-         print ("ERROR: did not find: ", fieldToPlot, " in the key file: ", self.keyFile)
-         print ()
-         sys.exit(0)
-
-
-      print ()
-      if self.unitConvert == 1:
-         self.units = model1Object.hdfData.variables[fieldToPlot].getncattr('units')
-      else:
-         self.units = self.newUnit
-      print ("units: ", self.units)
-      print ()
 
 
 
@@ -125,42 +79,60 @@ class TracerPlotTools:
       keyLines = GenericModelPlotTools.readFileAndReturnFileLines(GenericModelPlotTools, keyFile)
 
       tracerDict = {}
-      count = 0
-      for line in keyLines:
 
-         tracerDict[count] = {} # create new tracer info
+      tracerCount = 0
+      lineCount = 0
 
-         tracerMetData = line.split(':') # split this line into metdata tokens
+      while lineCount < len(keyLines)-1:
 
+         tracerDict[tracerCount] = {} # create new tracer info
 
-         tracerDict[count]['name'] = tracerMetData[0]
-         tracerDict[count]['long_name'] = tracerMetData[1]
-         tracerDict[count]['slices'] = []
-         
-         tracer2DSlices = tracerMetData[2].split(',') # split 3r token into list of levels
+         tracerMetData = keyLines[lineCount].split(':') # split this line into metdata tokens
 
-         sliceCount = 0 # add a list item for eacxh slice
-         for slice in range(len(tracer2DSlices)):
-            tracerDict[count]['slices'].append(tracer2DSlices[sliceCount])
-            sliceCount = sliceCount + 1
+         tracerDict[tracerCount]['name'] = tracerMetData[0]
+         tracerDict[tracerCount]['long_name'] = tracerMetData[1]
+         tracerDict[tracerCount]['lowLevel'] = tracerMetData[2]
+         tracerDict[tracerCount]['highLevel'] = tracerMetData[3]
+         tracerDict[tracerCount]['unitConvert'] = tracerMetData[4]
+         tracerDict[tracerCount]['newUnit'] = tracerMetData[5]
+         tracerDict[tracerCount]['zmContours'] = None
 
+         if len(tracerMetData) > 6: # this tracer provide its own contour levels for zm
 
-         tracerDict[count]['lowLevel'] = tracerMetData[3]
-         tracerDict[count]['highLevel'] = tracerMetData[4]
-    
-         tracerDict[count]['unitConvert'] = tracerMetData[5]
-         tracerDict[count]['newUnit'] = tracerMetData[6]
-
-         tracerDict[count]['contourLevels'] = []
-
-         if len(tracerMetData) > 7: # this tracer provide its own contour levels
-            contourLevels = tracerMetData[7].split(',')
+            contourLevels = tracerMetData[6].split(',')
             levCount = 0
+            tracerDict[tracerCount]['zmContours'] = []
             for level in range(len(contourLevels)):
-               tracerDict[count]['contourLevels'].append(contourLevels[levCount])
+               tracerDict[tracerCount]['zmContours'].append(contourLevels[levCount])
                levCount = levCount + 1
 
-         count = count + 1
+         tracerDict[tracerCount]['slices'] = {} # create new dict for the slices for this tracer
+
+         nextTracer = False
+         while nextTracer == False and lineCount < len (keyLines)-1:
+
+            lineCount = lineCount + 1
+            sliceLine = keyLines[lineCount].split(':') # split this line into "slice", numSlice, contours (maybe)
+
+
+            if sliceLine[0] == "\tslice": 
+
+               slice = float(sliceLine[1])
+                      
+               tracerDict[tracerCount]['slices'][slice] = None
+               if len(sliceLine) > 2: 
+
+                  contourLevels = sliceLine[2].split(",")
+                  levCount = 0
+                  tracerDict[tracerCount]['slices'][slice] = []
+                  for level in range (len(contourLevels)):
+                     tracerDict[tracerCount]['slices'][slice].append(float(contourLevels[levCount]))
+                     levCount = levCount + 1
+                                                       
+            else:
+               tracerCount = tracerCount + 1
+               nextTracer = True
+               continue
 
       return tracerDict
 

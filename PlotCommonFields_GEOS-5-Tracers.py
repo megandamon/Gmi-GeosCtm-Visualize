@@ -172,16 +172,7 @@ print("")
 
 
 
-tracerTools = TracerPlotTools (keyFile)
-count = 0
-for tracer in range(len(tracerTools.tracerDict)):
-   print (tracerTools.tracerDict[count]['name'], tracerTools.tracerDict[count]['long_name'], 
-          tracerTools.tracerDict[count]['slices'], tracerTools.tracerDict[count]['lowLevel'], 
-          tracerTools.tracerDict[count]['highLevel'], tracerTools.tracerDict[count]['unitConvert'], 
-          tracerTools.tracerDict[count]['newUnit'])
-   count = count + 1
-
-print("")
+tracerTools = TracerPlotTools (keyFile, geosObject1)
 
 fieldList = geosObject1.fieldList
 
@@ -253,51 +244,44 @@ for field in fieldsToCompare[:]:
     print("")
 
 
-    tCount = 0
     numTracers = len(tracerTools.tracerDict)
     print("")
     print("Num tracers: ", numTracers)
     print("")
 
-    for tracer in range(len(tracerTools.tracerDict)): 
-        if tracerTools.tracerDict[tCount]['name'] == field:
-            print ("Found tracer: ", field, " at index: ", tCount)
-            break
-        tCount = tCount + 1
-        
-
-    print ("tCount: ", tCount)
-    if tCount == numTracers: # tracer not found in key list
-        fieldCount = fieldCount + 1
+    isFieldThere = field in tracerTools.tracerDict
+    if isFieldThere == False: 
+        field = field.lower()
+    
+    isFieldThere = field in tracerTools.tracerDict
+    if isFieldThere == False: 
+        fieldCount = fieldCount + 1 # tracer not found in key list
         continue
+    
 
     sliceCommands = []
     sCount = 0
-    for slice in tracerTools.tracerDict[tCount]['slices']:
+    for slice in tracerTools.tracerDict[field].slices:
+
         sliceCommands.append("PlotTracerCompareSlice.py -g " +  geosFile1 \
-                                 + " -c " + geosFile2 + " -l " \
-                                 + tracerTools.tracerDict[tCount]['slices'][sCount] \
+                                 + " -c " + geosFile2 \
+                                 + " -l "  + str(int(slice)) \
                                  + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-                                 + " -l \"" + tracerTools.tracerDict[tCount]['long_name'] \
-                                 + " \" -u " + tracerTools.tracerDict[tCount]['unitConvert'] \
-                                 + " -t \"" + tracerTools.tracerDict[tCount]['newUnit'] \
-                                 + " \" -k " + keyFile)
+                                 + " -l \"" + tracerTools.tracerDict[field].long_name + "\" " \
+                                 + " -k " + keyFile)
+
 
         sCount = sCount + 1
                              
     pythonCommandZM = "PlotTracerCompareZM.py -g " +  geosFile1 \
         + " -c " + geosFile2 \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -l " + tracerTools.tracerDict[tCount]['lowLevel'] \
-        + " -u " + tracerTools.tracerDict[tCount]['highLevel'] \
-        + " -n " + tracerTools.tracerDict[tCount]['unitConvert'] \
-        + " -t \"" + tracerTools.tracerDict[tCount]['newUnit'] \
-        + "\" -k " + keyFile
+        + " -k " + keyFile
 
 
 
     sCount = 0
-    for slice in tracerTools.tracerDict[tCount]['slices']:
+    for slice in tracerTools.tracerDict[field].slices:
         sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
             "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
             sliceCommands[sCount] + " -f " + str(field) + " \'"
@@ -312,7 +296,7 @@ for field in fieldsToCompare[:]:
 
 
 
-    procCount = procCount + 1 + len(tracerTools.tracerDict[tCount]['slices'])
+    procCount = procCount + 1 + len(tracerTools.tracerDict[field].slices)
     fieldCount = fieldCount + 1
 
 
@@ -320,7 +304,6 @@ print("")
 for command in commands[:]:
     print(command)
 print("")
-
 
 
 pool = multiprocessing.Pool(processes=len(commands))

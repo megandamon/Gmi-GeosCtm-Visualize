@@ -150,7 +150,7 @@ print("Date: ", geosObject1.DATE)
 print("")
 
 
-tracerTools = TracerPlotTools (keyFile)
+tracerTools = TracerPlotTools (keyFile, geosObject1)
 
 fieldList = geosObject1.fieldList
 
@@ -190,11 +190,10 @@ procCount = 0
 nodeCount = 0
 
 
-print (fieldsToCompare)
+print ('\n', fieldsToCompare, '\n')
 
 
 for field in fieldsToCompare[:]:
-
 
     print ("Setting up : ", field)
 
@@ -212,63 +211,38 @@ for field in fieldsToCompare[:]:
             print("")
             sys.exit(-1)
 
-    field = fieldsToCompare[fieldCount]
+ 
+    isFieldThere = field in tracerTools.tracerDict
+    if isFieldThere == False: 
+        field = field.lower()
+   
+    for slice in tracerTools.tracerDict[field].slices:
+        pythonCommand = "PlotTracerSlice.py -c  " + geosFile \
+            + " -l " + str(int(slice)) \
+            + " -r " + str(timeRecord) + " -d " + dateYearMonth \
+            + " -n \"" + tracerTools.tracerDict[field].long_name + "\" " \
+            + " -k " + keyFile
 
-    tCount = 0
-    found = False
-    for tracer in range(len(tracerTools.tracerDict)): 
-        if tracerTools.tracerDict[tCount]['name'].lower() == field.lower():
-            print ("Found tracer: ", field, " at index: ", tCount)
-            found = True
-            break       
-        else: print (tracer, field)
-        
-        print ("Increment counter")
-        tCount = tCount + 1
 
-    if found == False: 
-        fieldCount = fieldCount + 1
-        continue
+        sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+            "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+            pythonCommand + " -f " + str(field) + " \'"
 
-    pythonCommand = "PlotTracerSlice.py -c  " + geosFile \
-        + " -l " + tracerTools.tracerDict[tCount]['slices'][0] \
-        + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -n \"" + tracerTools.tracerDict[tCount]['long_name'] + "\" " \
-        + " -k " + keyFile
+        commands.append(sysCommand)
 
-    pythonCommand2 = "PlotTracerSlice.py -c  " + geosFile \
-        + " -l " + tracerTools.tracerDict[tCount]['slices'][1] \
-        + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -n \"" + tracerTools.tracerDict[tCount]['long_name'] + "\" "  \
-        + " -k " + keyFile
+        procCount = procCount + 1
 
-    pythonCommand3 = "PlotTracerZM.py -g " + geosFile \
+
+    pythonCommandZM = "PlotTracerZM.py -g " + geosFile \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
         + " -k " + keyFile
-
-    print("")
-    print("Processing: ", field, " to : ", nodes[nodeCount], " proc : ", procCount)
-    print("")
-
-    sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+    sysCommandZM = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
         "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
-        pythonCommand + " -f " + str(field) + " \'"
-    commands.append(sysCommand)
-    
-
-    sysCommand2 = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
-        "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
-        pythonCommand2 + " -f " + str(field) + " \'"
-    commands.append(sysCommand2)
-
-    sysCommand3 = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
-        "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
-        pythonCommand3 + " -f " + str(field) + " \'"
-    commands.append(sysCommand3)
+        pythonCommandZM + " -f " + str(field) + " \'"
+    commands.append(sysCommandZM)
+    procCount = procCount + 1
 
 
-
-    procCount = procCount + 3
     fieldCount = fieldCount + 1
 
 
@@ -276,6 +250,8 @@ print("")
 for command in commands[:]:
     print(command)
 print("")
+
+
 
 pool = multiprocessing.Pool(processes=len(commands))
 

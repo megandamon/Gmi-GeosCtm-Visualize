@@ -32,9 +32,14 @@ from GenericModelPlotTools import GenericModelPlotTools
 from TracerPlotTools import TracerPlotTools
 
 
+#*********************
 COLORMAP = "rainbow"
+RATIO_COLORMAP = "bwr"
+RATIO_CONTOUR_LEVELS = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
 NUM_ARGS = 6
+#*********************
 
+#*********************
 def usage ():
     print("")
     print("usage: PlotTracerCompareZM.py [-g] [-c] [-r] [-d] [-k] [-f]")
@@ -46,9 +51,10 @@ def usage ():
     print("-f field to plot")
     print("")
     sys.exit (0)
+#*********************
 
 
-print("Start plotting field differences")
+
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -67,11 +73,6 @@ fieldToPlot = str(optList[5][1])
 
 
 
-#---------------------------------------------------------------
-print("")
-print("Checking command line options... ")
-print("")
-#---------------------------------------------------------------
 if not os.path.exists (modelFile1):
     print("The file you provided does not exist: ", modelFile1)
     sys.exit(0)
@@ -103,33 +104,19 @@ print("Command line options look good.")
 print("")
 #--------------------------------------------------------------
 
-
-
-tracerTools = TracerPlotTools (keyFile)
-tracerTools.setUnitInfo(fieldToPlot)
-tracerTools.setLevelInfo(fieldToPlot)
-
-contourLevelsFloat = zeros(len(tracerTools.contourLevels), dtype=float)
-count = 0
-for lev in tracerTools.contourLevels:
-    contourLevelsFloat[count] = float(lev)
-    count = count + 1
-if len(contourLevelsFloat) == 0:
-    contourLevelsFloat = []
-
-
-
-
 model1Object = GeosCtmPlotTools (modelFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
+
+tracerTools = TracerPlotTools (keyFile, model1Object)
+
 fillValue1 = model1Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
 modelFieldArray1 = model1Object.returnField (fieldToPlot, timeRecord)
-newModel1FieldArray = modelFieldArray1 * float(tracerTools.unitConvert)
+newModel1FieldArray = modelFieldArray1 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
 modelFieldArray1 = newModel1FieldArray
 newModel1FieldArray = None
-llIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.lowerLevel))
-ulIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.upperLevel))
+llIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
+ulIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
 zmArray1 = mean(modelFieldArray1[llIndex1:ulIndex1+1, :, :], axis=2)
 
 
@@ -138,12 +125,21 @@ model2Object = GeosCtmPlotTools (modelFile2, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 fillValue2 = model2Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
 modelFieldArray2 = model2Object.returnField (fieldToPlot, timeRecord)
-newModel2FieldArray = modelFieldArray2 * float(tracerTools.unitConvert)
+newModel2FieldArray = modelFieldArray2 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
 modelFieldArray2 = newModel2FieldArray
 newModel2FieldArray = None
-llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.lowerLevel))
-ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.upperLevel))
+llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
+ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
 zmArray2 = mean(modelFieldArray2[llIndex2:ulIndex2+1, :, :], axis=2)
+
+
+
+
+
+
+
+
+
 
 
 if zmArray1.shape != zmArray2.shape:
@@ -195,26 +191,42 @@ if zmArray2.min() < minValueBoth:
 if zmArray2.max() > maxValueBoth:
     maxValueBoth = zmArray2.max()
  
-if tracerTools.units.find("days") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("years") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("years") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("kg-1") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("kg-1") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("ppt") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("ppt") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("ppb") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("ppb") != -1:
     analType = "r"
     analString = "ratio"
-if tracerTools.units.find("mol-1") != -1:
+if tracerTools.tracerDict[fieldToPlot].units.find("mol-1") != -1:
     analType = "r"
     analString = "ratio"
 
 zDiff = modelObject.createComparision2D (zmArray1, zmArray2, analType)
+
+
+
+if tracerTools.tracerDict[fieldToPlot].zmContours == None:
+
+    print ("Calling createTracerContoursFromMinMax")
+    step = (maxValueBoth - minValueBoth) / 10.
+    contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax(minValueBoth, \
+                                                              maxValueBoth, \
+                                                              step=float('{:0.2e}'.format(step)))
+                                                              
+else:
+    contours = []
+    for contour in tracerTools.tracerDict[fieldToPlot].zmContours:
+        contours.append(float(contour))
+    print ("Received zm contours from input file")
 
 
 
@@ -228,31 +240,31 @@ plotOpt = {}
 
 model1SimName = modelFile1.split(".")[0] + "-" + modelFile1.split(".")[1]
 plotOpt['title'] = model1SimName + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
-plotOpt['units'] = tracerTools.units
+plotOpt['units'] = tracerTools.tracerDict[fieldToPlot].units
 
-ax1 = fig.add_subplot(311)
+
 plotZM (zmArray1 ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1], \
-            fig, ax1, COLORMAP, \
+            fig, 311, COLORMAP, \
             minValueBoth, maxValueBoth, \
-            plotOpt=plotOpt, contourLevels=contourLevelsFloat)
+            plotOpt=plotOpt, contourLevels=contours)
 
 
 model2SimName = modelFile2.split(".")[0] + "-" + modelFile2.split(".")[1]
 plotOpt['title'] = model2SimName + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
 
-ax2 = fig.add_subplot(312)
+
 plotZM (zmArray2 ,modelObject.lat[:], modelObject.lev[llIndex2:ulIndex2+1], \
-            fig, ax2, COLORMAP, \
+            fig, 312, COLORMAP, \
             minValueBoth, maxValueBoth, \
-            plotOpt=plotOpt, contourLevels=contourLevelsFloat)
+            plotOpt=plotOpt, contourLevels=contours)
 
 
 plotOpt['title'] = analString + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
-ax3 = fig.add_subplot(313)
+
 plotZM (zDiff ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1], \
-            fig, ax3, 'nipy_spectral', \
+            fig, 313, RATIO_COLORMAP, \
             0.5, 1.5, \
-            plotOpt=plotOpt,contourLevels=[])
+            plotOpt=plotOpt,contourLevels=RATIO_CONTOUR_LEVELS)
 
 
 
