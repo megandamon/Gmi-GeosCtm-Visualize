@@ -1,0 +1,264 @@
+
+Manual for 
+GEOS Tracer Visualization & Comparison
+
+AUTHOR: MEGAN ROSE DAMON,
+CONTACT: MEGAN.R.DAMON@NASA.GOV
+
+Background
+
+This effort was taken upon to support visualization and analysis needs of idealized tracers among configurations of GEOS. It provides drivers to 1. plot 2-D tracer slices (lat/lon) at a given pressure level (hPa), 2. plot tracer zonal means (lat versus pressure levels), 3. create comparisons of 1. and 2. from two GEOS simulations, and 4 create comparisons of 1. and 2. from one GEOS simulation.
+NCCS Setup
+
+The tracer visualization package is a subset of the Gmi-GeosCtm-Visualize package. It can be isolated as a standalone package. To obtain the scripts, clone the repository and:
+
+>> git clone https://github.com/megandamon/Gmi-GeosCtm-Visualize.git
+Then, obtain an interactive session on discover.
+>> cd Gmi-GeosCtm-Visualize
+>> git checkout Python3
+>> mkdir plots/
+>> bash setup_env
+ 
+Key File
+
+
+The current recommended key file is: Tracers.GEOS.TR_GOCART.list
+
+The key file is in ASCII format and provides tracer names and their respective metadata. Note that the zonal means and lat/lon slices for a given tracer must use the same units but can specify different contour levels. Contour levels (for zonal means or for an unlimited number of slices) are optional, and if they are not explicitly provided in the key file, the scripts will create default contours based on the minimum and maximum values of the data to be plotted. A tracer can define any number of lat/lon slices, but must define at least 1. The slicing feature is a standard data parallelization solution, but scales to the system configuration. 
+
+Note that proper error handling regarding the key files has not been completed, and bad formatting will likely be the cause of run time errors. 
+
+The format of the key file is as follows:
+
+Tracer:LongName:lowAtmLevel:highAtmLev:unitConversion:unitName:zonalMeanContours
+	Slice:levHpa1:sliceContours1
+	Slice:levHpa2:sliceContours2
+
+Or 
+
+Tracer:LongName:lowAtmLevel:highAtmLev:unitConversion:unitName
+	Slice:levHpa1
+
+A practical example follows and illustrates the flexibility the package offers including: tracer contouring, unit conversion, and slicing capabilities.
+
+ 
+aoa_nh:Age of air northern hemisphere: tracer:1000:10:1:days:0,100, ,300,400,500,1000
+        slice:200:0,400,425,450,475,500,550,600,700,800,900,1000
+Be10:Beryllium radionuclide 10:1000:10:2.3699E14:mBq/SCM (hyl)
+        slice:200
+        slice:500
+        slice:1000
+ 
+
+Plotting
+
+From the Gmi-GeosCtm-Visualize directory, run any of the following six tracer plotting drivers. By default, all plots will be saved in the plots/ subdirectory. Drivers 5 & 6 use bash commands to run processes in parallel; use only bash shell. The plots/ directory should be manually cleaned frequently by the user to avoid confusion (>> rm plots/*). 
+
+
+ 
+
+1 Plot a single lat/lon pressure slice (hPa)
+
+python PlotTracerSlice.py -c fileName -l levelhPa -r fileTimeRecord -d recordDate  -n tracerLongName -k keyFile -f tracerName
+	
+fileName: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: TR_GOCART.tracers_avg.monthly.200912.nc4
+
+levelhPa: Pressure level to be plotted. This level (hPa) should appear in the fileName’s lev variable, as well as in the keyFile
+	ex: 500
+
+fileTimeRecord: integer defining which time record to plot (usually 0)
+	ex: 0
+
+recordDate: string defining date of fileTimeRecord (either YYYY or YYYYMM)			ex: 200912 or 2009
+
+tracerLongName: long name of tracer; wrap in quotes
+	ex: “Age of air northern hemisphere tracer”
+
+keyFile: name of tracer key file
+	ex: Tracers.GEOS.list
+
+tracerName: tracer field name
+	ex: aoa_nh
+
+
+ 
+2 Plot a single zonal mean (lat versus pressure)
+
+python PlotTracerZM.py -g fileName -r fileTimeRecord -d recordDate  -k keyFile -f tracerName
+
+fileName : NetCDF/HDF file usually with extension .nc or .nc4
+	ex: TR_GOCART.tracers_avg.monthly.200912.nc4
+
+fileTimeRecord: integer defining which time record to plot (usually 0)
+	ex: 0
+
+recordDate: string defining date of fileTimeRecord (either YYYY or YYYYMM)			ex: 200912 or 2009
+
+keyFile: file name of tracer key file
+	ex: ‘Tracers.GEOS.list
+
+tracerName: tracer field name
+	ex: aoa_nh
+ 
+3 Plot a 4-panel lat/lon pressure slice (hPa) comparison of a single tracer from two input files
+
+python PlotTracerCompareSlice.py -g fileName1 -c fileName2 -l levelhPa -r fileTimeRecord -d recordDate -l tracerLongName -k keyFile -f tracerName
+	
+fileName1: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: TR_GOCART.tracers_avg.monthly.200912.nc4
+
+fileName2: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: bench_i329_gmi_free_c180.tavg24_3d_dat_Np.monthly.200912.nc4
+
+levelhPa: Pressure level to be plotted. This level (hPa) should appear in the fileName’s lev variable, as well as in the keyFile	ex: 500
+
+fileTimeRecord: integer defining which time record to plot (usually 0)
+	ex: 0
+
+recordDate: string defining date of fileTimeRecord (either YYYY or YYYYMM)			ex: 200912 or 2009
+
+tracerLongName: long name of tracer; wrap in quotes
+	ex: “Age of air northern hemisphere tracer”
+
+keyFile: file name of tracer key file
+	ex: ‘Tracers.GEOS.list
+
+tracerName: tracer field name
+	ex: co_25
+ 
+4 Plot a 4-panel zonal mean (lat versus pressure) comparison of a single tracer from two input files
+
+python PlotTracerCompareZM.py -g fileName1 -c fileName2 -r fileTimeRecord -d recordDate --k keyFile -f tracerName
+
+fileName1: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: TR_GOCART.tracers_avg.monthly.200912.nc4
+
+fileName2: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: bench_i329_gmi_free_c180.tavg24_3d_dat_Np.monthly.200912.nc4
+
+fileTimeRecord: integer defining which time record to plot (usually 0)
+	ex: 0
+
+recordDate: string defining date of fileTimeRecord (either YYYY or YYYYMM)			ex: 200912 or 2009
+
+keyFile: file name of tracer key file
+	ex: ‘Tracers.GEOS.list
+
+tracerName: tracer field name
+	ex: co_25
+
+
+ 
+5 Plot global lat/lon pressure slices (hPa) and zonal means (lat versus pressure) of all tracers from a single file
+
+python PlotTracers_GEOS.py -g fileName -k keyFile -r fileTimeRecord -d recordDate -n pbsNodeFile -p numberOfProcsPerNode -m geosConfiguration
+
+fileName: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: TR_GOCART.tracers_avg.monthly.200912.nc4
+
+keyFile: file name of Tracer key file
+	ex: ‘Tracers.GEOS.list
+
+fileTimeRecord : integer defining which time record to plot (usually 0)
+	ex: 0
+
+pbsNodeFile: file that lists the nodes available for parallelization
+	ex: $PBS_NODEFILE
+
+numberOfProcsPerNode: number of processors to use per node
+	ex: 48
+
+geosConfiguration: configuration of GEOS that created fileName
+	ex: CCM
+ 
+6 Plot 4-panel comparisons containing global lat/lon pressure slices (hPa) and zonal means (lat versus pressure) of all tracers from two input files
+
+python PlotCommonFields_GEOS-5-Tracers.py -g fileName1 -c fileName2 -k keyFile -r fileTimeRecord -d recordDate -n pbsNodeFile -p numberOfProcsPerNode
+
+fileName1: NetCDF/HDF file usually with extension .nc or .nc4
+	ex: TR_GOCART.tracers_avg.monthly.200912.nc4
+
+fileName2: NetCDF/HDF file usually with extension nc or nc4
+	ex: bench_i329_gmi_free_c180.tavg24_3d_dat_Np.monthly.200912.nc4
+
+keyFile: file name of tracer key file
+	ex: ‘Tracers.GEOS.list
+
+fileTimeRecord: integer defining which time record to plot (usually 0)
+	ex: 0
+
+pbsNodeFile: file that lists the nodes available for parallelization
+	ex: $PBS_NODEFILE
+
+numberOfProcsPerNode: number of processors to use per node
+	ex: 48
+
+geosConfiguration: configuration of GEOS that created fileName
+	ex: CCM
+ 
+Software Design
+
+Python using Matplotlib. Defines a base class in the file GenericTracer.py, which provides, as the name suggests, generic tracer functionality and properties. It can be sub classed by any specific tracer, such as aoa, co_25, Be7, etc.  Classes that inherit from GenericTracer override some default behavior. These files have created thus far: Be10sTracer.py.  Be10Tracer.py. Be7sTracer.py. Be7Tracer.py. GenericTracer.py. Pb210sTracer.py, Pb210Tracer.py, and Rn222Tracer.py – which suggests which tracers required special procedures and additional solutions. Other tracers have been found to be more easily generalized. 
+
+Simulations & Data Location
+
+Benchmark i329 
+	free running simulation
+	Contact: Mike Manyin
+
+/discover/nobackup/projects/gmao/ccmi/mmanyin/benchmarks/bench_i329_gmi_free_c180/tavg24_3d_dat_Np/
+
+TR_GOCART
+	CTM driven with MERRA-2 
+	Contact: Jules Kouatch
+
+/archive/u/jkouatch/GEOSctm/TR_GOCART/tracers_avg/
+
+MERRA2_GMI Replay 
+	Replays will look more like a CTM b/c it is constrained
+	Contact: Luke Oman
+
+/gpfsm/dnb04/projects/p76/pub/Y2009/
+	
+
+
+
+
+
+
+
+
+ 
+
+
+
+References
+
+•	(H. Liu et al.: Using beryllium-7 to assess cross-tropopause transport in global models)
+•	https://www.atmos-chem-phys.net/5/3389/2005/acp-5-3389-2005.pdf
+
+ 
+
+Tracers
+
+	aoa         days       	Age of air (uniform source) tracer
+	aoa_bl    days       	Age of air above boundary layer
+	aoa_nh   days       	Age of air northern hemisphere tracer
+	Be10      nBq/SCM     Beryllium radionuclide 10(Be)
+	Be10s    nBq/SCM     Beryllium radionuclide 10(Be) strat-source
+	Be7       mBq/SCM     Beryllium radionuclide 7(Be)
+	Be7s      mBq/SCM     Beryllium radionuclide 7(Be) strat-source
+	CH3I      ppt   		Methyl iodide
+	CO_25    ppb   	Anthro CO 25 day tracer
+	CO_50    ppb   	Anthro CO 50 day tracer
+	e90         ppb   		Constant burden 90 day tracer
+	e90_n      ppb 		Constant burden 90 day tracer 40N-pole emiss
+	e90_s      ppb 		Constant burden 90 day tracer 40S-pole emiss
+	nh_5       ppb   	Northern Hemisphere 5 day tracer
+	nh_50     ppb   	Northern Hemisphere 50 day tracer
+	Pb210     mBq/SCM  	Lead-210
+	Pb210s   mBq/SCM  	Lead-210 strat-source
+	Rn222    nBq/SCM  	Radon-222
+	SF6         ppt   		Sulfur Hexafluoride tracer
+	st80_25   ppb   	Stratospheric source 25 day tracer
