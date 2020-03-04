@@ -34,7 +34,14 @@ from mpl_toolkits.basemap import Basemap
 
 from GenericModelPlotTools import GenericModelPlotTools
 from GenericTracer import GenericTracer
-
+from AoaBlTracer import AoaBlTracer
+from Be10Tracer import Be10Tracer
+from Be10sTracer import Be10sTracer
+from Be7Tracer import Be7Tracer
+from Be7sTracer import Be7sTracer
+from Pb210Tracer import Pb210Tracer
+from Pb210sTracer import Pb210sTracer
+from Rn222Tracer import Rn222Tracer
 
 class TracerPlotTools:
 
@@ -66,7 +73,24 @@ class TracerPlotTools:
          if 'slice' not in tracerMetData[0]:
          
             tracerName = tracerMetData[0]
-            self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject, keyFile)# create new tracer info
+            if tracerName.lower() == "aoa_bl":
+               self.tracerDict[tracerName] = AoaBlTracer(tracerName, modelObject, keyFile, 'linear')
+            elif tracerName.lower() == "be7":
+               self.tracerDict[tracerName] = Be7Tracer(tracerName, modelObject, keyFile, 'log')
+            elif tracerName.lower() == "be7s":
+               self.tracerDict[tracerName] = Be7Tracer(tracerName, modelObject, keyFile, 'log')
+            elif tracerName.lower() == "be10":
+               self.tracerDict[tracerName] = Be10Tracer(tracerName, modelObject, keyFile, 'log')
+            elif tracerName.lower() == "be10s":
+               self.tracerDict[tracerName] = Be10sTracer(tracerName, modelObject, keyFile, 'log')
+            elif tracerName.lower() == "pb210":
+               self.tracerDict[tracerName] = Pb210Tracer(tracerName, modelObject, keyFile, 'log')
+            elif tracerName.lower() == "pb210s":
+               self.tracerDict[tracerName] = Pb210sTracer(tracerName, modelObject, keyFile, 'log')
+            elif tracerName.lower() == "rn222":
+               self.tracerDict[tracerName] = Rn222Tracer(tracerName, modelObject, keyFile, 'log')
+            else:
+               self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject, keyFile)# create new tracer info
             
          lineCount = lineCount + 1
       

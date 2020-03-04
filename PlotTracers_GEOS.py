@@ -115,8 +115,8 @@ if int(timeRecord) < 0:
     print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
-if len(dateYearMonth) != 6:
-    print("ERROR date must be in the format YYYYMM")
+if len(dateYearMonth) != 6 and len(dateYearMonth) != 4:
+    print("ERROR date must be in the format YYYY or YYYYMM")
     print("Received: ", dateYearMonth)
     sys.exit(0)
 
@@ -248,8 +248,10 @@ for field in fieldsToCompare[:]:
 
 print("")
 for command in commands[:]:
+#    if "e90" in command and "Slice" in command:
     print(command)
 print("")
+
 
 
 

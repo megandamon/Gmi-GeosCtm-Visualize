@@ -78,7 +78,7 @@ if not os.path.exists (modelFile1):
     sys.exit(0)
 
 if not os.path.exists (modelFile2):
-    print("The file you provided does not exist: ", modelFile1)
+    print("The file you provided does not exist: ", modelFile2)
     sys.exit(0)
 
 if int(timeRecord) > 31: 
@@ -88,7 +88,7 @@ if int(timeRecord) < 0:
     print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
-if len(dateYearMonth) != 6:
+if len(dateYearMonth) != 6 and len(dateYearMonth) != 4:
     print("ERROR date must be in the format YYYYMM")
     print("Received: ", dateYearMonth)
     sys.exit(0)
@@ -108,11 +108,33 @@ model1Object = GeosCtmPlotTools (modelFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
+model1SimName = modelFile1.split(".")[0] + "-" + modelFile1.split(".")[1]
+model1SimName2 = model1SimName.split("_")[0] + "_" + model1SimName.split("_")[1]
+model1SimName = model1SimName2
+
+
+
 tracerTools = TracerPlotTools (keyFile, model1Object)
 
-fillValue1 = model1Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
+
+if fieldToPlot not in model1Object.hdfData.variables.keys():
+    print ("NOT IN KEYS")
+
+    if fieldToPlot.islower() == True:
+        fieldToPlot1 = fieldToPlot.upper()
+    else:
+        fieldToPlot1 = fieldToPlot.lower()
+else:
+    fieldToPlot1 = fieldToPlot
+
+
+fillValue1 = model1Object.hdfData.variables[fieldToPlot1].getncattr('_FillValue')
 modelFieldArray1 = model1Object.returnField (fieldToPlot, timeRecord)
-newModel1FieldArray = modelFieldArray1 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
+preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray1, \
+                                                                              model1SimName)
+newModel1FieldArray = preConvertFieldArray1 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
+tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+
 modelFieldArray1 = newModel1FieldArray
 newModel1FieldArray = None
 llIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
@@ -123,9 +145,30 @@ zmArray1 = mean(modelFieldArray1[llIndex1:ulIndex1+1, :, :], axis=2)
 model2Object = GeosCtmPlotTools (modelFile2, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
-fillValue2 = model2Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
+
+model2SimName = modelFile2.split(".")[0] + "-" + modelFile2.split(".")[1]
+model2SimName2 = model2SimName.split("_")[0] + "_" + model2SimName.split("_")[1]
+model2SimName = model2SimName2
+
+
+if fieldToPlot not in model2Object.hdfData.variables.keys():
+    print ("NOT IN KEYS")
+
+    if fieldToPlot.islower() == True:
+        fieldToPlot2 = fieldToPlot.upper()
+    else:
+        fieldToPlot2 = fieldToPlot.lower()
+else:
+    fieldToPlot2 = fieldToPlot
+
+
+fillValue2 = model2Object.hdfData.variables[fieldToPlot2].getncattr('_FillValue')
 modelFieldArray2 = model2Object.returnField (fieldToPlot, timeRecord)
-newModel2FieldArray = modelFieldArray2 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
+preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray2, \
+                                                                             model2SimName)
+newModel2FieldArray = preConvertFieldArray2 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
+tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+
 modelFieldArray2 = newModel2FieldArray
 newModel2FieldArray = None
 llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
@@ -182,6 +225,8 @@ if zmArray1.shape != zmArray2.shape:
 
         zmArray2[zmArray2>fillValue2] = 0.0
 
+else:
+    modelObject = model1Object
 
 minValueBoth = zmArray1.min()
 maxValueBoth = zmArray1.max()
@@ -191,28 +236,6 @@ if zmArray2.min() < minValueBoth:
 if zmArray2.max() > maxValueBoth:
     maxValueBoth = zmArray2.max()
  
-if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
-    analType = "r"
-    analString = "ratio"
-if tracerTools.tracerDict[fieldToPlot].units.find("years") != -1:
-    analType = "r"
-    analString = "ratio"
-if tracerTools.tracerDict[fieldToPlot].units.find("kg-1") != -1:
-    analType = "r"
-    analString = "ratio"
-if tracerTools.tracerDict[fieldToPlot].units.find("ppt") != -1:
-    analType = "r"
-    analString = "ratio"
-if tracerTools.tracerDict[fieldToPlot].units.find("ppb") != -1:
-    analType = "r"
-    analString = "ratio"
-if tracerTools.tracerDict[fieldToPlot].units.find("mol-1") != -1:
-    analType = "r"
-    analString = "ratio"
-
-zDiff = modelObject.createComparision2D (zmArray1, zmArray2, analType)
-
-
 
 if tracerTools.tracerDict[fieldToPlot].zmContours == None:
 
@@ -238,37 +261,69 @@ fig = plt.figure(figsize=(20,20))
 
 plotOpt = {}
 
-model1SimName = modelFile1.split(".")[0] + "-" + modelFile1.split(".")[1]
+
+
 plotOpt['title'] = model1SimName + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
 plotOpt['units'] = tracerTools.tracerDict[fieldToPlot].units
 
 
 plotZM (zmArray1 ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1], \
-            fig, 311, COLORMAP, \
+            fig, 221, COLORMAP, \
             minValueBoth, maxValueBoth, \
+            "fuchsia", "darkred", \
             plotOpt=plotOpt, contourLevels=contours)
 
 
-model2SimName = modelFile2.split(".")[0] + "-" + modelFile2.split(".")[1]
+
 plotOpt['title'] = model2SimName + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
 
 
 plotZM (zmArray2 ,modelObject.lat[:], modelObject.lev[llIndex2:ulIndex2+1], \
-            fig, 312, COLORMAP, \
+            fig, 222, COLORMAP, \
             minValueBoth, maxValueBoth, \
+            "fuchsia", "darkred", \
             plotOpt=plotOpt, contourLevels=contours)
 
+analType = "s"
+analString = "diff"
+zDiff = modelObject.createComparision2D(zmArray1, zmArray2, analType)
 
-plotOpt['title'] = analString + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
+diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax\
+    (zDiff.min(), zDiff.max())
+
+
+plotOpt['title'] = analString + "     " + fieldToPlot + dateYearMonth
 
 plotZM (zDiff ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1], \
-            fig, 313, RATIO_COLORMAP, \
-            0.5, 1.5, \
-            plotOpt=plotOpt,contourLevels=RATIO_CONTOUR_LEVELS)
+            fig, 223, "coolwarm", \
+            zDiff.min(), zDiff.max(), \
+            "navy", "darkred", \
+            plotOpt=plotOpt,contourLevels=diffContourLevels)
 
 
 
-fileTitle = "-" + model1SimName + "." + model2SimName + "_ZM."
+
+percDiffContours =  [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
+
+analType = "c"
+analString = "perc change"
+
+zDiff = None
+zDiff = modelObject.createComparision2D(zmArray1, zmArray2, analType)
+print ("zDiff min max for perc change", zDiff.min(), zDiff.max())
+
+plotOpt['title'] = analString + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
+plotOpt['units'] = "%"
+
+plotZM (zDiff ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1], \
+            fig, 224, "coolwarm", \
+            zDiff.min(), zDiff.max(), \
+            "navy", "darkred", \
+            plotOpt=plotOpt,contourLevels=percDiffContours)
+
+
+fileTitle = "-" + model1SimName + "." + model2SimName + "_" + \
+    str(dateYearMonth) + "_ZM."
 plt.savefig ("plots/" + fieldToPlot + fileTitle \
                  + ".", bbox_inches='tight')
 

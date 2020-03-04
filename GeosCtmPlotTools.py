@@ -55,13 +55,6 @@ class GeosCtmPlotTools (GenericModelPlotTools):
          if token.isdigit():
             self.DATE = token
 
-      self.KNOWN_TRACERS = []
-      self.KNOWN_TRACERS.append('CH3I')
-      self.KNOWN_TRACERS.append('Pb210')
-      self.KNOWN_TRACERS.append('Rn222')
-      self.KNOWN_TRACERS.append('aoa')
-      self.KNOWN_TRACERS.append('e90')
-      self.KNOWN_TRACERS.append('st80_25')
 
    #---------------------------------------------------------------------------  
    # AUTHORS: Megan Damon NASA GSFC 
@@ -93,15 +86,13 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
       fieldName = prefix + fieldName
 
+      if fieldName not in self.hdfData.variables.keys():
+         if fieldName.islower(): 
+            fieldName = fieldName.upper()
+         else: 
+            fieldName = fieldName.lower()
 
-      if fieldName not in self.KNOWN_TRACERS:
-         fieldAllTime = self.hdfData.variables[fieldName]
-      else:
-         fieldAllTime = self.hdfData.variables[fieldName]
-
-
-
-      #print fieldAllTime.shape[:], len(fieldAllTime.shape[:])
+      fieldAllTime = self.hdfData.variables[fieldName]
 
       if fieldAllTime.shape[0] - 1 < timeRecord:
          print("")

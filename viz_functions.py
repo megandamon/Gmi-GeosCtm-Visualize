@@ -24,7 +24,10 @@ from mpl_toolkits.basemap import Basemap, shiftgrid
 
 from decimal import *
 
-def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, plotOpt=None, contourLevels=None):
+from PlotTools import PlotTools
+
+def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, \
+                cmapUnder, cmapOver, yScale='log',plotOpt=None, contourLevels=None):
 
     """Create a zonal mean contour plot of one variable
     plotOpt is a dictionary with plotting options:
@@ -37,83 +40,74 @@ def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, plotOpt=Non
 
     ax1 = fig.add_subplot (subplotNum)
 
+    plotTool = PlotTools ()
+    cLabelFontsize = plotTool.returnContourLabelFromSubPlotNum (subplotNum)
+    cTickFontSize = plotTool.returncTickSizeFromSubPlotNum (subplotNum)
+    titleFontSize = plotTool.returnTitleFontSizeFromSubPlotNum (subplotNum)
+    pad = plotTool.returnPadFromSubPlotNum (subplotNum)
+    cBarFontSize = plotTool.returncBarFontSizeFromSubPlotNum (subplotNum)
+    yTickFontSize = plotTool.returnYTickFontSizeFromSubPlotNum (subplotNum)
+    xTickFontSize = plotTool.returnXTickFontSizeFromSubPlotNum (subplotNum)
+    pad = plotTool.returnPadFromSubPlotNum (subplotNum)
 
-    if subplotNum == 111: #single image on page
-        cLabelFontsize = 16
-        titleFontSize = 20
-        cBarFontSize = 16
-        yTickFontSize = "xx-large"
-        xTickFontSize = "xx-large"
-        pad = .05
-    else:
-        cLabelFontsize = 16
-        titleFontSize = 20
-        cBarFontSize = 16
-        yTickFontSize = "large"
-        xTickFontSize = "large"
-        pad = .1
-
-
-
-    # scale data if requested
+    # scale data
     scale_factor = plotOpt.get('scale_factor', 1.0)
     pdata = data * scale_factor
 
-    if contourLevels == [] or contourLevels == None:
-
-        print ("Determining contourLevels...")
-
+    if contourLevels == []:
         # determine contour levels to be used; linear spacing, 20 levels
         clevs = plotOpt.get('levels', linspace(dataMin, dataMax, 10))
 
     else:
-        print ("User provided contourLevels")        
         clevs = contourLevels
 
-    print ("clevs: ", clevs)
-    print (type(clevs))
+
+    newClevs = plotTool.returnFormattedContours(clevs)
+
+    clevs = None
+    clevs = newClevs
+    contourFormat = plotTool.returnContourFormatFromLevels(clevs)
 
 
     ax1.set_xticks([-90, -60, -30, 0, 30, 60, 90])
     ax1.set_xticklabels(["90N", "60N", "30N", "EQ", "30S", "60S", "90S"])
 
-    numClevs = len(clevs)
-    midClev = int(numClevs/2)
-    clevsString = str(clevs[midClev])
-    digits = clevsString.split('.')[1]
-
-    if len(digits) <= 3:
-        contourFormat = "%1." + str(len(digits)) + "f"
-    else:
-        contourFormat = "%1.1e"
-    
+    extendValue = "both"
+    if clevs[0] == 0:
+        extendValue = "max"
 
 
     # map contour values to colors
     norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
     # draw the contours with contour labels
-    CS = ax1.contour(x, y, pdata, levels=clevs, cmap=colorMap, extend='max')
+    CS = ax1.contour(x, y, pdata, levels=clevs, cmap=colorMap, extend=extendValue, norm=norm)
     ax1.clabel(CS,inline=1, fontsize=cLabelFontsize, colors="black", fmt=contourFormat)
-
-
-
 
     # draw the (filled) contours
     contour = ax1.contourf(x, y, pdata, levels=clevs, norm=norm, cmap=colorMap, \
-                               vmin = clevs[0], vmax = clevs[-1], extend='max')
+                               extend=extendValue)
 
-
+    # these assume a certain colormap
+    contour.cmap.set_under(cmapUnder)
+    contour.cmap.set_over(cmapOver)
 
     # add a title
     title = plotOpt.get('title',  'Zonal Mean')
     ax1.set_title(title, fontsize=titleFontSize)   # optional keyword: fontsize="small"
 
-    # add colorbar
-    cbar = fig.colorbar(contour, ax=ax1, orientation='horizontal', pad=pad) #, xshrink=0.8,                     
+
+    cbar = fig.colorbar(contour, ax=ax1, orientation='horizontal', pad=pad, ticks=clevs, format=contourFormat)
+
     cbar.set_label(plotOpt.get('units', ''),size=cBarFontSize)
+
+    plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
+
+
     for t in cbar.ax.get_xticklabels():
-        t.set_fontsize(xTickFontSize)
+        t.set_fontsize(cTickFontSize)
+
+    plotTool.reviseTickLabels (cbar)
 
     # change font size of y labels
     ylabels = ax1.get_yticklabels()
@@ -132,7 +126,6 @@ def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, plotOpt=Non
     ax1.set_ylabel ("Pressure (hPa)", size=18)
     #ax1.set_xlabel ("Latitude", size=16)
 
-
     # all tracers are assumed to at least go to 100
     yRanges = [1000, 700, 500, 300, 200, 100]
 
@@ -142,19 +135,17 @@ def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, plotOpt=Non
         yRanges = None
         yRanges = yNew
 
-
     if y.min() <= 0.2:
         yRanges1 = [7, 5, 3, 2, 1, .7, .5, .3, .2, .1]
         yNew = yRanges + yRanges1
         yRanges = None
         yRanges = yNew
 
-    print (yRanges)
-
-
+    if yRanges[-1] != y.min():
+        yRanges.append(y.min())
 
     ax1.set_ylim(int(y.max()), y.min()) # make sure surface is bottom
-    ax1.set_yscale('log')
+    ax1.set_yscale(yScale)
     ax1.yaxis.set_minor_formatter(NullFormatter())
     ax1.set_yticks(yRanges)
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%3.1f'))

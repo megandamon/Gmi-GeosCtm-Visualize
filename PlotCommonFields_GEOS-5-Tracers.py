@@ -119,7 +119,7 @@ if int(timeRecord) < 0:
     print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
-if len(dateYearMonth) != 6:
+if len(dateYearMonth) != 6 and len(dateYearMonth) != 4:
     print("ERROR date must be in the format YYYYMM")
     print("Received: ", dateYearMonth)
     sys.exit(0)
@@ -144,12 +144,18 @@ print("")
 geosSimName1 = geosFile1.split(".")[0] + "-" + geosFile1.split(".")[1]
 geosSimName2 = geosFile2.split(".")[0] + "-" + geosFile2.split(".")[1]
 
+geosSimName1New = geosSimName1.split("_")[0] + "-" + geosSimName1.split("_")[1] 
+geosSimName2New = geosSimName2.split("_")[0] + "-" + geosSimName2.split("_")[1]
+
+geosSimName1 = geosSimName1New
+geosSimName2 = geosSimName2New
 
 print("")
-print("Sim name: ")
+print("Sim names: ")
 print(geosSimName1)
 print(geosSimName2)
 print("")
+
 
 #---------------------------------------------------------------
 print("")

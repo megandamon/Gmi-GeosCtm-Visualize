@@ -35,8 +35,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import vertLevels_GEOS5 as pressLevels
 
+from PlotTools import PlotTools
+
 
 class GenericModelPlotTools:
+
 
    def find_nearest(self, array, value):
       idx = (numpy.abs(array-value)).argmin()
@@ -260,8 +263,24 @@ class GenericModelPlotTools:
                absVal = abs(array1[dim1It,dim2It]-array2[dim1It,dim2It])
                denVal = (array1[dim1It,dim2It]+array2[dim1It,dim2It]) / 2.0
                z_Diff[dim1It,dim2It] = (absVal/denVal) * 100.
-                             
 
+      elif analType == "c":
+
+         print("")
+         print("Creating Absolute Differences")
+         print("")
+
+         num = array1 - array2
+         z_Diff = (num / array2)
+
+
+      elif analType == "s":
+         
+         print("")
+         print("Creating Absolute Differences")
+         print("")
+
+         z_Diff = array1 - array2
 
       elif analType == "r":
 
@@ -310,6 +329,24 @@ class GenericModelPlotTools:
                denVal = (array1[lat,lon]+array2[lat,lon]) / 2.0
                z_Diff[lat,lon] = (absVal/denVal) * 100.
                              
+
+      elif analType == "c":
+
+         print("")
+         print("Creating Absolute Differences")
+         print("")
+
+         num = array1 - array2
+         z_Diff = (num / array2)
+
+      # User requested absolute difference
+      elif analType == "s":
+         
+         print("")
+         print("Creating Absolute Differences")
+         print("")
+
+         z_Diff = array1 - array2
 
 
       elif analType == "r":
@@ -383,10 +420,11 @@ class GenericModelPlotTools:
    # X_model, Y_model, and min/maxes 
    # can be members of the class
    def create2dSliceContours (self, fig, baseMap, X_model, Y_model, z, \
-                         minMaxVals, minMaxLat, \
-                         minMaxLong, subplotNum, plotTitle, \
-                         colorMap, units, \
-                         normalize=False, contourLevels=None):
+                                 minMaxVals, minMaxLat, \
+                                 minMaxLong, cmapUnder, cmapOver, subplotNum, \
+                                 plotTitle, \
+                                 colorMap, units, \
+                                 labelContours=True,normalize=False, contourLevels=None):
 
 
       axPlot = fig.add_subplot(subplotNum)
@@ -395,87 +433,86 @@ class GenericModelPlotTools:
       maxVal = minMaxVals[1]
 
       if contourLevels != []:
-         print ("User provided contour levels")
          clevs = contourLevels
       else:         
+
+         print ("Need to create contour levels")
          clevs = linspace(minVal, maxVal, 10)
 
-
-      print ("")
-      print ("Contour levels: ", clevs)
-      print ("")
-
-      numClevs = len(clevs)
-      midClev = int(numClevs/2)
-      print ("midClev: ", midClev)
-      clevsString = str(float(clevs[midClev]))
-      print ("clevsString: ", clevsString)
-      print ("len: ", clevsString.split('.')[1])
-      digits = clevsString.split('.')[1]
+      plotTool = PlotTools ()
 
 
-      if len(digits) <= 3:
-         formatString = "%1." + str(len(digits)) + "f"
-      else:
-         formatString = "%1.1e"
+      newClevs = plotTool.returnFormattedContours(clevs)
 
-      if subplotNum == 111: # single image on a page
-         cLabelSize = 14
-      else:
-         cLabelSize = 10
+      clevs = None
+      clevs = newClevs
 
-      CS = plt.contour(X_model, Y_model, z, levels=clevs, cmap=colorMap, extend='both')
-      plt.clabel(CS, inline=1, colors="black", fmt=formatString, fontsize=cLabelSize)
-      # draw the filled contours
-      CF = plt.contourf(X_model, Y_model, z, levels=clevs, cmap=colorMap, extend='both')
 
-      if subplotNum == 111: # single image on a page
-         orientation = 'horizontal'
-         pad = .05
-         fraction = 0.4
-#         cbar = fig.colorbar(CF, ax=axPlot, orientation='horizontal', pad=.05, fraction=0.4)
-         fontSize = "xx-large"
-         titleFontSize = 20
-         latLonFontSize = 20
+      # map contour values to colors
+      norm=colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
-      else: # several images on a page
-         print ("Mutliple images on page")
-         orientation = 'vertical'
-         pad = .05
-         fraction = 0.4
-#         cbar = fig.colorbar(CF, ax=axplot, orientation='vertical', pad=.05)
-         fontSize = "large"
-         titleFontSize = 16
-         latLonFontSize = 14
 
-      cbar = fig.colorbar(CF, ax=axPlot, orientation=orientation, pad=pad, fraction=fraction)
+
+      contourFormat = plotTool.returnContourFormatFromLevels(clevs)
+      cLabelSize = plotTool.returnContourLabelFromSubPlotNum (subplotNum)
+
+      extendValue = "both"
+      if clevs[0] == 0:
+         print ("first contour is 0")
+         extendValue = "max"
+
+         
+      CS = plt.contour(X_model, Y_model, z, levels=clevs, cmap=colorMap, extend=extendValue, norm=norm)
+      if labelContours == True:
+         plt.clabel(CS, inline=1, colors="black", fmt=contourFormat, fontsize=cLabelSize)
+
+
+      CF = plt.contourf(X_model, Y_model, z, levels=clevs, norm=norm, cmap=colorMap, extend=extendValue)
+
+      CF.cmap.set_under(cmapUnder)
+      CF.cmap.set_over(cmapOver)
+
+
+      orientation = plotTool.returnOrientationFromSubPlotNum (subplotNum)
+      pad = plotTool.returnPadFromSubPlotNum (subplotNum)
+      fraction = plotTool.returnFractionFromSubPlotNum (subplotNum)
+      fontSize = plotTool.returnFontSizeFromSubPlotNum (subplotNum)
+      titleFontSize = plotTool.returnTitleFontSizeFromSubPlotNum (subplotNum)
+      latLonFontSize = plotTool.returnLatLonFontSizeFromSubPlotNum (subplotNum)
+      
+
+      cbar = fig.colorbar(CF, ax=axPlot, orientation=orientation, pad=pad, fraction=fraction, \
+                             format=contourFormat, ticks=clevs)
+
 
       if units != None:
          cbar.set_label(label=units,size=16)
 
-
-
-
-
+      print ("Num clevs: ", len(clevs)) 
+      plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
 
       for t in cbar.ax.get_xticklabels():
          t.set_fontsize(fontSize)
+
+      plotTool.reviseTickLabels (cbar)
+
       
       plt.title(plotTitle, fontsize=titleFontSize)
       plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])
 
 
-      latLabels = [-90, -60, -30, 0, 30, 60, 90]
-      lonLabels = [-120, -60, 0, 60, 120, 180]
-
+      latLabels = [-90, -60, -30, 0, 30, 60]
+      lonLabels = [-180, -120, -60, 0, 60, 120,180]
 
       baseMap.drawparallels(latLabels,labels=[1,0,0,0], color='grey', \
                                fontsize=latLonFontSize)
-      baseMap.drawmeridians(lonLabels,labels=[0,1,0,1], color='grey', \
+      baseMap.drawmeridians(lonLabels,labels=[1,1,0,1], color='grey', \
                                fontsize=latLonFontSize)
       baseMap.drawcoastlines()
       baseMap.drawcountries()
 
+      if str(subplotNum)[0:2] == "22":
+         plt.subplots_adjust(left=0.10, right=0.95, hspace=.0000001)#, wspace=0.35, hspace=0.25)
 
 
    # X_model, Y_model, and min/maxes 

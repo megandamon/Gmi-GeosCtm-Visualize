@@ -86,7 +86,7 @@ if len (optList) != NUM_ARGS:
 modelFile = str(optList[0][1])
 fileLevel = float(optList[1][1])
 timeRecord = int(optList[2][1])
-dateYearMonth = optList[3][1]
+dateString = optList[3][1]
 longName = str(optList[4][1])
 keyFile = str(optList[5][1])
 fieldToPlot = str(optList[6][1])
@@ -112,8 +112,8 @@ if int(timeRecord) < 0:
     print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
-if len(dateYearMonth) != 6:
-    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
+if len(dateString) != 6 and len(dateString) != 4:
+    print("ERROR date must be in the format YYYYMM. Received: ", dateString, len(dateString))
     sys.exit(0)
 
 if not os.path.exists (keyFile):
@@ -135,9 +135,27 @@ modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
+modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
+
 tracerTools = TracerPlotTools (keyFile, modelObject)
-modelFieldArray = modelObject.return2DSliceAndConvert (fieldToPlot, timeRecord, \
-                                                           fileLevel, tracerTools.tracerDict[fieldToPlot].unitConvert)
+modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord) # read bare field
+modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
+
+print ("min max of array: ", modelFieldArraySlice.min(), modelFieldArraySlice.max())
+
+preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArraySlice, modelSimName)
+
+print ("min max of array after pre-conv: ", preConvertFieldArray.min(), preConvertFieldArray.max())
+
+newModelFieldArray = preConvertFieldArray * \
+    float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
+
+print ("min max of array after conv: ", newModelFieldArray.min(), newModelFieldArray.max())
+
+tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+
+modelFieldArray =  newModelFieldArray
+newModelFieldArray = None
 
 
 #-----------------------------------------------------#
@@ -146,16 +164,15 @@ modelFieldArray = modelObject.return2DSliceAndConvert (fieldToPlot, timeRecord, 
 fig = plt.figure(figsize=(20,20))
 
 modelObject.createPlotObjects()
-modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
 plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-    + " hPa (" + longName + ") " + dateYearMonth
+    + " hPa (" + longName + ") " + dateString
 
 
 
 if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
     print ("Calling createTracerContours")
     print ((modelFieldArray.max() - modelFieldArray.min())/10)
-    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, step=.5)
+#    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, step=.5)
     contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, \
                                                     step=(modelFieldArray.max() - modelFieldArray.min())/10)
     print (contours)
@@ -166,12 +183,15 @@ else:
     print ("Received contours from input file")
 
 
+print ( "model min/max values: ",  modelFieldArray.min(),modelFieldArray.max())
+print ( "(max-min)/100: ",  (modelFieldArray.max() - modelFieldArray.min())/10)
 
 modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, modelFieldArray, \
                                        [modelFieldArray.min(),modelFieldArray.max()], \
                                        [modelObject.lat[:].min(),modelObject.lat[:].max()], \
-                                       [modelObject.long[:].min(), modelObject.long[:].max()], 111, \
+                                       [modelObject.long[:].min(), modelObject.long[:].max()], \
+                                       "fuchsia", "darkred", 111, \
                                        plotTitle, COLORMAP, tracerTools.tracerDict[fieldToPlot].units, \
                                        contourLevels=contours)
 
