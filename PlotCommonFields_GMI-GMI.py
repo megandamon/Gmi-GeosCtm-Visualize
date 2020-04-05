@@ -360,6 +360,8 @@ for command in commands[:]:
 
 
 
+
+
 print("")
 print("len of commands: ", len(commands))
 print("")

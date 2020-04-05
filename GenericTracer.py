@@ -204,13 +204,130 @@ class GenericTracer:
       
       return returnContours
 
+
+    def createPercChangeContoursFromMinMax (self, minVal, maxVal):
+
+        if maxVal - minVal == 0:
+            return [-1, -.5, -.25, 0, .25, .5, 1]
+
+
+        absMinVal = abs(minVal)
+        absMaxVal = abs(maxVal)
+
+        if absMinVal > absMaxVal:
+            newMaxVal = absMinVal
+            newMinVal = -absMinVal
+        else:
+            newMaxVal = absMaxVal
+            newMinVal = -absMaxVal
+
+        if newMaxVal > 1.:
+            roundNewMaxVal = round(newMaxVal)
+            roundNewMinVal = -roundNewMaxVal
+        else:
+            roundNewMaxVal = round(newMaxVal,2)
+            roundNewMinVal = -roundNewMaxVal
+
+            
+
+        print ("old: ", minVal, maxVal)
+        print ("new: ", newMinVal, newMaxVal)
+        print ("round: ", -roundNewMaxVal, roundNewMaxVal)
+        
+        
+        range = 2.*roundNewMaxVal
+        print ("range: ", range)
+        
+        if range > 2:
+            step = int(ceil(range / 12))
+        else:
+            step = round(range/12,2)
+
+
+        if step > 10: step = self.roundup(step)
+        elif step > 1:  step = round(step)
+
+        print ("step: ", step)
+
+        diffContours = arange(roundNewMinVal,roundNewMaxVal,step)
+
+        print (diffContours)
+
+
+        if 0 in diffContours:
+            newContours = diffContours
+        else:
+            print ("No zero")
+            negative = False
+            newContours = []
+            for lev in diffContours:
+                if lev < 0:
+                    newContours.append(lev)
+                    negative = True
+                elif lev > 0 and negative == True:
+                    newContours.append(0)
+                    newContours.append(lev)
+                    negative = False
+                else :
+                    newContours.append(lev)
+                
+        
+        if newContours[-1] < roundNewMaxVal: 
+            newContours2 = zeros(len(newContours)+1)
+            count = 0
+            for contour in newContours:
+                newContours2[count] = contour
+                count = count + 1
+            newContours2[count] = roundNewMaxVal
+            diffContours = newContours2
+        else:
+            diffContours = newContours
+
+
+        #convert from sci notation to float
+        print ("oth element diffContours: ", str(diffContours[0]))
+        if "e" in str(diffContours[0]):
+            print ("found e")
+
+        newDiffContours = []
+        for lev in diffContours:
+            newDiffContours.append(round(lev,3))
+
+        print (newDiffContours)
+
+        newNewDiffContours = []
+        foundZero = False
+        for lev in newDiffContours:
+            if lev == 0.0:
+                if foundZero == False:
+                    foundZero = True
+                    newNewDiffContours.append(lev)
+            else:
+                newNewDiffContours.append(lev)
+        
+        return newNewDiffContours
+        
+
+
+
     def createDiffContoursFromMinMax (self, minVal, maxVal):
 
 
         
-        print ("received: ", minVal, maxVal)
+#        print ("received: ", minVal, maxVal)
+
+        if maxVal - minVal == 0:
+            return [-1, -.5, -.25, 0, .25, .5, 1]
+
         avg = (abs(minVal) + abs(maxVal))/2.
+
+        print ("avg: ", avg)
+
+        if "e" in str(avg): 
+            return (self.returnContoursFromMinMax(-avg,avg,(avg*2)/12.))
+
         minValAvg = -self.roundup(avg)
+
         maxValAvg = abs(minValAvg)
 
         print ("new: ", minValAvg, maxValAvg)
@@ -225,14 +342,14 @@ class GenericTracer:
         if step > 10: step = self.roundup(step)
         elif step > 1:  step = round(step)
 
-        print ("step: ", step)
+#        print ("step: ", step)
 
         diffContours = arange(minValAvg,maxValAvg,step)
 
         if 0 in diffContours:
             newContours = diffContours
         else:
-            print ("No zero")
+#            print ("No zero")
             negative = False
             newContours = []
             for lev in diffContours:
@@ -262,44 +379,6 @@ class GenericTracer:
         return diffContours
         
 
-        if (minVal < 1 and maxVal > 10) or \
-                (minVal < 100 and maxVal > 200):
-
-            if abs(maxVal) > minVal:
-                maxValAbs = int(abs(round(maxVal)))
-                if maxValAbs >= 10: maxVal = self.roundup(maxValAbs)
-                else: maxVal = maxValAbs
-                minVal = -maxVal            
-            else:
-                minValRound = int(round(minVal))
-                if minValRound >= 10: maxVal = self.roundup(minValRound)
-                else: minVal = minValRound
-                maxVal = -minVal
-
-        else:
-            if abs(minVal) < maxVal:
-                maxValAbs = int(abs(round(minVal)))
-                if maxValAbs >= 10: maxVal = self.roundup(maxValAbs)
-                else: maxVal = maxValAbs
-                minVal = -maxVal            
-            else:
-                maxValRound = int(round(maxVal))
-                if maxValRound >= 10: maxVal = self.roundup(maxValRound)
-                else: maxVal = maxValRound
-                minVal = -maxVal
-
-            
-        print ("min/max vals: ", minVal, maxVal)
-        sys.exit(0)
-                
-        range = int(maxVal+ abs(minVal))
-        step = int(ceil(range / 12)) # 12 contours for now
-        if step > 10: step = self.roundup(step)
-        diffContours = arange(minVal,maxVal+step,step)
-        if diffContours[-1] != maxVal: diffContours[-1] = maxVal
-        
-        return diffContours
-
     def createTracerContoursFromMinMax (self, minVal, maxVal, step=.5):
 
         return self.returnContoursFromMinMax (minVal, maxVal, step)
@@ -312,7 +391,7 @@ class GenericTracer:
 
 
     def preConversion (self, array, simName, convFac = None, newUnits = None):
-        print ("\nGeneric tracers do not perform pre-conversions!")
+#        print ("\nGeneric tracers do not perform pre-conversions!")
 
         return array
 

@@ -173,21 +173,21 @@ class GenericModelPlotTools:
 
       if levUnits == "layer":
 
-         print ()
-         print ("Object uses model levels.")
-         print ()
+#          print ()
+#          print ("Object uses model levels.")
+#          print ()
 
          levs1 = pressLevels.calcPressureLevels(len(self.lev))
          levs = levs1[::-1]
 
       elif levUnits == "hPa":
 
-         print ()
-         print ("File uses pressure levels / layers")
-         print ("Vertical dimension, lev, is in hPa!")
-         print ()
+#          print ()
+#          print ("File uses pressure levels / layers")
+#          print ("Vertical dimension, lev, is in hPa!")
+#          print ()
 
-         levs1 = zeros(len(self.lev))
+         Levs1 = zeros(len(self.lev))
 
          count = 0
          for modelLev in self.lev[:]:
@@ -252,9 +252,9 @@ class GenericModelPlotTools:
 
       if analType == "d":
 
-         print("")
-         print("Creating Percent Differences")
-         print("")
+#          print("")
+#          print("Creating Percent Differences")
+#          print("")
 
          z_Diff = numpy.zeros((dim1,dim2), numpy.float32)
 
@@ -266,9 +266,9 @@ class GenericModelPlotTools:
 
       elif analType == "c":
 
-         print("")
-         print("Creating Absolute Differences")
-         print("")
+#          print("")
+#          print("Creating Absolute Differences")
+#          print("")
 
          num = array1 - array2
          z_Diff = (num / array2)
@@ -276,9 +276,9 @@ class GenericModelPlotTools:
 
       elif analType == "s":
          
-         print("")
-         print("Creating Absolute Differences")
-         print("")
+#          print("")
+#          print("Creating Absolute Differences")
+#          print("")
 
          z_Diff = array1 - array2
 
@@ -332,9 +332,9 @@ class GenericModelPlotTools:
 
       elif analType == "c":
 
-         print("")
-         print("Creating Absolute Differences")
-         print("")
+#          print("")
+#          print("Creating Absolute Differences")
+#          print("")
 
          num = array1 - array2
          z_Diff = (num / array2)
@@ -342,9 +342,9 @@ class GenericModelPlotTools:
       # User requested absolute difference
       elif analType == "s":
          
-         print("")
-         print("Creating Absolute Differences")
-         print("")
+#          print("")
+#          print("Creating Absolute Differences")
+#          print("")
 
          z_Diff = array1 - array2
 
@@ -458,7 +458,7 @@ class GenericModelPlotTools:
 
       extendValue = "both"
       if clevs[0] == 0:
-         print ("first contour is 0")
+#         print ("first contour is 0")
          extendValue = "max"
 
          
@@ -488,7 +488,7 @@ class GenericModelPlotTools:
       if units != None:
          cbar.set_label(label=units,size=16)
 
-      print ("Num clevs: ", len(clevs)) 
+#      print ("Num clevs: ", len(clevs)) 
       plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
 
       for t in cbar.ax.get_xticklabels():
@@ -572,7 +572,7 @@ class GenericModelPlotTools:
 
    def populateFieldList (self):
 
-      print("Generic populateFieldList")
+#      print("Generic populateFieldList")
       
 
 
@@ -597,8 +597,8 @@ class GenericModelPlotTools:
                
    def returnFieldsInCommon (self, list1, list2, order):
 
-      print(order, " has more fields than the other model!")
-      print("")
+#      print(order, " has more fields than the other model!")
+#      print("")
 
 
       if order == "GEOS-CTM": # GEOS-CTM has more fields
@@ -606,7 +606,7 @@ class GenericModelPlotTools:
       else:
          scanList = list2 # GMI has more fields
 
-      print("Scanning fields- ")
+#      print("Scanning fields- ")
       count = 0
       for item in scanList[:]:
          if item[0:4] != "Var_" and \
@@ -621,8 +621,8 @@ class GenericModelPlotTools:
       else:
          list2 = scanList
 
-      print("")
-      print("Scanning ", order, " fields for matches in other model.")
+#       print("")
+#       print("Scanning ", order, " fields for matches in other model.")
       
       if hasattr(self, 'fieldName'):
          print("Field name is: ", self.fieldName)
@@ -708,13 +708,30 @@ class GenericModelPlotTools:
       return slice
 
 
+
+   def interpMaskedFieldZM (self, maskedField1, maskedField2, latPoints1, timeRecord, replaceValue=None):
+
+      realMax = maskedField2.max()
+
+      newMaskedField2 = self.returnInterpolatedFieldZM (maskedField2, latPoints1, timeRecord, replaceValue)
+
+      maskedField2 = None
+      maskedField2 = newMaskedField2
+
+      maskedArray2 = numpy.ma.masked_where(maskedField1.mask == True, maskedField2)
+
+      maskedField2 = None
+      maskedField2 = numpy.ma.masked_where(maskedArray2 >= realMax, maskedArray2)
+
+      return maskedField2
+
    def returnInterpolatedFieldZM (self, fieldArray, latPoints, timeRecord, replaceValue=None):
 
-      print ("")
-      print ("Interplating to lat size: ", len(latPoints))
-      print ("Native resolution: ", fieldArray.shape)
-      print ("fieldArray min/max: ", fieldArray.min(), fieldArray.max())
-      print ("")
+#       print ("")
+#       print ("Interplating to lat size: ", len(latPoints))
+#       print ("Native resolution: ", fieldArray.shape)
+#       print ("fieldArray min/max: ", fieldArray.min(), fieldArray.max())
+#       print ("")
 
 
       levCount = 0
@@ -727,7 +744,8 @@ class GenericModelPlotTools:
          # pull lat records out 
          latRecords = fieldArray[levCount, :]
 
-         latRecords[latRecords >= replaceValue] = 0.0
+         if replaceValue != None:
+            latRecords[latRecords >= replaceValue] = 0.0
 
 #         print("LR min/max: ", latRecords.min(), latRecords.max(), levCount)         
 
@@ -739,27 +757,34 @@ class GenericModelPlotTools:
 
          levCount = levCount + 1
 
-      print("")
-      print("New 1 min / max / shape",  newFieldArray.min(), " / ", newFieldArray.max(), " / ", 
-            newFieldArray.shape)
-      print("")
+#       print("")
+#       print("New 1 min / max / shape",  newFieldArray.min(), " / ", newFieldArray.max(), " / ", 
+#             newFieldArray.shape)
+#       print("")
 
       return newFieldArray
 
 
+   # maskedField2 is going to the resolution of maskedField1
+   def interpMaskedFieldLatLon (self, maskedField1, maskedField2, lat1, lon1, timeRecord, replaceValue=None):
+
+      realMax = maskedField2.max()
+
+      newMaskedField2 = self.returnInterpolatedFieldLatLon (maskedField2, lat1, lon1, timeRecord, replaceValue)
+
+      maskedField2 = None
+      maskedField2 = newMaskedField2
+
+      maskedArray2 = numpy.ma.masked_where(maskedField1.mask == True, maskedField2)
+
+      maskedField2 = None
+      maskedField2 = numpy.ma.masked_where(maskedArray2 >= realMax, maskedArray2)
+
+      return maskedField2
+
 
 
    def returnInterpolatedFieldLatLon (self, fieldArray, latPoints, longPoints, timeRecord, replaceValue=None):
-
-      print ("")
-      print ("Interplating  to lat/long size: ", len(latPoints), len(longPoints))
-
-      print ("Native resolution: ", fieldArray.shape, len(self.lat), len(self.long))
-      print ("")
-
-
-      print ("fielArray min/max: ", fieldArray.min(), fieldArray.max())
-
 
       if replaceValue != None:
          print("Received replace value! = ", replaceValue)
@@ -775,7 +800,8 @@ class GenericModelPlotTools:
          # pull long records out 
          longRecords = fieldArray[latCount, :]
 
-         longRecords[longRecords >= replaceValue] = 0.0
+         if replaceValue != None:
+            longRecords[longRecords >= replaceValue] = 0.0
 
 #         print("LR min/max: ", longRecords.min(), longRecords.max(), latCount)         
 
@@ -786,11 +812,6 @@ class GenericModelPlotTools:
          newFieldArray [latCount, :] = yinterp
 
          latCount = latCount + 1
-
-      print("")
-      print("New 1 min / max / shape",  newFieldArray.min(), " / ", newFieldArray.max(), " / ", 
-            newFieldArray.shape)
-      print("")
 
 
 
@@ -804,18 +825,14 @@ class GenericModelPlotTools:
          # pull lat records out
          latRecords  = newFieldArray[:, longCount]
 
-         latRecords[latRecords >= replaceValue] = 0.0
+         if replaceValue != None:
+            latRecords[latRecords >= replaceValue] = 0.0
 
          yinterp = numpy.interp(latPoints[:], self.lat[:], latRecords)
 
          newFieldArrayBoth [:, longCount] = yinterp[:]
 
          longCount = longCount + 1 
-
-      print("")
-      print("New min / max / shape",  newFieldArrayBoth.min(), " / ", newFieldArrayBoth.max(), " / ", 
-            newFieldArrayBoth.shape)
-      print("")
 
       
       newFieldArray = None
@@ -877,9 +894,9 @@ class GenericModelPlotTools:
       # User requested absolute difference
       elif analysisType == "s":
          
-         print("")
-         print("Creating Absolute Differences")
-         print("")
+#          print("")
+#          print("Creating Absolute Differences")
+#          print("")
 
          fieldDiff = field1 - field2
 
@@ -891,9 +908,9 @@ class GenericModelPlotTools:
          else:
             minDiff = -maxDiff
 
-         print("")
-         print("low end / high end for simple diffs: ", minDiff, " / ", maxDiff)
-         print("")
+#          print("")
+#          print("low end / high end for simple diffs: ", minDiff, " / ", maxDiff)
+#          print("")
 
 
       # User requested ratio

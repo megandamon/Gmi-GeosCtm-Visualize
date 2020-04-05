@@ -35,6 +35,7 @@ from matplotlib.colors import BoundaryNorm
 import matplotlib.colors as colors
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.basemap import Basemap
+import pandas as pd
 
 
 
@@ -55,7 +56,8 @@ from TracerPlotTools import TracerPlotTools
 COLORMAP = "rainbow"
 RATIO_COLORMAP = "bwr"
 RATIO_CONTOUR_LEVELS = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
-NUM_ARGS = 8
+DEFAULT_PERCHANGE_CONTOURS = [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
+NUM_ARGS = 9
 #*********************
 
 
@@ -63,7 +65,7 @@ NUM_ARGS = 8
 #*********************
 def usage ():
     print("")
-    print("usage: PlotTracerCompareSlice.py [-c] [-g] [-l] [-r] [-d] [-n] [-k] [-f] ")
+    print("usage: PlotTracerCompareSlice.py [-c] [-g] [-l] [-r] [-d] [-n] [-k] [-f] [-p]")
     print("-g Model file 1")
     print("-c Model file 2")
     print("-l vertical level (hPa)")
@@ -72,6 +74,7 @@ def usage ():
     print("-n long name of tracer")
     print("-k Key file for tracers")
     print("-f tracer to plot")
+    print("-p percentage change contours (d-default-+-100, a-algorithmic")
     print("")
     sys.exit (0)
 #*********************
@@ -80,7 +83,7 @@ def usage ():
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'g:c:l:r:d:n:k:f:')
+optList, argList = getopt.getopt(sys.argv[1:],'g:c:l:r:d:n:k:p:f:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -92,7 +95,9 @@ timeRecord = int(optList[3][1])
 dateYearMonth = optList[4][1]
 longName = str(optList[5][1])
 keyFile = str(optList[6][1])
-fieldToPlot = str(optList[7][1])
+percChangeContours = str(optList[7][1])
+fieldToPlot = str(optList[8][1])
+
 
 if not os.path.exists (model1File):
     print("The file you provided does not exist: ", model1File)
@@ -119,6 +124,10 @@ if not os.path.exists (keyFile):
 
 if fileLevel < 0.1 and fileLevel > 1300.: 
     print("GEOS-5 pressure levels should be < 1300 and > 0.1 mb/hPa")
+    sys.exit(0)
+
+if percChangeContours != "d" and percChangeContours != "a":
+    print("Percent change contours should be either d(deafult) or a(algorithmic)")
     sys.exit(0)
 
 
@@ -153,7 +162,8 @@ if fieldToPlot not in model1Object.hdfData.variables.keys():
 else:
     fieldToPlot1 = fieldToPlot
 
-fillValue1 = model1Object.hdfData.variables[fieldToPlot1].getncattr('_FillValue')
+
+
 model1FieldArray = model1Object.returnField (fieldToPlot, timeRecord)
 model1FieldArraySlice = model1Object.return2DSliceFromRefPressure (model1FieldArray, fileLevel)
 
@@ -168,10 +178,16 @@ model1FieldArray = newModel1FieldArray
 newModel1FieldArray = None
 
 
+
+
 model2Object = GeosCtmPlotTools (model2File, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
-fillValue2 = model2Object.hdfData.variables[fieldToPlot].getncattr('_FillValue')
+
+
+
+
+
 model2FieldArray = model2Object.returnField (fieldToPlot, timeRecord)
 model2FieldArraySlice = model2Object.return2DSliceFromRefPressure (model2FieldArray, fileLevel)
 
@@ -179,7 +195,6 @@ preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(model2
 
 newModel2DFieldArray = preConvertFieldArray2 * \
     float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
-
 
 tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
@@ -197,39 +212,39 @@ if model1FieldArray.shape != model2FieldArray.shape:
     model1NumPoints = len(model1FieldArray.flatten())
     model2NumPoints = len(model2FieldArray.flatten())
 
-
-    print("")
-    print("Field 1 num points: ", model1NumPoints)
-    print("Field 2 num points: ", model2NumPoints)
-    print("")
-
+    print ("")
     if model1NumPoints < model2NumPoints:
+        
+        print ("model1 has fewer points (", model1NumPoints, "<", model2NumPoints, ") ; will interpolate to the grid of model 1")
+
+
+        model2FieldArrayInterp = model2Object.interpMaskedFieldLatLon (model1FieldArray, model2FieldArray, \
+                                                                    model1Object.lat, model1Object.long, \
+                                                                    timeRecord, replaceValue = None)
+
+        model2FieldArray = None
+        model2FieldArray = model2FieldArrayInterp
 
         modelObject = model1Object
-        newModel2FieldArray = model2Object.returnInterpolatedFieldLatLon(model2FieldArray, 
-                                                                         model1Object.lat, 
-                                                                         model1Object.long,
-                                                                         timeRecord, 
-                                                                         replaceValue=fillValue2)
-        model2FieldArray = None
-        model2FieldArray = newModel2FieldArray
-        
-        model1FieldArray[model1FieldArray>=fillValue1] = 0.0
 
     else:
-        modelObject = model2Object
-        newModel1FieldArray = model1Object.returnInterpolatedFieldLatLon(model1FieldArray, 
-                                                                         model2Object.lat,
-                                                                         model2Object.long,
-                                                                         timeRecord, 
-                                                                         replaceValue=fillValue1)
-        model1FieldArray = None
-        model1FieldArray = newModel1FieldArray
 
-        model2FieldArray[model2FieldArray>=fillValue2] = 0.0
+        print ("model2 has fewer points (", model2NumPoints, "<", model1NumPoints, ") ; will interpolate to the grid of model 2")
+
+
+        model1FieldArrayInterp = model1Object.interpMaskedFieldLatLon (model2FieldArray, model1FieldArray, \
+                                                                     model2Object.lat, model2Object.long, \
+                                                                     timeRecord, replaceValue = None)
+        model1FieldArray = None
+        model1FieldArray = model1FieldArrayInterp
+        modelObject = model2Object
 
 else:
     modelObject = model1Object
+
+print ("")
+
+
 
 
 minValueBoth = model1FieldArray.min()
@@ -243,6 +258,7 @@ if model2FieldArray.max() > maxValueBoth:
 
 
 print("")
+print("min/max value of both models: ", minValueBoth, maxValueBoth)
 print("Global sum 1 of ", fieldToPlot, " : ", sum(model1FieldArray))
 print("Global sum 2 of ", fieldToPlot, " : ", sum(model2FieldArray))
 print("")
@@ -280,7 +296,6 @@ if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
     step = (maxValueBoth - minValueBoth) / 10.
     contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax (minValueBoth, maxValueBoth, \
                                                                step=float('{:0.2e}'.format(step)))
-    print (contours)
 else:
     contours = []
     for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
@@ -329,9 +344,11 @@ analType = "s"
 analString = "diff"
 z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray, analType)
 
+print (z_Model.min(), z_Model.max())
+
+
 diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
 
-print ("diff levels: ", diffContourLevels)
 
 
 plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
@@ -353,6 +370,22 @@ analType = "c"
 analString = "perc change"
 z_Model = None
 z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray, analType)
+
+
+if percChangeContours == "d":
+    percDiffContours =  [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
+
+else:
+    print ("Create percDiffContours!")
+    percDiffContours = tracerTools.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
+        (z_Model.min(), z_Model.max())
+    if percDiffContours [0] < -100.0:
+        percDiffContours = DEFAULT_PERCHANGE_CONTOURS
+
+
+
+print (percDiffContours)
+
 plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
      + " hPa (" + longName + ") " + dateYearMonth
 modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \

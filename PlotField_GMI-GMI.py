@@ -373,15 +373,17 @@ for modelLev in modelLevsToPlotGmi:
 
 
 
-    gmiObject1.create2dSlice2 (z_Gmi1, [useMin, useMax], \
-                                      311, "GMI " + gmiSimName1 + "        " + \
-                                      variableExtractField + "_" + \
-                                      field + " @ " + str(modelLev) + \
-                                      "mb " + dateYearMonth, "jet")
+    gmiObject1.create2dSlice2 (z_Gmi1, \
+#                                   [z_Gmi1.min(), z_Gmi1.max()], \
+                                   [useMin, useMax], \
+                                   311, "GMI " + gmiSimName1 + "        " + \
+                                   variableExtractField + "_" + \
+                                   field + " @ " + str(modelLev) + \
+                                   "mb " + dateYearMonth, "jet")
 
 
     print("")
-    print("GMI: ", z_Gmi2.min(), " / ", z_Gmi2.max())
+    print("GMI 2: ", z_Gmi2.min(), " / ", z_Gmi2.max())
     print("") 
 
     if z_Gmi2.max() - z_Gmi2.min() == 0.0 or orderGMI2 < -13:
@@ -400,11 +402,13 @@ for modelLev in modelLevsToPlotGmi:
     useMax = maxValueOfBoth
 
 
-    gmiObject1.create2dSlice2 (z_Gmi2, [useMin, useMax], \
-                                      312, "GMI " + gmiSimName2 + "        " + \
-                                      variableExtractField + "_" + \
-                                      field + " @ " + str(modelLev) + \
-                                      " mb " + dateYearMonth, "jet")
+    gmiObject1.create2dSlice2 (z_Gmi2, \
+#                                   [z_Gmi2.min(), z_Gmi2.max()], \
+                                   [useMin, useMax], \
+                                   312, "GMI " + gmiSimName2 + "        " + \
+                                   variableExtractField + "_" + \
+                                   field + " @ " + str(modelLev) + \
+                                   " mb " + dateYearMonth, "jet")
 
 
     gmiObject1.create2dSlice2 (z_Diff, \

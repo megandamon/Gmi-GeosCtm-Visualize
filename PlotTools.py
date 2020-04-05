@@ -148,7 +148,7 @@ class PlotTools:
 #            print ('\n ', lhs, '-', rhs, interval2, " =?", interval)
 
             if interval == interval2:
-               print ("Found equal ", clevs[rhsIndex], " to False")
+#               print ("Found equal ", clevs[rhsIndex], " to False")
                clevTicks[rhsIndex].set_visible(False)
                numFalse = numFalse + 1
                if numFalse == 4: # prevent too many blank marks
@@ -157,7 +157,7 @@ class PlotTools:
 
                   
             else:
-               print ("Found diff ", clevs[rhsIndex], " to True")
+#               print ("Found diff ", clevs[rhsIndex], " to True")
                clevTicks[rhsIndex].set_visible(True)
                clevTicks[lhsIndex].set_visible(True)
 
@@ -313,7 +313,7 @@ class PlotTools:
 
    def returnContourLabelFromSubPlotNum (self, subplotNum):
 
-      print ("In contourLabel : ", subplotNum)
+
 
       if subplotNum == 111:           # single image on a page
          cLabelSize = 14
@@ -326,14 +326,14 @@ class PlotTools:
 
    def returnClevsForPlotting (self, clevs):
       
-      print (clevs)
+
 
       newClevs = []
       for lev in clevs:
          clevsString = str(lev)
 
          if "e" in clevsString:
-            print ("Digits are in scientific notation")
+            #print ("Digits are in scientific notation")
             newClevs.append(lev)
 
          else:
@@ -356,7 +356,7 @@ class PlotTools:
       digitsList = []
       numSciFormat = 0
 
-      print (levels)
+      #print (levels)
 
 
       for lev in levels: # check each contour level
@@ -367,25 +367,25 @@ class PlotTools:
 
             numSciFormat = numSciFormat + 1
 
-            print ("found e number")
+            #print ("found e number")
 
             if "e" in clevsString or "E" in clevsString:
                pres = abs(int(clevsString.split('e')[1]))
                if "E" in str(pres):
                   pres = abs(int(clevsString.split('E')[1]))
 
-               print ('pres: ', pres)
+               #print ('pres: ', pres)
 
 
                number = decimal.Decimal(lev)
                clevsString = str(round(number,pres+2))
 
-               print (clevsString)
+               #print (clevsString)
 
 
                digits1 = clevsString.split('.')[1] # just get RHS of number
                
-               print (digits1)
+               #print (digits1)
 
 
 
@@ -408,8 +408,8 @@ class PlotTools:
 
       digitsList.sort()
 
-      print ("numscieformat: ", numSciFormat)
-      print ("digitsList: ", digitsList)
+#       print ("numscieformat: ", numSciFormat)
+#       print ("digitsList: ", digitsList)
 
       numType = "f"
       if numSciFormat > 1: numType = "e"
@@ -421,6 +421,6 @@ class PlotTools:
       else:
          contourFormat = "%1.1e"
 
-      print ("contourFormat: ", contourFormat)
+      #print ("contourFormat: ", contourFormat)
 
       return contourFormat

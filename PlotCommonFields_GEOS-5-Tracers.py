@@ -60,10 +60,10 @@ def worker (command):
 
 
 
-NUM_ARGS = 7
+NUM_ARGS = 8
 def usage ():
     print("")
-    print("usage: PlotTracers_GEOS.py [-g] [-c] [-k] [-r] [-d] [-n] [-p]")
+    print("usage: PlotTracers_GEOS.py [-g] [-c] [-k] [-r] [-d] [-n] [-p] [-t]")
     print("-g GEOS file ")
     print("-c GEOS file ")
     print("-k Key file for tracers ")
@@ -71,6 +71,7 @@ def usage ():
     print("-d date of comparision (YYYYMM)")
     print("-n PBS_NODEFILE")
     print("-p number of processes to use per node")
+    print("-t percentage change contours (d-default-+-100, a-algorithmic")
     print("")
     sys.exit (0)
 
@@ -80,7 +81,7 @@ print("Start plotting field differences")
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'g:c:k:r:d:n:p:')
+optList, argList = getopt.getopt(sys.argv[1:],'g:c:k:r:d:n:p:t:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
@@ -92,6 +93,7 @@ timeRecord = int(optList[3][1])
 dateYearMonth = optList[4][1]
 pbsNodeFile = optList[5][1]
 numProcesses = int(optList[6][1])
+percChangeContours = str(optList[7][1])
 
 
 
@@ -134,6 +136,10 @@ if numProcesses <= 0:
     sys.exit(0)
 
 
+
+if percChangeContours != "d" and percChangeContours != "a":
+    print("Percent change contours should be either d(deafult) or a(algorithmic)")
+    sys.exit(0)
 
 
 print("")
@@ -274,7 +280,7 @@ for field in fieldsToCompare[:]:
                                  + " -l "  + str(int(slice)) \
                                  + " -r " + str(timeRecord) + " -d " + dateYearMonth \
                                  + " -l \"" + tracerTools.tracerDict[field].long_name + "\" " \
-                                 + " -k " + keyFile)
+                                 + " -k " + keyFile + " -p " + percChangeContours)
 
 
         sCount = sCount + 1
@@ -282,7 +288,7 @@ for field in fieldsToCompare[:]:
     pythonCommandZM = "PlotTracerCompareZM.py -g " +  geosFile1 \
         + " -c " + geosFile2 \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
-        + " -k " + keyFile
+        + " -k " + keyFile + " -p " + percChangeContours
 
 
 
@@ -310,6 +316,7 @@ print("")
 for command in commands[:]:
     print(command)
 print("")
+
 
 
 pool = multiprocessing.Pool(processes=len(commands))
