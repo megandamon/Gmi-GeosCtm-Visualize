@@ -86,6 +86,7 @@ class GeosCtmPlotTools (GenericModelPlotTools):
 
       fieldName = prefix + fieldName
 
+
       if fieldName not in self.hdfData.variables.keys():
          if fieldName.islower(): 
             fieldName = fieldName.upper()

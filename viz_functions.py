@@ -70,7 +70,7 @@ def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, \
 
 
     ax1.set_xticks([-90, -60, -30, 0, 30, 60, 90])
-    ax1.set_xticklabels(["90N", "60N", "30N", "EQ", "30S", "60S", "90S"])
+    ax1.set_xticklabels(["90S", "60S", "30S", "EQ", "30N", "60N", "90N"])
 
     extendValue = "both"
     if clevs[0] == 0:
@@ -101,7 +101,7 @@ def plotZM (data, x, y, fig, subplotNum, colorMap, dataMin, dataMax, \
 
     cbar.set_label(plotOpt.get('units', ''),size=cBarFontSize)
 
-    plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
+    #plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
 
 
     for t in cbar.ax.get_xticklabels():

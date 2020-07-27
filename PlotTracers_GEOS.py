@@ -145,18 +145,18 @@ geosObject1 = GeosCtmPlotTools (geosFile, 'lat','lon',\
                                       'lon', 'lev', 'time' )
 
 
-print("")
-print("Date: ", geosObject1.DATE)
-print("")
+#print("")
+#print("Date: ", geosObject1.DATE)
+#print("")
 
 
-tracerTools = TracerPlotTools (keyFile, geosObject1)
+tracerTools = TracerPlotTools (geosObject1, keyFile, timeRecord, "ZM")
 
 fieldList = geosObject1.fieldList
 
 fieldsToCompare = []
 for field in fieldList[:]:
-    if field[0:4] != "Var_":
+    if field[0:4] != "Var_" and field != "AIRDENS" and field != "PS":
         fieldsToCompare.append(field)
 
 

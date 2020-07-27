@@ -137,7 +137,7 @@ modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
 
 modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
 
-tracerTools = TracerPlotTools (keyFile, modelObject)
+tracerTools = TracerPlotTools (modelObject, keyFile, timeRecord, fileLevel)
 modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord) # read bare field
 modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
 
@@ -152,7 +152,8 @@ newModelFieldArray = preConvertFieldArray * \
 
 print ("min max of array after conv: ", newModelFieldArray.min(), newModelFieldArray.max())
 
-tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
+    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
 modelFieldArray =  newModelFieldArray
 newModelFieldArray = None

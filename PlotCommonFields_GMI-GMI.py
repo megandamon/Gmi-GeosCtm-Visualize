@@ -163,12 +163,12 @@ print("GMI2 simulation type: ", simType2)
 print("")
 #--------------------------------------------------------------
 
-if simType1.strip() == "amonthly":
+if simType1.strip() == "amonthly" or simType1.strip() == "idaily":
     timeVarName1 = "hdr"
 else:
     timeVarName1 = "nymd"
 
-if simType2.strip() == "amonthly":
+if simType2.strip() == "amonthly" or simType2.strip() == "idaily":
     timeVarName2 = "hdr"
 else:
     timeVarName2 = "nymd"
@@ -359,6 +359,7 @@ for command in commands[:]:
     print(command)
 
 
+#sys.exit(0)
 
 
 
@@ -373,7 +374,7 @@ print("")
 print("Calling pool.map")
 pool.map(workerLocal, commands)
 print("")
-
+2
 print("")
 print("Calling pool.close")
 pool.close()

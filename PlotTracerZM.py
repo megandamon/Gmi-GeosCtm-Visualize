@@ -106,7 +106,7 @@ modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
                                       'lev','time', 'lat', \
                                       'lon', 'lev', 'time' )
 
-tracerTools = TracerPlotTools (keyFile, modelObject)
+tracerTools = TracerPlotTools (modelObject, keyFile, timeRecord, "ZM")
 
 
 modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
@@ -120,7 +120,8 @@ preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion(modelFi
 newModelFieldArray = preConvertFieldArray * \
     float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
 
-tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
+    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
 modelFieldArray = newModelFieldArray
 newModelFieldArray = None

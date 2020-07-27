@@ -225,7 +225,7 @@ print("")
 #--------------------------------------------------------------
 
 
-if "amonthly" in gmiFile1: 
+if "amonthly" in gmiFile1 or "idaily" in gmiFile1:
     gmiTimeVar = "hdr"
 else:
     gmiTimeVar = "nymd"

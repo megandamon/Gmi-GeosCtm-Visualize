@@ -35,7 +35,8 @@ class GenericTracer:
     NEWUNIT_INDEX = 5
     ZMCONTOUR_INDEX = 6
 
-    MOL_WEIGHT_DRY_AIR = 29 #g/mol dry air)
+    MOL_WEIGHT_DRY_AIR = 28.965  #g/mol dry air)
+    MOL_WEIGHT_H2O = 18.015
     
     name = None
     long_name = None
@@ -59,14 +60,22 @@ class GenericTracer:
     # DESCRIPTION: 
     # Constructor routine.
     #---------------------------------------------------------------------------  
-    def __init__(self, tracerName, modelObject, keyFile):
+    def __init__(self, tracerName, modelObject, keyFile, timeRecord, fileLevel):
 
         keyLines = GenericModelPlotTools.readFileAndReturnFileLines(GenericModelPlotTools, keyFile)
 
+#        print ("key file lines: ", len(keyLines) -1)
+#        print ("tracer name: ", tracerName)
+
+        foundzZm = False
+
+
         lineCount = 0
+
         while lineCount < len(keyLines)-1:
 
             tracerMetData = keyLines[lineCount].split(':') # split this line into metdata tokens
+#            print ("Tracer met data: ", tracerMetData)
 
             if tracerMetData[0] == tracerName:
 
@@ -101,7 +110,16 @@ class GenericTracer:
                     lineCount = lineCount + 1
                     sliceLine = keyLines[lineCount].split(':') # split this line into "slice", numSlice, contours (maybe)
 
-                    if sliceLine[0] == "\tslice": 
+ #                   print ("")
+ #                   print (sliceLine)
+ #                   print (sliceLine[0])
+ #                   print ("")
+
+                    if "slice" in sliceLine[0] and "z_slice" not in sliceLine[0]:
+
+  #                      print ("")
+  #                      print ("Found regular slice")
+  #                      print ("")
 
                         slice = float(sliceLine[1])
 
@@ -114,11 +132,74 @@ class GenericTracer:
                             for level in range (len(contourLevels)):
                                 self.slices[slice].append(float(contourLevels[levCount]))
                                 levCount = levCount + 1
-                                                       
-                    else:
-                        nextTracer = True 
-                        return # after we've filled in this info, we can exit
 
+                    elif "z_slice" in sliceLine[0]:
+   #                     print ("")
+   #                     print ("foudn first z_slice, breaking")
+   #                     print ("")
+                        break
+
+   #             print ("")
+   #             print ("creating diffSlices")
+   #             print ("")
+
+                lineCount = lineCount - 1 # need to back up and let the next loop read the zslices
+
+                self.diffSlices = {} # create new dict for the difference contours for each slice 
+                nextTracer = False
+
+
+                while nextTracer == False and lineCount < len(keyLines)-1:
+
+                    lineCount = lineCount + 1
+                    sliceLine = keyLines[lineCount].split(':') # split this line into "z_slice", numSlice, contours (maybe)
+
+
+                    if "z_slice" in sliceLine[0]: 
+
+#                         print ("")
+#                         print ("Found z_slice")
+#                         print ("")
+
+                        slice = float(sliceLine[1])
+
+#                        print ("")
+#                        print ("zslice: ", slice)
+#                        print ("")
+
+                        self.diffSlices[slice] = None
+                        if len(sliceLine) > 2: 
+
+                            contourLevels = sliceLine[2].split(",")
+                            levCount = 0
+                            self.diffSlices[slice] = []
+                            for level in range (len(contourLevels)):
+                                self.diffSlices[slice].append(float(contourLevels[levCount]))
+                                levCount = levCount + 1
+
+                    elif "z_zm" in sliceLine[0]:
+#                        print ("")
+#                        print ("foudn z_zm, breaking")
+#                        print ("")
+                        break
+
+                                
+#                print (sliceLine, "length of sliceLine: ", len(sliceLine))
+                self.z_zm = []
+                if len(sliceLine) > 1: 
+
+                    contourLevels = sliceLine[1].split(",")
+#                    print (contourLevels, 'length of contourLevels: ', len(contourLevels))
+                    levCount = 0
+                    if len(contourLevels) > 1:
+                        for level in range (len(contourLevels)):
+                            self.z_zm.append(float(contourLevels[levCount]))
+                            levCount = levCount + 1
+                    else:
+                        self.z_zm = None
+                    
+ #               print ("Before return: ", self.z_zm)
+                return 
 
             lineCount = lineCount + 1
 
@@ -221,6 +302,9 @@ class GenericTracer:
             newMaxVal = absMaxVal
             newMinVal = -absMaxVal
 
+
+        print ("new max: ", newMaxVal)
+
         if newMaxVal > 1.:
             roundNewMaxVal = round(newMaxVal)
             roundNewMinVal = -roundNewMaxVal
@@ -233,6 +317,8 @@ class GenericTracer:
         print ("old: ", minVal, maxVal)
         print ("new: ", newMinVal, newMaxVal)
         print ("round: ", -roundNewMaxVal, roundNewMaxVal)
+
+
         
         
         range = 2.*roundNewMaxVal
@@ -248,10 +334,17 @@ class GenericTracer:
         elif step > 1:  step = round(step)
 
         print ("step: ", step)
+        
+        diffContoursLeft = arange(roundNewMinVal,0, step)
+        diffContoursRight = -diffContoursLeft
+        diffContoursRightRev = diffContoursRight[::-1]
 
-        diffContours = arange(roundNewMinVal,roundNewMaxVal,step)
+        print (diffContoursLeft)
+        print (diffContoursRightRev)
 
+        diffContours = numpy.concatenate([diffContoursLeft, diffContoursRightRev])
         print (diffContours)
+
 
 
         if 0 in diffContours:
@@ -295,6 +388,7 @@ class GenericTracer:
 
         print (newDiffContours)
 
+        # remove double zeros 
         newNewDiffContours = []
         foundZero = False
         for lev in newDiffContours:
@@ -304,6 +398,10 @@ class GenericTracer:
                     newNewDiffContours.append(lev)
             else:
                 newNewDiffContours.append(lev)
+
+        # remove double last elements
+        if newNewDiffContours[-1] == newNewDiffContours[-2]:
+            del newNewDiffContours[-1]
         
         return newNewDiffContours
         
@@ -311,8 +409,6 @@ class GenericTracer:
 
 
     def createDiffContoursFromMinMax (self, minVal, maxVal):
-
-
         
 #        print ("received: ", minVal, maxVal)
 
@@ -321,30 +417,49 @@ class GenericTracer:
 
         avg = (abs(minVal) + abs(maxVal))/2.
 
-        print ("avg: ", avg)
+#        print ("avg: ", avg)
 
         if "e" in str(avg): 
             return (self.returnContoursFromMinMax(-avg,avg,(avg*2)/12.))
 
-        minValAvg = -self.roundup(avg)
+        if avg > 1:
+            minValAvg = -self.roundup(avg)
+            maxValAvg = abs(minValAvg)
+            range = int(maxValAvg + abs(minValAvg))
+            step = int(ceil(range / 12))
 
-        maxValAvg = abs(minValAvg)
+        else:
+#            print ("avg < 1")
+            print (minVal, maxVal)
 
-        print ("new: ", minValAvg, maxValAvg)
+            if abs(minVal) > abs(maxVal):
+                minValAvg = round(minVal,5)
+                maxValAvg = abs(minValAvg)
+            else:
+                minValAvg = -round(maxVal,5)
+                maxValAvg = maxVal
 
-        range = int(maxValAvg + abs(minValAvg))
-        print ("range: ", range)
-        
-        step = int(ceil(range / 12))
 
-        print ("step: ", step)
+            range = maxValAvg + abs(minValAvg)
+#            print ("range: ", range)
+            step = range / 12.
+
+        print (minValAvg, maxValAvg, range)
 
         if step > 10: step = self.roundup(step)
         elif step > 1:  step = round(step)
 
 #        print ("step: ", step)
 
-        diffContours = arange(minValAvg,maxValAvg,step)
+        diffContoursLeft = arange(minValAvg,0., step)
+        diffContoursRight = -diffContoursLeft
+        diffContoursRightRev = diffContoursRight[::-1]
+
+#        print (diffContoursLeft)
+#        print (diffContoursRightRev)
+
+        diffContours = numpy.concatenate([diffContoursLeft, diffContoursRightRev])
+#        print (diffContours)
 
         if 0 in diffContours:
             newContours = diffContours

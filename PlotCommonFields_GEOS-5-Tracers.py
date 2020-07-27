@@ -178,13 +178,13 @@ geosObject2 = GeosCtmPlotTools (geosFile2, 'lat','lon',\
 
 
 print("")
-print("Date 1: ", geosObject1.DATE)
-print("Date 2: ", geosObject2.DATE)
+#print("Date 1: ", geosObject1.DATE)
+#print("Date 2: ", geosObject2.DATE)
 print("")
 
 
 
-tracerTools = TracerPlotTools (keyFile, geosObject1)
+tracerTools = TracerPlotTools (geosObject1, keyFile, timeRecord, "ZM")
 
 fieldList = geosObject1.fieldList
 
@@ -316,6 +316,7 @@ print("")
 for command in commands[:]:
     print(command)
 print("")
+
 
 
 

@@ -36,7 +36,8 @@ from TracerPlotTools import TracerPlotTools
 COLORMAP = "rainbow"
 RATIO_COLORMAP = "bwr"
 RATIO_CONTOUR_LEVELS = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
-DEFAULT_PERCHANGE_CONTOURS = [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
+DEFAULT_PERCHANGE_CONTOURS = [-1000, -500, -100, -50, -20, -10, -5, -2, -.5, 0.5, 2, 5, 10, 20, 50, 100, 500, 1000]
+#-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
 NUM_ARGS = 7
 #*********************
 
@@ -106,7 +107,7 @@ if percChangeContours != "d" and percChangeContours != "a":
 
 #---------------------------------------------------------------
 print("")
-print("Command line options look good.")
+print("Command line options look good. Field to plot is: ", fieldToPlot)
 print("")
 #--------------------------------------------------------------
 
@@ -120,11 +121,11 @@ model1SimName = model1SimName2
 
 
 
-tracerTools = TracerPlotTools (keyFile, model1Object)
+tracerTools = TracerPlotTools (model1Object, keyFile, timeRecord, "ZM")
 
 
 if fieldToPlot not in model1Object.hdfData.variables.keys():
-    print ("NOT IN KEYS")
+    print ("NOT IN KEYS OBJECT 1")
 
     if fieldToPlot.islower() == True:
         fieldToPlot1 = fieldToPlot.upper()
@@ -135,11 +136,13 @@ else:
 
 
 
-modelFieldArray1 = model1Object.returnField (fieldToPlot, timeRecord)
+modelFieldArray1 = model1Object.returnField (fieldToPlot1, timeRecord)
 preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray1, \
                                                                               model1SimName)
+
 newModel1FieldArray = preConvertFieldArray1 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
-tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
+    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
 modelFieldArray1 = newModel1FieldArray
 newModel1FieldArray = None
@@ -158,7 +161,7 @@ model2SimName = model2SimName2
 
 
 if fieldToPlot not in model2Object.hdfData.variables.keys():
-    print ("NOT IN KEYS")
+    print ("NOT IN KEYS OBJECT2")
 
     if fieldToPlot.islower() == True:
         fieldToPlot2 = fieldToPlot.upper()
@@ -169,13 +172,14 @@ else:
 
 
 
-modelFieldArray2 = model2Object.returnField (fieldToPlot, timeRecord)
+modelFieldArray2 = model2Object.returnField (fieldToPlot2, timeRecord)
 preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray2, \
                                                                              model2SimName)
 newModel2FieldArray = preConvertFieldArray2 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
-tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
+    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
-modelFieldArray2 = newModel2FieldArray 
+modelFieldArray2 = newModel2FieldArray
 newModel2FieldArray = None
 llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
 ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
@@ -244,6 +248,8 @@ else:
 minValueBoth = zmArray1.min()
 maxValueBoth = zmArray1.max()
 
+print ("\nMin / max values of both arrays: ", minValueBoth, maxValueBoth)
+
 if zmArray2.min() < minValueBoth:
     minValueBoth = zmArray2.min()
 if zmArray2.max() > maxValueBoth:
@@ -301,11 +307,20 @@ analType = "s"
 analString = "diff"
 zDiff = modelObject.createComparision2D(zmArray1, zmArray2, analType)
 
-diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax\
-    (zDiff.min(), zDiff.max())
+print ("\nMin / max values of differences: ", zDiff.min(), zDiff.max())
 
 
-plotOpt['title'] = analString + "     " + fieldToPlot + dateYearMonth
+
+if tracerTools.tracerDict[fieldToPlot].z_zm == None:
+    diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax\
+        (zDiff.min(), zDiff.max())
+else:
+    diffContourLevels = tracerTools.tracerDict[fieldToPlot].z_zm
+
+
+print ("diffContourLevels: ", diffContourLevels)
+
+plotOpt['title'] = analString + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
 
 plotZM (zDiff ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1], \
             fig, 223, "coolwarm", \
@@ -331,11 +346,11 @@ else:
     print ("Create percDiffContours!")
     percDiffContours = tracerTools.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
         (zDiff.min(), zDiff.max())
-    if percDiffContours [0] < -100.0:
-        percDiffContours = DEFAULT_PERCHANGE_CONTOURS
+#    if percDiffContours [0] < -100.0:
+#        percDiffContours = DEFAULT_PERCHANGE_CONTOURS
 
     
-
+percDiffContours =  DEFAULT_PERCHANGE_CONTOURS 
 
 print (percDiffContours)
 

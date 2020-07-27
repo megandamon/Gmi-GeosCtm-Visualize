@@ -33,7 +33,11 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.basemap import Basemap
 
 from GenericModelPlotTools import GenericModelPlotTools
+
 from GenericTracer import GenericTracer
+
+from RadionuclideTracer import RadionuclideTracer
+
 from AoaBlTracer import AoaBlTracer
 from Be10Tracer import Be10Tracer
 from Be10sTracer import Be10sTracer
@@ -53,14 +57,17 @@ class TracerPlotTools:
    # Constructor routine.
    #---------------------------------------------------------------------------  
 
-   def __init__(self, modelObject, keyFile):
+   def __init__(self, modelObject, keyFile, timeRecord, fileLevel):
       
       self.init = True 
       self.tracerDict = None
-      if keyFile != None:
-         self.tracerDict = self.createTracerDictFromKeyFileObjects(keyFile, modelObject)
+      self.timeRecord = timeRecord
+      self.fileLevel = fileLevel
 
-   def createTracerDictFromKeyFileObjects (self, modelObject, keyFile):
+      if keyFile != None:
+         self.tracerDict = self.createTracerDictFromKeyFileObjects(modelObject, keyFile, timeRecord, fileLevel)
+
+   def createTracerDictFromKeyFileObjects (self, modelObject, keyFile, timeRecord, fileLevel):
 
       keyLines = GenericModelPlotTools.readFileAndReturnFileLines(GenericModelPlotTools, keyFile)
 
@@ -70,29 +77,49 @@ class TracerPlotTools:
 
          tracerMetData = keyLines[lineCount].split(':') # split this line into metdata tokens
 
-         if 'slice' not in tracerMetData[0]:
-         
+         if 'slice' not in tracerMetData[0] and 'z_zm' not in tracerMetData[0]:
+
+
             tracerName = tracerMetData[0]
+
+
             if tracerName.lower() == "aoa_bl":
-               self.tracerDict[tracerName] = AoaBlTracer(tracerName, modelObject, keyFile, 'linear')
-            elif tracerName.lower() == "be7":
-               self.tracerDict[tracerName] = Be7Tracer(tracerName, modelObject, keyFile, 'log')
-            elif tracerName.lower() == "be7s":
-               self.tracerDict[tracerName] = Be7Tracer(tracerName, modelObject, keyFile, 'log')
-            elif tracerName.lower() == "be10":
-               self.tracerDict[tracerName] = Be10Tracer(tracerName, modelObject, keyFile, 'log')
-            elif tracerName.lower() == "be10s":
-               self.tracerDict[tracerName] = Be10sTracer(tracerName, modelObject, keyFile, 'log')
-            elif tracerName.lower() == "pb210":
-               self.tracerDict[tracerName] = Pb210Tracer(tracerName, modelObject, keyFile, 'log')
-            elif tracerName.lower() == "pb210s":
-               self.tracerDict[tracerName] = Pb210sTracer(tracerName, modelObject, keyFile, 'log')
+               self.tracerDict[tracerName] = AoaBlTracer(tracerName, modelObject, keyFile, 'linear', timeRecord,fileLevel)
+
+            elif tracerName.lower() == "be7" or tracerName.lower() == "be7s":
+
+               print ("Calling RadionuclineTracer for: ", tracerName)
+
+               self.tracerDict[tracerName] = RadionuclideTracer \
+                   (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 7.)
+
+            elif tracerName.lower() == "be10" or tracerName.lower() == "be10s":
+
+               print ("Calling RadionuclineTracer for: ", tracerName)
+
+               self.tracerDict[tracerName] = RadionuclideTracer \
+                   (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 10.)
+
+            elif tracerName.lower() == "pb210" or tracerName.lower() == "pb210s":
+               
+               print ("Calling RadionuclineTracer for: ", tracerName)
+
+               self.tracerDict[tracerName] = RadionuclideTracer \
+                   (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 210.)
+
             elif tracerName.lower() == "rn222":
-               self.tracerDict[tracerName] = Rn222Tracer(tracerName, modelObject, keyFile, 'log')
+
+               print ("Calling RadionuclineTracer for: ", tracerName)
+
+               self.tracerDict[tracerName] = RadionuclideTracer \
+                   (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 222.)
+
             else:
-               self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject, keyFile)# create new tracer info
+               self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject, keyFile, timeRecord,fileLevel) # create new tracer info
             
          lineCount = lineCount + 1
+
+
       
       return self.tracerDict
 

@@ -35,10 +35,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import vertLevels_GEOS5 as pressLevels
 
+from BasicTools import BasicTools
 from PlotTools import PlotTools
 
 
 class GenericModelPlotTools:
+
+   zmLowLevel = None
+   zzmHighLevel = None
 
 
    def find_nearest(self, array, value):
@@ -218,10 +222,11 @@ class GenericModelPlotTools:
          fileContents = fileObject.read ()
          fileObject.close ()
       except:
-         raise self.constants.READERROR
+         sys.exit(-1)
 
       if len (fileContents) == 0:
-        raise self.constants.BADFILENAME
+         sys.exit(-1)
+
 
       fileLines = fileContents.splitlines()
 
@@ -264,15 +269,17 @@ class GenericModelPlotTools:
                denVal = (array1[dim1It,dim2It]+array2[dim1It,dim2It]) / 2.0
                z_Diff[dim1It,dim2It] = (absVal/denVal) * 100.
 
+
       elif analType == "c":
 
 #          print("")
-#          print("Creating Absolute Differences")
+#          print("Creating percent change")
 #          print("")
 
          num = array1 - array2
          z_Diff = (num / array2)
 
+         z_Diff = z_Diff * 100.
 
       elif analType == "s":
          
@@ -333,11 +340,27 @@ class GenericModelPlotTools:
       elif analType == "c":
 
 #          print("")
-#          print("Creating Absolute Differences")
+#          print("Creating percent change")
 #          print("")
 
          num = array1 - array2
          z_Diff = (num / array2)
+         
+         z_Diff = z_Diff * 100.
+
+         # z_Diff = numpy.zeros((size(self.lat),size(self.long)), numpy.float32)
+
+         # for lat in range(0,size(self.lat)):
+         #    for lon in range(0,size(self.long)):
+
+         #       if array1[lat,lon] == 0. and array2[lat,lon] == 0.:
+         #          z_Diff[lat,lon] == 0.
+         #       else:
+         #          num = array1[lat,lon] - array2[lat,lon]
+         #          z_Diff[lat,lon] = (num / array2[lat,lon])
+         #          z_Diff[lat,lon] = z_Diff[lat,lon] * 100.
+
+
 
       # User requested absolute difference
       elif analType == "s":
@@ -442,10 +465,13 @@ class GenericModelPlotTools:
       plotTool = PlotTools ()
 
 
+      print (clevs)
       newClevs = plotTool.returnFormattedContours(clevs)
 
       clevs = None
       clevs = newClevs
+      print ("clevs after formatting: ", clevs)
+
 
 
       # map contour values to colors
@@ -489,7 +515,7 @@ class GenericModelPlotTools:
          cbar.set_label(label=units,size=16)
 
 #      print ("Num clevs: ", len(clevs)) 
-      plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
+#      plotTool.setVisibleClevTicks (clevs, cbar.ax.get_xticklabels())
 
       for t in cbar.ax.get_xticklabels():
          t.set_fontsize(fontSize)
@@ -548,27 +574,9 @@ class GenericModelPlotTools:
 
    def readNodesIntoArray (self, nodeFile):
 
-      nodesRead = []
-
-      myFile = open (nodeFile, "r")
-
-      count = 0
-      line = myFile.readline().rstrip()
-      while line != '':
-         nodesRead.append(line)
-
-         if count == 10000: break
-         count = count + 1
-         line = myFile.readline().rstrip()
-
-      myFile.close()
-
-      nodesToReturn = []
-      for node in nodesRead:
-         if node not in nodesToReturn: nodesToReturn.append(node)
+      basicTools = BasicTools ()
+      return basicTools.readNodesIntoArray (nodeFile)
       
-      return nodesToReturn
-
 
    def populateFieldList (self):
 

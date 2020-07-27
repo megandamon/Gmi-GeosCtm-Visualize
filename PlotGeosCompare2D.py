@@ -1,14 +1,15 @@
+
  
 #------------------------------------------------------------------------------
 # NASA/GSFC
 #------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
-# DATE:         Nobember 20th 2019
+# DATE:         April 17 2020
 #
 # DESCRIPTION:
-# Driver to plot comparisions of a lat/lon slice of a tracer (mb/hPa).
-#-----------------------------------------------------------------------------
+# Driver to plot 2D comparisions between GEOS files. 
+#-------------------------------------------------1----------------------------
 
 import re
 import os
@@ -56,9 +57,9 @@ from TracerPlotTools import TracerPlotTools
 COLORMAP = "rainbow"
 RATIO_COLORMAP = "bwr"
 RATIO_CONTOUR_LEVELS = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
-DEFAULT_PERCHANGE_CONTOURS = [-1000, -500, -100, -50, -20, -10, -5, -2, -.5, .5, 2, 5, 10, 20, 50, 100, 500, 1000]
-#DEFAULT_PERCHANGE_CONTOURS = [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
-NUM_ARGS = 9
+DEFAULT_PERCHANGE_CONTOURS = [-1000, -500, -100, -50, -20, -10, -5, -2, -.05, 0.5, 2, 5, 10, 20, 50, 100, 500, 1000]
+DEFAULT_PERCHANGE_CONTOURS = [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
+NUM_ARGS = 7
 #*********************
 
 
@@ -66,16 +67,14 @@ NUM_ARGS = 9
 #*********************
 def usage ():
     print("")
-    print("usage: PlotTracerCompareSlice.py [-c] [-g] [-l] [-r] [-d] [-n] [-k] [-f] [-p]")
+    print("usage: PlotGeosCompare2D.py [-g] [-c] [-r] [-d] [-k] [-f] [-p]")
     print("-g Model file 1")
     print("-c Model file 2")
-    print("-l vertical level (hPa)")
     print("-r time record to plot")
     print("-d date (YYYYMM)")
-    print("-n long name of tracer")
     print("-k Key file for tracers")
-    print("-f tracer to plot")
     print("-p percentage change contours (d-default-+-100, a-algorithmic")
+    print("-f tracer to plot")
     print("")
     sys.exit (0)
 #*********************
@@ -84,20 +83,18 @@ def usage ():
 #---------------------------------------------------------------
 # START:: Get options from command line
 #---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'g:c:l:r:d:n:k:p:f:')
+optList, argList = getopt.getopt(sys.argv[1:],'g:c:r:d:k:p:f:')
 if len (optList) != NUM_ARGS:
    usage ()
    sys.exit (0)
 
 model1File = str(optList[0][1])
 model2File = str(optList[1][1])
-fileLevel = float(optList[2][1])
-timeRecord = int(optList[3][1])
-dateYearMonth = optList[4][1]
-longName = str(optList[5][1])
-keyFile = str(optList[6][1])
-percChangeContours = str(optList[7][1])
-fieldToPlot = str(optList[8][1])
+timeRecord = int(optList[2][1])
+dateYearMonth = optList[3][1]
+keyFile = str(optList[4][1])
+percChangeContours = str(optList[5][1])
+fieldToPlot = str(optList[6][1])
 
 
 if not os.path.exists (model1File):
@@ -121,10 +118,6 @@ if len(dateYearMonth) != 6 and len(dateYearMonth) != 4:
 
 if not os.path.exists (keyFile):
     print("The file you provided does not exist: ", keyFile)
-    sys.exit(0)
-
-if fileLevel < 0.1 and fileLevel > 1300.: 
-    print("GEOS-5 pressure levels should be < 1300 and > 0.1 mb/hPa")
     sys.exit(0)
 
 if percChangeContours != "d" and percChangeContours != "a":
@@ -152,8 +145,9 @@ model2SimName2 = model2SimName.split("_")[0] + "_" + model2SimName.split("_")[1]
 model2SimName = model2SimName2
 
 
-tracerTools = TracerPlotTools (model1Object, keyFile, timeRecord, fileLevel)
+print ("keyFile in PlotGeosCompare2D: ", keyFile)
 
+tracerTools = TracerPlotTools (model1Object, keyFile)
 
 if fieldToPlot not in model1Object.hdfData.variables.keys():
 
@@ -165,31 +159,21 @@ else:
     fieldToPlot1 = fieldToPlot
 
 
-
 model1FieldArray = model1Object.returnField (fieldToPlot, timeRecord)
+print ("model1FieldArray min/max: ", model1FieldArray.min(), model1FieldArray.max())
+#preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(model1FieldArray, model1SimName)
 
-print (model1FieldArray.shape)
+print (tracerTools, tracerTools.__dict__)
 
-model1FieldArraySlice = model1Object.return2DSliceFromRefPressure (model1FieldArray, fileLevel)
-
-print ("2: ", model1FieldArraySlice.shape)
-
-preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(model1FieldArraySlice, model1SimName)
-
-print ("3: ", preConvertFieldArray1.shape)
-
-newModel1FieldArray = preConvertFieldArray1 * \
+newModel1FieldArray = model1FieldArray * \
     float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
 
-if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
 model1FieldArray = newModel1FieldArray
 newModel1FieldArray = None
 
-
-
-
+print ("model1FieldArray min/max: ", model1FieldArray.min(), model1FieldArray.max())
 
 model2Object = GeosCtmPlotTools (model2File, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -200,18 +184,17 @@ model2Object = GeosCtmPlotTools (model2File, 'lat','lon',\
 
 
 model2FieldArray = model2Object.returnField (fieldToPlot, timeRecord)
-model2FieldArraySlice = model2Object.return2DSliceFromRefPressure (model2FieldArray, fileLevel)
+#preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(model2FieldArraySlice, model2SimName)
 
-preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(model2FieldArraySlice, model2SimName)
-
-newModel2DFieldArray = preConvertFieldArray2 * \
+newModel2DFieldArray = model2FieldArray * \
     float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
 
-if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
 model2FieldArray = newModel2DFieldArray
 newModel2FieldArray = None
+
+
 
 
 #***********************************************
@@ -276,7 +259,6 @@ print("Global sum 2 of ", fieldToPlot, " : ", sum(model2FieldArray))
 print("")
 
 
-
 #***********************************************
 if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
     analType = "r"
@@ -303,26 +285,28 @@ if tracerTools.tracerDict[fieldToPlot].units.find("mol-1") != -1:
 #-----------------------------------------------------#
 # Model  Plotting
 
-if tracerTools.tracerDict[fieldToPlot].slices[int(fileLevel)] == None:
 
+if tracerTools.tracerDict[fieldToPlot].zmContours == None:
+
+    print ("Calling createTracerContoursFromMinMax")
     step = (maxValueBoth - minValueBoth) / 10.
-    contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax (minValueBoth, maxValueBoth, \
-                                                               step=float('{:0.2e}'.format(step)))
+    contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax(minValueBoth, \
+                                                              maxValueBoth, \
+                                                              step=float('{:0.2e}'.format(step)))
+                                                              
 else:
     contours = []
-    for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
+    for contour in tracerTools.tracerDict[fieldToPlot].zmContours:
         contours.append(float(contour))
+    print ("Received 2d contours from input file")
 
 
 
 fig = plt.figure(figsize=(20,20))
 modelObject.createPlotObjects()
 
-print (model1FieldArray.shape)
 
-
-plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-    + " hPa  " + dateYearMonth
+plotTitle1 = model1SimName + "     " + fieldToPlot + "    " + dateYearMonth
 modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, model1FieldArray, \
                                        [minValueBoth, maxValueBoth], \
@@ -336,8 +320,7 @@ modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid,
 
 
 
-plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-    + " hPa  " + dateYearMonth
+plotTitle2 = model2SimName + "     " + fieldToPlot + "    " + dateYearMonth
 modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, model2FieldArray, \
                                        [minValueBoth, maxValueBoth], \
@@ -359,26 +342,14 @@ z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray
 print (z_Model.min(), z_Model.max())
 
 
-print (tracerTools.tracerDict[fieldToPlot].slices)
-print (tracerTools.tracerDict[fieldToPlot].diffSlices)
+diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
 
 
-if tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel] == None:
-
-    diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
-
-else:
-
-    diffContourLevels = tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel]
+print (diffContourLevels)
 
 
-print ("")
-print ("Diff contours: ", diffContourLevels)
-print ("")
 
-
-plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-     + " hPa " + dateYearMonth
+plotTitle3 = analString + "     " + fieldToPlot + "   " + dateYearMonth
 modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, z_Model, \
                                        [z_Model.min(), z_Model.max()], \
@@ -391,7 +362,7 @@ modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid,
                                        contourLevels=diffContourLevels)
 
 
-#sys.exit(0)
+
 
 analType = "c"
 analString = "perc change"
@@ -415,8 +386,7 @@ percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
 print (percDiffContours)
 
 
-plotTitle4 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-     + " hPa " + dateYearMonth
+plotTitle4 = analString + "     " + fieldToPlot + "   " + dateYearMonth
 modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
                                        modelObject.Y_grid, z_Model, \
                                        [z_Model.min(), z_Model.max()], \
@@ -430,8 +400,7 @@ modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid,
 file = "f"
 if file == "f":
     plt.savefig("plots/" + fieldToPlot + "-" + model1SimName + "_" + model2SimName + \
-                    "_" + str(dateYearMonth) + "_" +  str(int(fileLevel)) \
-                    + "hPa.", \
+                    "_" + str(dateYearMonth) + ".", \
                     bbox_inches='tight')
 elif file == "s":
     plt.show()
