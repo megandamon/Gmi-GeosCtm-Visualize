@@ -41,7 +41,7 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.basemap import Basemap
 
 
-sys.path.append('/discover/nobackup/mrdamon/MERRA2')
+sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
 
 
 from BasicTools import BasicTools

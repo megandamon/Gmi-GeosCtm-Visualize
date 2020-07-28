@@ -43,7 +43,7 @@ import pandas as pd
 
 
 
-sys.path.append('/discover/nobackup/mrdamon/MERRA2')
+sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
 
 import vertLevels_GEOS5 as pressLevels
 
