@@ -8,7 +8,6 @@
 # DESCRIPTION:
 # Driver to plot a single tracer slice at designated level.
 #-----------------------------------------------------------------------------
-
 import os
 import sys
 import getopt
@@ -19,14 +18,6 @@ import matplotlib.pyplot as plt
 
 from GeosCtmPlotTools import GeosCtmPlotTools
 from TracerPlotTools import TracerPlotTools
-
-
-if "GMIMetFieldProcessing" in os.environ:
-    sys.path.append(os.environ.get("GMIMetFielProcessing"))
-else:
-    print("Please specify location of GMIMetFieldProcessing scripts")
-    sys.exit(1)
-
 
 #*********************
 COLORMAP = "rainbow"
@@ -46,145 +37,129 @@ def usage ():
     print("")
     sys.exit (0)
 
+def main():
+    print("Start plotting field slice.")
 
-print("Start plotting field slice.")
+    optList, argList = getopt.getopt(sys.argv[1:],'c:l:r:d:n:k:f:')
+    if len (optList) != NUM_ARGS:
+       usage ()
+       sys.exit (0)
 
-#---------------------------------------------------------------
-# START:: Get options from command line
-#---------------------------------------------------------------
-optList, argList = getopt.getopt(sys.argv[1:],'c:l:r:d:n:k:f:')
-if len (optList) != NUM_ARGS:
-   usage ()
-   sys.exit (0)
+    modelFile = str(optList[0][1])
+    fileLevel = float(optList[1][1])
+    timeRecord = int(optList[2][1])
+    dateString = optList[3][1]
+    longName = str(optList[4][1])
+    keyFile = str(optList[5][1])
+    fieldToPlot = str(optList[6][1])
 
-modelFile = str(optList[0][1])
-fileLevel = float(optList[1][1])
-timeRecord = int(optList[2][1])
-dateString = optList[3][1]
-longName = str(optList[4][1])
-keyFile = str(optList[5][1])
-fieldToPlot = str(optList[6][1])
+    if not os.path.exists (modelFile):
+        print("The file you provided does not exist: ", modelFile)
+        sys.exit(0)
 
+    if fileLevel < 0.0:
+        print("The level to plot must be >= 0 (check file 1 lev)")
+        sys.exit(0)
 
-#---------------------------------------------------------------
-print("")
-print("Checking command line options... ")
-print("")
-#---------------------------------------------------------------
-if not os.path.exists (modelFile):
-    print("The file you provided does not exist: ", modelFile)
-    sys.exit(0)
+    if int(timeRecord) > 31:
+        print("WARNING: time record is more than a typical daily file!")
 
-if fileLevel < 0.0:
-    print("The level to plot must be >= 0 (check file 1 lev)")
-    sys.exit(0)
+    if int(timeRecord) < 0:
+        print("ERROR: time record needs to be positive!")
+        sys.exit(0)
 
-if int(timeRecord) > 31: 
-    print("WARNING: time record is more than a typical daily file!")
+    if len(dateString) != 6 and len(dateString) != 4:
+        print("ERROR date must be in the format YYYYMM. Received: ", dateString, len(dateString))
+        sys.exit(0)
 
-if int(timeRecord) < 0: 
-    print("ERROR: time record needs to be positive!")
-    sys.exit(0)
+    if not os.path.exists (keyFile):
+        print("The file you provided does not exist: ", keyFile)
+        sys.exit(0)
 
-if len(dateString) != 6 and len(dateString) != 4:
-    print("ERROR date must be in the format YYYYMM. Received: ", dateString, len(dateString))
-    sys.exit(0)
+    modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',
+                                          'lev','time', 'lat',
+                                          'lon', 'lev', 'time' )
 
-if not os.path.exists (keyFile):
-    print("The file you provided does not exist: ", keyFile)
-    sys.exit(0)
-#*********************
+    modelFilebs = os.path.basename(modelFile)
+    modelSimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
 
+    tracerTools = TracerPlotTools (modelObject, keyFile, timeRecord, fileLevel)
+    modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord) # read bare field
+    modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
 
-#---------------------------------------------------------------
-print("")
-print("Command line options look good.")
-print("")
-#---------------------------------------------------------------
+    print ("min max of array: ", modelFieldArraySlice.min(), modelFieldArraySlice.max())
 
+    preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArraySlice, modelSimName)
 
+    print ("min max of array after pre-conv: ", preConvertFieldArray.min(), preConvertFieldArray.max())
 
+    newModelFieldArray = preConvertFieldArray * \
+        float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
 
-modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',\
-                                      'lev','time', 'lat', \
-                                      'lon', 'lev', 'time' )
+    print ("min max of array after conv: ", newModelFieldArray.min(), newModelFieldArray.max())
 
-modelSimName = modelFile.split(".")[0] + "-" + modelFile.split(".")[1]
+    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
 
-tracerTools = TracerPlotTools (modelObject, keyFile, timeRecord, fileLevel)
-modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord) # read bare field
-modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
-
-print ("min max of array: ", modelFieldArraySlice.min(), modelFieldArraySlice.max())
-
-preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArraySlice, modelSimName)
-
-print ("min max of array after pre-conv: ", preConvertFieldArray.min(), preConvertFieldArray.max())
-
-newModelFieldArray = preConvertFieldArray * \
-    float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
-
-print ("min max of array after conv: ", newModelFieldArray.min(), newModelFieldArray.max())
-
-if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-    tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
-
-modelFieldArray =  newModelFieldArray
-newModelFieldArray = None
+    modelFieldArray =  newModelFieldArray
+    newModelFieldArray = None
 
 
-#-----------------------------------------------------#
-# Model  Plotting
+    #-----------------------------------------------------#
+    # Model  Plotting
 
-fig = plt.figure(figsize=(20,20))
+    fig = plt.figure(figsize=(20,20))
 
-modelObject.createPlotObjects()
-plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-    + " hPa (" + longName + ") " + dateString
+    modelObject.createPlotObjects()
+    plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
+        + " hPa (" + longName + ") " + dateString
 
 
 
-if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
-    print ("Calling createTracerContours")
-    print ((modelFieldArray.max() - modelFieldArray.min())/10)
-#    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, step=.5)
-    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, \
-                                                    step=(modelFieldArray.max() - modelFieldArray.min())/10)
-    print (contours)
-else:
-    contours = []
-    for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
-        contours.append(float(contour))
-    print ("Received contours from input file")
+    if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
+        print ("Calling createTracerContours")
+        print ((modelFieldArray.max() - modelFieldArray.min())/10)
+    #    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, step=.5)
+        contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray,
+                                                        step=(modelFieldArray.max() - modelFieldArray.min())/10)
+        print (contours)
+    else:
+        contours = []
+        for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
+            contours.append(float(contour))
+        print ("Received contours from input file")
 
 
-print ( "model min/max values: ",  modelFieldArray.min(),modelFieldArray.max())
-print ( "(max-min)/100: ",  (modelFieldArray.max() - modelFieldArray.min())/10)
+    print ( "model min/max values: ",  modelFieldArray.min(),modelFieldArray.max())
+    print ( "(max-min)/100: ",  (modelFieldArray.max() - modelFieldArray.min())/10)
 
-modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid, \
-                                       modelObject.Y_grid, modelFieldArray, \
-                                       [modelFieldArray.min(),modelFieldArray.max()], \
-                                       [modelObject.lat[:].min(),modelObject.lat[:].max()], \
-                                       [modelObject.long[:].min(), modelObject.long[:].max()], \
-                                       "fuchsia", "darkred", 111, \
-                                       plotTitle, COLORMAP, tracerTools.tracerDict[fieldToPlot].units, \
-                                       contourLevels=contours)
+    modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid,
+                                           modelObject.Y_grid, modelFieldArray,
+                                           [modelFieldArray.min(),modelFieldArray.max()],
+                                           [modelObject.lat[:].min(),modelObject.lat[:].max()],
+                                           [modelObject.long[:].min(), modelObject.long[:].max()],
+                                           "fuchsia", "darkred", 111,
+                                           plotTitle, COLORMAP, tracerTools.tracerDict[fieldToPlot].units,
+                                           contourLevels=contours)
 
 
-file = "f"
-if file == "f":
-    plt.savefig("plots/" + fieldToPlot + "-" + modelSimName + "_" + str(int(fileLevel)) \
-                    + "hPa.", \
-                    bbox_inches='tight')
-elif file == "s":
-    plt.show()
-        
-plt.clf()
+    if not os.path.exists("plots"):
+        os.mkdir("plots")
+    file = "f"
+    if file == "f":
+        plt.savefig("plots/" + fieldToPlot + "-" + modelSimName + "_" + str(int(fileLevel)) \
+                        + "hPa.", bbox_inches='tight')
+    elif file == "s":
+        plt.show()
 
-print("")
-print("Plotted : ", fieldToPlot, " to plots/ directory")
-print("") 
+    plt.clf()
 
+    print("")
+    print("Plotted : ", fieldToPlot, " to plots/ directory")
+    print("")
+
+if __name__ == "__main__":
+    main()
 
 
 
