@@ -1,29 +1,5 @@
-#!/usr/bin/python
-
-import re
-import os
-import sys
-import random
-import datetime
-import calendar
-import numpy
-from numpy import *
-from netCDF4 import Dataset
-
 import matplotlib
 matplotlib.use('pdf')
-import matplotlib.pyplot as plt
-
-import math
-import matplotlib.pyplot as plt
-from matplotlib.colors import BoundaryNorm
-import matplotlib.colors as colors
-from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.basemap import Basemap
-
-import vertLevels_GEOS5 as pressLevels
-
-
 
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt

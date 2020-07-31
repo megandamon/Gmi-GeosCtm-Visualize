@@ -34,14 +34,12 @@ def subproc(cmd):
 
 def usage ():
     print("")
-    print("usage: PlotTracers_GEOS.py [-g] [-c] [-k] [-r] [-d] [-n] [-p] [-t]")
+    print("usage: PlotTracers_GEOS.py [-g] [-c] [-k] [-r] [-d] [-t]")
     print("-g GEOS file ")
     print("-c GEOS file ")
     print("-k Key file for tracers ")
     print("-r time record to plot")
-    print("-d date of comparision (YYYYMM)")
-    print("-n PBS_NODEFILE")
-    print("-p number of processes to use per node")
+    print("-d date of comparison (YYYYMM)")
     print("-t percentage change contours (d-default-+-100, a-algorithmic")
     print("")
     sys.exit (0)
@@ -50,12 +48,12 @@ def usage ():
 def main():
     print("Start plotting field differences")
 
-    NUM_ARGS = 8
+    NUM_ARGS = 6
 
     #---------------------------------------------------------------
     # START:: Get options from command line
     #---------------------------------------------------------------
-    optList, argList = getopt.getopt(sys.argv[1:],'g:c:k:r:d:n:p:t:')
+    optList, argList = getopt.getopt(sys.argv[1:],'g:c:k:r:d:t:')
     if len (optList) != NUM_ARGS:
        usage ()
        sys.exit (0)
@@ -65,9 +63,7 @@ def main():
     keyFile = optList[2][1]
     timeRecord = int(optList[3][1])
     dateYearMonth = optList[4][1]
-    pbsNodeFile = optList[5][1]
-    numProcesses = int(optList[6][1])
-    percChangeContours = str(optList[7][1])
+    percChangeContours = str(optList[5][1])
 
     if not os.path.exists (geosFile1):
         print("The file you provided does not exist: ", geosFile1)
@@ -81,25 +77,17 @@ def main():
         print("The file you provided does not exist: ", keyFile)
         sys.exit(0)
 
-    if int(timeRecord) > 31:
+    if timeRecord > 31:
         print("WARNING: time record is more than a typical daily file!")
+        timeRecord = 31 # reset?
 
-    if int(timeRecord) < 0:
+    if timeRecord < 0:
         print("ERROR: time record needs to be positive!")
         sys.exit(0)
 
     if len(dateYearMonth) != 6 and len(dateYearMonth) != 4:
         print("ERROR date must be in the format YYYYMM")
         print("Received: ", dateYearMonth)
-        sys.exit(0)
-
-    if not os.path.exists (pbsNodeFile):
-        print("The file you provided does not exist: ", pbsNodeFile)
-        sys.exit(0)
-
-    if numProcesses <= 0:
-        print("Number of processes must be larger than 0! ")
-        print("Given: ", numProcesses)
         sys.exit(0)
 
     if percChangeContours != "d" and percChangeContours != "a":
@@ -175,4 +163,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

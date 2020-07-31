@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 #------------------------------------------------------------------------------
 # NASA/GSFC
 #------------------------------------------------------------------------------
@@ -10,21 +8,10 @@
 # DESCRIPTION:
 # This class represents a generic tracer and it's base information. 
 #------------------------------------------------------------------------------
-
-import re
-import os
-import sys
-import random
-import datetime
-import calendar
-import numpy
-from numpy import *
-from netCDF4 import Dataset
-
+from GenericTracer import GenericTracer
 
 class AoaTracer(GenericTracer):
 
-    
     tracerName = None
     tracerLongName = None
     tracerIntervalZM = None

@@ -8,10 +8,15 @@
 # DESCRIPTION:
 # Driver to plot comparisions of zonal means from tracer species.
 #------------------------------------------------------------------------------
-
+import sys
+import os
 import getopt
-from viz_functions import *
+import numpy as np
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
 
+from viz_functions import plotZM
 from GeosCtmPlotTools import GeosCtmPlotTools
 from TracerPlotTools import TracerPlotTools
 
@@ -117,7 +122,7 @@ def main():
     newModel1FieldArray = None
     llIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
     ulIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
-    zmArray1 = mean(modelFieldArray1[llIndex1:ulIndex1+1, :, :], axis=2)
+    zmArray1 = np.mean(modelFieldArray1[llIndex1:ulIndex1+1, :, :], axis=2)
 
 
     model2Object = GeosCtmPlotTools (modelFile2, 'lat','lon',
@@ -151,7 +156,7 @@ def main():
     newModel2FieldArray = None
     llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
     ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
-    zmArray2 = mean(modelFieldArray2[llIndex2:ulIndex2+1, :, :], axis=2)
+    zmArray2 = np.mean(modelFieldArray2[llIndex2:ulIndex2+1, :, :], axis=2)
 
     if zmArray1.shape != zmArray2.shape:
 

@@ -35,14 +35,11 @@ def subproc(cmd):
 
 def usage ():
     print("")
-    print("usage: PlotTracers_GEOS.py [-g] [-k] [-r] [-d] [-n] [-p] [-m]")
+    print("usage: PlotTracers_GEOS.py [-g] [-k] [-r] [-d]")
     print("-g GEOS file ")
     print("-k Key file for tracers ")
     print("-r time record to plot")
     print("-d date of comparision (YYYYMM)")
-    print("-n PBS_NODEFILE")
-    print("-p number of processes to use per node")
-    print("-m configuration name (Replay, CCM, etc.)")
     print("")
     sys.exit (0)
 
@@ -51,12 +48,12 @@ def main():
 
     print("Start plotting field differences")
 
-    NUM_ARGS = 7
+    NUM_ARGS = 4
 
     #---------------------------------------------------------------
     # START:: Get options from command line
     #---------------------------------------------------------------
-    optList, argList = getopt.getopt(sys.argv[1:],'g:k:r:d:n:p:m:')
+    optList, argList = getopt.getopt(sys.argv[1:],'g:k:r:d:')
     if len (optList) != NUM_ARGS:
        usage ()
        sys.exit (0)
@@ -65,9 +62,6 @@ def main():
     keyFile = optList[1][1]
     timeRecord = int(optList[2][1])
     dateYearMonth = optList[3][1]
-    pbsNodeFile = optList[4][1]
-    numProcesses = int(optList[5][1])
-    configName = optList[6][1]
 
     if not os.path.exists (geosFile):
         print("The geos file you provided does not exist: ", geosFile)
@@ -77,10 +71,11 @@ def main():
         print("The key file you provided does not exist: ", keyFile)
         sys.exit(0)
 
-    if int(timeRecord) > 30:
+    if timeRecord > 30:
         print("WARNING: time record is more than a typical daily file!")
+        timeRecord = 30 # reset?
 
-    if int(timeRecord) < 0:
+    if timeRecord < 0:
         print("ERROR: time record needs to be positive!")
         sys.exit(0)
 
@@ -89,17 +84,8 @@ def main():
         print("Received: ", dateYearMonth)
         sys.exit(0)
 
-    if not os.path.exists (pbsNodeFile):
-        print("The file you provided does not exist: ", pbsNodeFile)
-        sys.exit(0)
-
-    if numProcesses <= 0:
-        print("Number of processes must be larger than 0! ")
-        print("Given: ", numProcesses)
-        sys.exit(0)
-
-    geosObject1 = GeosCtmPlotTools (geosFile, 'lat','lon',\
-                                          'lev','time', 'lat', \
+    geosObject1 = GeosCtmPlotTools (geosFile, 'lat','lon',
+                                          'lev','time', 'lat',
                                           'lon', 'lev', 'time' )
 
     tracerTools = TracerPlotTools (geosObject1, keyFile, timeRecord, "ZM")

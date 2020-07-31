@@ -11,10 +11,10 @@
 import os
 import sys
 import getopt
-from viz_functions import mean, plotZM
+from viz_functions import plotZM
+from numpy import mean
 
 import matplotlib
-
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
