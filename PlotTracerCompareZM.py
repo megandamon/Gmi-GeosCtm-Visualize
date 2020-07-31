@@ -9,28 +9,11 @@
 # Driver to plot comparisions of zonal means from tracer species.
 #------------------------------------------------------------------------------
 
-#-------------
-# Load modules
-#-------------
-import os
-import sys
 import getopt
-import glob
-
-from netCDF4 import Dataset
-
-from numpy.random import uniform
-
-import matplotlib.pyplot as plt            # pyplot module import
-import matplotlib.cm as cm
-
-import vertLevels_GEOS5 as pressLevels
 from viz_functions import *
 
 from GeosCtmPlotTools import GeosCtmPlotTools
-from GenericModelPlotTools import GenericModelPlotTools
 from TracerPlotTools import TracerPlotTools
-
 
 #*********************
 COLORMAP = "rainbow"
@@ -55,9 +38,6 @@ def usage ():
     print("")
     sys.exit (0)
 #*********************
-
-
-
 
 #---------------------------------------------------------------
 # START:: Get options from command line
@@ -103,13 +83,6 @@ if not os.path.exists (keyFile):
 if percChangeContours != "d" and percChangeContours != "a":
     print("Percent change contours should be either d(deafult) or a(algorithmic)")
     sys.exit(0)
-
-
-#---------------------------------------------------------------
-print("")
-print("Command line options look good. Field to plot is: ", fieldToPlot)
-print("")
-#--------------------------------------------------------------
 
 model1Object = GeosCtmPlotTools (modelFile1, 'lat','lon',\
                                       'lev','time', 'lat', \
@@ -184,15 +157,6 @@ newModel2FieldArray = None
 llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
 ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
 zmArray2 = mean(modelFieldArray2[llIndex2:ulIndex2+1, :, :], axis=2)
-
-
-
-
-
-
-
-
-
 
 
 if zmArray1.shape != zmArray2.shape:

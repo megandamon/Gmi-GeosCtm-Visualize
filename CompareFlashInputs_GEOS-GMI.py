@@ -40,7 +40,7 @@ from mpl_toolkits.basemap import Basemap
 
 
 
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
+sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 
 from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import GenericModelPlotTools

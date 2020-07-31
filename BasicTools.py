@@ -9,36 +9,17 @@
 # Class to hold basic tools.
 #------------------------------------------------------------------------------
 
-import re
 import os
 import sys
-import random
-import datetime
-import calendar
-import getopt
-import numpy
-from numpy import *
 
 import matplotlib
 matplotlib.use('pdf')
-import matplotlib.pyplot as plt
 
-
-import multiprocessing
-from time import sleep
-from multiprocessing import Pool
-
-from netCDF4 import Dataset
-
-import math
-
-from matplotlib.colors import BoundaryNorm
-import matplotlib.colors as colors
-from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.basemap import Basemap
-
-
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
+if "GMIMetFieldProcessing" in os.environ:
+    sys.path.append(os.environ.get("GMIMetFielProcessing"))
+else:
+    print("Please specify location of GMIMetFieldProcessing scripts")
+    sys.exit(1)
 
 
 class BasicTools:

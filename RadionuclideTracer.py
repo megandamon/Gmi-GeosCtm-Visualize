@@ -84,7 +84,7 @@ class RadionuclideTracer(GenericTracer):
         print ("Array shape preConversion: ", array.shape)
         print ("")
 
-        if "TR_GOCART" in simName or "cycling" in simName or "bench_i329" in simName:
+        if "TR_GOCART" in simName or "cycling" in simName:
 
             print ("")
             print ("Converting ", self.tracerName, "  to mol/mol")

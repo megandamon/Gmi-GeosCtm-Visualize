@@ -9,43 +9,20 @@
 # Driver to plot 2D slices and zonal means of a list of tracer species. 
 #------------------------------------------------------------------------------
 
-
-
-import re
-import os
 import sys
-import random
-import datetime
-import calendar
+import os
 import getopt
-import numpy
-from numpy import *
 
 import matplotlib
 matplotlib.use('pdf')
-import matplotlib.pyplot as plt
-
-
 import multiprocessing
-from time import sleep
-from multiprocessing import Pool
 
-from netCDF4 import Dataset
+if "GMIMetFieldProcessing" in os.environ:
+    sys.path.append(os.environ.get("GMIMetFielProcessing"))
+else:
+    print("Please specify location of GMIMetFieldProcessing scripts")
+    sys.exit(1)
 
-import math
-
-from matplotlib.colors import BoundaryNorm
-import matplotlib.colors as colors
-from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.basemap import Basemap
-
-
-
-
-
-
-
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
 
 
 from GeosCtmPlotTools import GeosCtmPlotTools
@@ -294,16 +271,20 @@ for field in fieldsToCompare[:]:
 
     sCount = 0
     for slice in tracerTools.tracerDict[field].slices:
-        sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
-            "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
-            sliceCommands[sCount] + " -f " + str(field) + " \'"
+        #sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+        #    "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+        #    sliceCommands[sCount] + " -f " + str(field) + " \'"
+        sysCommand = "python " + cwd + "/" + \
+            sliceCommands[sCount] + " -f " + str(field)# + " \'"
         commands.append(sysCommand)
         sCount = sCount + 1
 
 
-    sysCommandZM = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
-        "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
-        pythonCommandZM + " -f " + str(field) + " \'"
+    #sysCommandZM = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+    #    "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+    #    pythonCommandZM + " -f " + str(field) + " \'"
+    sysCommandZM =  "python " + cwd + "/" + \
+        pythonCommandZM + " -f " + str(field)# + " \'"
     commands.append(sysCommandZM)
 
 

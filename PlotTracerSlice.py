@@ -1,4 +1,3 @@
-
 #------------------------------------------------------------------------------
 # NASA/GSFC
 #------------------------------------------------------------------------------
@@ -10,54 +9,29 @@
 # Driver to plot a single tracer slice at designated level.
 #-----------------------------------------------------------------------------
 
-import re
 import os
 import sys
-import random
-import datetime
-import calendar
 import getopt
-import numpy
-from numpy import *
 
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-
-from netCDF4 import Dataset
-import math
-
-
-
-from matplotlib.colors import BoundaryNorm
-import matplotlib.colors as colors
-from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.basemap import Basemap
-
-
-
-
-
-
-
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
-
-import vertLevels_GEOS5 as pressLevels
-
 from GeosCtmPlotTools import GeosCtmPlotTools
-from GenericModelPlotTools import GenericModelPlotTools
 from TracerPlotTools import TracerPlotTools
 
+
+if "GMIMetFieldProcessing" in os.environ:
+    sys.path.append(os.environ.get("GMIMetFielProcessing"))
+else:
+    print("Please specify location of GMIMetFieldProcessing scripts")
+    sys.exit(1)
 
 
 #*********************
 COLORMAP = "rainbow"
 NUM_ARGS = 7
 #*********************
-
-
-
 
 def usage ():
     print("")
@@ -206,9 +180,6 @@ elif file == "s":
     plt.show()
         
 plt.clf()
-
-
-
 
 print("")
 print("Plotted : ", fieldToPlot, " to plots/ directory")

@@ -12,22 +12,9 @@
 #------------------------------------------------------------------------------
 
 import re
-import os
-import sys
-import random
-import datetime
-import calendar
-from numpy import *
-from netCDF4 import Dataset
 from GenericModelPlotTools import GenericModelPlotTools
 
-
-
 class GeosCtmPlotTools (GenericModelPlotTools):
-
-
-
-
 
    #---------------------------------------------------------------------------  
    # AUTHORS: Megan Damon NASA GSFC 

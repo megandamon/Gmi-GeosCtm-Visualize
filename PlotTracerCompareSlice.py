@@ -9,47 +9,22 @@
 # DESCRIPTION:
 # Driver to plot comparisions of a lat/lon slice of a tracer (mb/hPa).
 #-----------------------------------------------------------------------------
-
-import re
 import os
-import sys
-import random
-import datetime
-import calendar
 import getopt
-import numpy
-from numpy import *
+import sys
 
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-
-from netCDF4 import Dataset
-import math
-
-
-
-
-from matplotlib.colors import BoundaryNorm
-import matplotlib.colors as colors
-from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.basemap import Basemap
-import pandas as pd
-
-
-
-
-
-
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
-
-import vertLevels_GEOS5 as pressLevels
-
 from GeosCtmPlotTools import GeosCtmPlotTools
-from GenericModelPlotTools import GenericModelPlotTools
 from TracerPlotTools import TracerPlotTools
 
+if "GMIMetFieldProcessing" in os.environ:
+    sys.path.append(os.environ.get("GMIMetFielProcessing"))
+else:
+    print("Please specify location of GMIMetFieldProcessing scripts")
+    sys.exit(1)
 
 
 #*********************
@@ -130,14 +105,6 @@ if fileLevel < 0.1 and fileLevel > 1300.:
 if percChangeContours != "d" and percChangeContours != "a":
     print("Percent change contours should be either d(deafult) or a(algorithmic)")
     sys.exit(0)
-
-
-
-#---------------------------------------------------------------
-print("")
-print("Command line options look good.")
-print("")
-#---------------------------------------------------------------
 
 
 model1Object = GeosCtmPlotTools (model1File, 'lat','lon',\

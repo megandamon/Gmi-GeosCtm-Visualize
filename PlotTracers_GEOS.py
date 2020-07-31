@@ -9,56 +9,32 @@
 # Driver to plot 2D slices and zonal means of a list of tracer species. 
 #------------------------------------------------------------------------------
 
-
-
-import re
+import getopt
 import os
 import sys
-import random
-import datetime
-import calendar
-import getopt
-import numpy
-from numpy import *
+import job_pool as pool
+
 
 import matplotlib
 matplotlib.use('pdf')
-import matplotlib.pyplot as plt
 
 
 import multiprocessing
-from time import sleep
-from multiprocessing import Pool
 
-from netCDF4 import Dataset
+if "GMIMetFieldProcessing" in os.environ:
+    sys.path.append(os.environ.get("GMIMetFielProcessing"))
+else:
+    print("Please specify location of GMIMetFieldProcessing scripts")
+    sys.exit(1)
 
-import math
-
-from matplotlib.colors import BoundaryNorm
-import matplotlib.colors as colors
-from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.basemap import Basemap
-
-
-
-
-
-
-
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
 
 
 from GeosCtmPlotTools import GeosCtmPlotTools
-from GenericModelPlotTools import GenericModelPlotTools
 from TracerPlotTools import TracerPlotTools
-
-
 
 def worker (command):
     print("I will execute: ", command)
     return os.system(command)
-
-
 
 NUM_ARGS = 7
 def usage ():
@@ -224,8 +200,11 @@ for field in fieldsToCompare[:]:
             + " -k " + keyFile
 
 
-        sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
-            "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+        #sysCommand = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+        #    "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+        #    pythonCommand + " -f " + str(field) + " \'"
+
+        sysCommand = "python " + cwd + "/" + \
             pythonCommand + " -f " + str(field) + " \'"
 
         commands.append(sysCommand)
@@ -236,8 +215,10 @@ for field in fieldsToCompare[:]:
     pythonCommandZM = "PlotTracerZM.py -g " + geosFile \
         + " -r " + str(timeRecord) + " -d " + dateYearMonth \
         + " -k " + keyFile
-    sysCommandZM = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
-        "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+    #sysCommandZM = "ssh -XYqt " + nodes[nodeCount] +  " \'. " + cwd + \
+    #    "/setup_env ; cd " + cwd + " ; python " + cwd + "/" + \
+    #    pythonCommandZM + " -f " + str(field) + " \'"
+    sysCommandZM = "python " + cwd + "/" + \
         pythonCommandZM + " -f " + str(field) + " \'"
     commands.append(sysCommandZM)
     procCount = procCount + 1
@@ -252,19 +233,20 @@ for command in commands[:]:
     print(command)
 print("")
 
+pool.run_commands(commands, "no")
 
 
 
-pool = multiprocessing.Pool(processes=len(commands))
+#pool = multiprocessing.Pool(processes=len(commands))
 
-print("")
-print("Calling pool.map")
-pool.map(worker, commands)
-print("")
+#print("")
+#print("Calling pool.map")
+#pool.map(worker, commands)
+#print("")
 
-print("")
-print("Calling pool.close")
-pool.close()
-print("")
+#print("")
+#print("Calling pool.close")
+#pool.close()
+#print("")
 
 

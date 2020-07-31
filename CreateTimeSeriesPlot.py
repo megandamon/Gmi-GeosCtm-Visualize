@@ -21,7 +21,7 @@ import datetime
 
 
 
-sys.path.append('/discover/nobackup/ccruz/devel/CCM/GmiMetfieldProcessing')
+sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 
 
 from GmiIcarttConfiguration import GmiIcarttConfiguration
