@@ -11,7 +11,7 @@
 # Creating this call so zonal mean plotting and slice plotting can share the same
 # tools. 
 #------------------------------------------------------------------------------
-
+import decimal
 import matplotlib
 matplotlib.use('pdf')
 

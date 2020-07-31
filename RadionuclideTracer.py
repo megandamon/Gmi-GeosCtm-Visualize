@@ -70,7 +70,7 @@ class RadionuclideTracer(GenericTracer):
                 self.specificHumidity = modelObject.return2DSliceFromRefPressure (specificHumidity, fileLevel)
 
             print ("")
-            print ("Min/max QV for RadionuclineTracer: ", \
+            print ("Min/max QV for RadionuclideTracer: ", \
                        self.specificHumidity.min(), self.specificHumidity.max())
             print ("")
 
@@ -80,7 +80,7 @@ class RadionuclideTracer(GenericTracer):
 
 
         print ("")
-        print ("Min/max incoming array for Radionucline: ", array.min(), array.max())
+        print ("Min/max incoming array for Radionuclide: ", array.min(), array.max())
         print ("Array shape preConversion: ", array.shape)
         print ("")
 

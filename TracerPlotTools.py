@@ -67,28 +67,28 @@ class TracerPlotTools:
 
             elif tracerName.lower() == "be7" or tracerName.lower() == "be7s":
 
-               print ("Calling RadionuclineTracer for: ", tracerName)
+               print ("Calling RadionuclideTracer for: ", tracerName)
 
                self.tracerDict[tracerName] = RadionuclideTracer \
                    (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 7.)
 
             elif tracerName.lower() == "be10" or tracerName.lower() == "be10s":
 
-               print ("Calling RadionuclineTracer for: ", tracerName)
+               print ("Calling RadionuclideTracer for: ", tracerName)
 
                self.tracerDict[tracerName] = RadionuclideTracer \
                    (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 10.)
 
             elif tracerName.lower() == "pb210" or tracerName.lower() == "pb210s":
                
-               print ("Calling RadionuclineTracer for: ", tracerName)
+               print ("Calling RadionuclideTracer for: ", tracerName)
 
                self.tracerDict[tracerName] = RadionuclideTracer \
                    (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 210.)
 
             elif tracerName.lower() == "rn222":
 
-               print ("Calling RadionuclineTracer for: ", tracerName)
+               print ("Calling RadionuclideTracer for: ", tracerName)
 
                self.tracerDict[tracerName] = RadionuclideTracer \
                    (tracerName, modelObject, keyFile, 'log', timeRecord, fileLevel, 222.)
