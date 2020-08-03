@@ -152,11 +152,13 @@ def main():
 
         sCount = 0
         for _ in tracerTools.tracerDict[field].slices:
-            sysCommand = "python " + cwd + "/" + sliceCommands[sCount] + " -f " + str(field)
+            sysCommand = "python " + cwd + "/" + sliceCommands[sCount] + \
+                " -f " + str(field)
             commands.append(sysCommand)
             sCount = sCount + 1
 
-        sysCommandZM =  "python " + cwd + "/" + pythonCommandZM + " -f " + str(field)
+        sysCommandZM =  "python " + cwd + "/" + pythonCommandZM + " -f " \
+            + str(field)
         commands.append(sysCommandZM)
 
     print("Process jobs, please wait...")

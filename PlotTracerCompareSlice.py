@@ -24,7 +24,6 @@ COLORMAP = "rainbow"
 RATIO_COLORMAP = "bwr"
 RATIO_CONTOUR_LEVELS = [.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5]
 DEFAULT_PERCHANGE_CONTOURS = [-1000, -500, -100, -50, -20, -10, -5, -2, -.5, .5, 2, 5, 10, 20, 50, 100, 500, 1000]
-#DEFAULT_PERCHANGE_CONTOURS = [-100, -75, -50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50, 75, 100]
 NUM_ARGS = 9
 #*********************
 
@@ -96,21 +95,42 @@ def main():
         sys.exit(0)
 
 
+
+
+        
     model1Object = GeosCtmPlotTools (model1File, 'lat','lon',
                                           'lev','time', 'lat',
                                           'lon', 'lev', 'time' )
+
+    model2Object = GeosCtmPlotTools (model2File, 'lat','lon',
+                                     'lev','time', 'lat',
+                                     'lon', 'lev', 'time' )
+
+    
+
+
+
+    
 
     modelFilebs = os.path.basename(model1File)
     model1SimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
     model1SimName2 = model1SimName.split("_")[0] + "_" + model1SimName.split("_")[1]
     model1SimName = model1SimName2
+
     modelFilebs = os.path.basename(model2File)
     model2SimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
     model2SimName2 = model2SimName.split("_")[0] + "_" + model2SimName.split("_")[1]
     model2SimName = model2SimName2
 
-    tracerTools = TracerPlotTools (model1Object, keyFile, timeRecord, fileLevel)
 
+
+    
+    tracerTools1 = TracerPlotTools (model1Object, keyFile, timeRecord, fileLevel)
+    tracerTools2 = TracerPlotTools (model2Object, keyFile, timeRecord, fileLevel)
+
+
+
+    
     if fieldToPlot not in model1Object.hdfData.variables.keys():
 
         if fieldToPlot.islower() == True:
@@ -122,38 +142,35 @@ def main():
 
     model1FieldArray = model1Object.returnField (fieldToPlot, timeRecord)
 
-
     model1FieldArraySlice = model1Object.return2DSliceFromRefPressure (model1FieldArray, fileLevel)
 
-    preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(model1FieldArraySlice, model1SimName)
+    preConvertFieldArray1 = tracerTools1.tracerDict[fieldToPlot].preConversion(model1FieldArraySlice, model1SimName)
 
     newModel1FieldArray = preConvertFieldArray1 * \
-        float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
+        float(tracerTools1.tracerDict[fieldToPlot].unitConvert) # key convert
 
-    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+    if float(tracerTools1.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools1.tracerDict[fieldToPlot].units  = tracerTools1.tracerDict[fieldToPlot].newUnit
 
     model1FieldArray = newModel1FieldArray
     newModel1FieldArray = None
 
-    model2Object = GeosCtmPlotTools (model2File, 'lat','lon',
-                                          'lev','time', 'lat',
-                                          'lon', 'lev', 'time' )
 
     model2FieldArray = model2Object.returnField (fieldToPlot, timeRecord)
     model2FieldArraySlice = model2Object.return2DSliceFromRefPressure (model2FieldArray, fileLevel)
 
-    preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(model2FieldArraySlice, model2SimName)
+    preConvertFieldArray2 = tracerTools2.tracerDict[fieldToPlot].preConversion(model2FieldArraySlice, model2SimName)
 
     newModel2DFieldArray = preConvertFieldArray2 * \
-        float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
+        float(tracerTools2.tracerDict[fieldToPlot].unitConvert) # key convert
 
-    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+    if float(tracerTools2.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools2.tracerDict[fieldToPlot].units  = tracerTools2.tracerDict[fieldToPlot].newUnit
 
     model2FieldArray = newModel2DFieldArray
     newModel2FieldArray = None
 
+    
     if model1FieldArray.shape != model2FieldArray.shape:
 
         print("\n")
@@ -166,7 +183,7 @@ def main():
         print ("")
         if model1NumPoints < model2NumPoints:
 
-            print ("model1 has fewer points (", model1NumPoints, "<", model2NumPoints, ") ; will interpolate to the grid of model 1")
+            print ("\nmodel1 has fewer points (", model1NumPoints, "<", model2NumPoints, ") ; will interpolate to the grid of model 1")
 
 
             model2FieldArrayInterp = model2Object.interpMaskedFieldLatLon (model1FieldArray, model2FieldArray,
@@ -180,7 +197,7 @@ def main():
 
         else:
 
-            print ("model2 has fewer points (", model2NumPoints, "<", model1NumPoints, ") ; will interpolate to the grid of model 2")
+            print ("\nmodel2 has fewer points (", model2NumPoints, "<", model1NumPoints, ") ; will interpolate to the grid of model 2")
 
 
             model1FieldArrayInterp = model1Object.interpMaskedFieldLatLon (model2FieldArray, model1FieldArray,
@@ -204,26 +221,32 @@ def main():
         maxValueBoth = model2FieldArray.max()
     #***********************************************
 
+
+    
+
     print("")
     print("min/max value of both models: ", minValueBoth, maxValueBoth)
     print("")
 
-    if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
+    
+    # by now, all the tracers should be in the same units for comparision
+    # so we can reference just tracerTools1 
+    if tracerTools1.tracerDict[fieldToPlot].units.find("days") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("years") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("years") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("kg-1") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("kg-1") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("ppt") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("ppt") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("ppb") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("ppb") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("mol-1") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("mol-1") != -1:
         analType = "r"
         analString = "ratio"
 
@@ -231,19 +254,25 @@ def main():
     #-----------------------------------------------------#
     # Model  Plotting
 
-    if tracerTools.tracerDict[fieldToPlot].slices[int(fileLevel)] == None:
+    if tracerTools1.tracerDict[fieldToPlot].slices[int(fileLevel)] == None:
 
         step = (maxValueBoth - minValueBoth) / 10.
-        contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax (minValueBoth, maxValueBoth,
-                                                                                       step=float('{:0.2e}'.format(step)))
+        contours = tracerTools1.tracerDict[fieldToPlot].createTracerContoursFromMinMax \
+            (minValueBoth, maxValueBoth, \
+             step=float('{:0.2e}'.format(step)))
     else:
         contours = []
-        for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
+        for contour in tracerTools1.tracerDict[fieldToPlot].slices[fileLevel]:
             contours.append(float(contour))
 
+
+
+            
     fig = plt.figure(figsize=(20,20))
     modelObject.createPlotObjects()
 
+
+    
 
     plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
         + " hPa  " + dateYearMonth
@@ -255,7 +284,7 @@ def main():
                                        "fuchsia", "darkred",
                                        221,
                                        plotTitle1,
-                                       COLORMAP, tracerTools.tracerDict[fieldToPlot].units,
+                                       COLORMAP, tracerTools1.tracerDict[fieldToPlot].units,
                                        contourLevels=contours)
 
     plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
@@ -267,7 +296,7 @@ def main():
                                        [modelObject.long[:].min(), modelObject.long[:].max()],
                                            "fuchsia", "darkred",
                                        222,
-                                       plotTitle2, COLORMAP, tracerTools.tracerDict[fieldToPlot].units,
+                                       plotTitle2, COLORMAP, tracerTools2.tracerDict[fieldToPlot].units,
                                        contourLevels=contours)
 
     analType = "s"
@@ -275,13 +304,13 @@ def main():
     z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray, analType)
 
 
-    if tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel] == None:
+    if tracerTools1.tracerDict[fieldToPlot].diffSlices[fileLevel] == None:
 
-        diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
+        diffContourLevels = tracerTools1.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
 
     else:
 
-        diffContourLevels = tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel]
+        diffContourLevels = tracerTools1.tracerDict[fieldToPlot].diffSlices[fileLevel]
 
 
     plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
@@ -293,7 +322,7 @@ def main():
                                        [modelObject.long[:].min(), modelObject.long[:].max()],
                                            "navy", "darkred",
                                        223,
-                                       plotTitle3, "coolwarm", units=tracerTools.tracerDict[fieldToPlot].units,
+                                       plotTitle3, "coolwarm", units=tracerTools1.tracerDict[fieldToPlot].units,
                                        labelContours=False,
                                        contourLevels=diffContourLevels)
 
@@ -308,7 +337,7 @@ def main():
 
     else:
         print ("\nCreating percent difference contours")
-        percDiffContours = tracerTools.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
+        percDiffContours = tracerTools1.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
             (z_Model.min(), z_Model.max())
     #    if percDiffContours [0] < -100.0:
     #        percDiffContours = DEFAULT_PERCHANGE_CONTOURS

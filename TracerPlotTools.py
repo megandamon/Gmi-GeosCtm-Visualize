@@ -18,6 +18,7 @@ from AoaBlTracer import AoaBlTracer
 
 from configparser import ConfigParser
 import json
+import sys
 
 class TracerPlotTools:
 
@@ -39,6 +40,9 @@ class TracerPlotTools:
       if keyFile != None:
          self.createTracerDict \
             (modelObject, keyFile, timeRecord, fileLevel)
+
+      else:
+         print("\nWARNING: keyFile is None. Tracer dict will not be created!")
 
 
    def createTracerDict (self, modelObject, keyFile, \

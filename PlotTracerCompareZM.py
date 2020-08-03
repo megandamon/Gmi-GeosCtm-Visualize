@@ -88,15 +88,20 @@ def main():
                                      'lev','time', 'lat',
                                      'lon', 'lev', 'time' )
 
+    model2Object = GeosCtmPlotTools (modelFile2, 'lat','lon',
+                                     'lev','time', 'lat',
+                                     'lon', 'lev', 'time' )
+
+
     modelFilebs = os.path.basename(modelFile1)
     model1SimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
     model1SimName2 = model1SimName.split("_")[0] + "_" + model1SimName.split("_")[1]
     model1SimName = model1SimName2
 
-    tracerTools = TracerPlotTools (model1Object, keyFile, timeRecord, "ZM")
+    tracerTools1 = TracerPlotTools (model1Object, keyFile, timeRecord, "ZM")
+    tracerTools2 = TracerPlotTools (model2Object, keyFile, timeRecord, "ZM")
 
     if fieldToPlot not in model1Object.hdfData.variables.keys():
-        print ("NOT IN KEYS OBJECT 1")
 
         if fieldToPlot.islower() == True:
             fieldToPlot1 = fieldToPlot.upper()
@@ -106,23 +111,20 @@ def main():
         fieldToPlot1 = fieldToPlot
 
     modelFieldArray1 = model1Object.returnField (fieldToPlot1, timeRecord)
-    preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray1,
+    preConvertFieldArray1 = tracerTools1.tracerDict[fieldToPlot].preConversion(modelFieldArray1,
                                                                               model1SimName)
 
-    newModel1FieldArray = preConvertFieldArray1 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
-    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+    newModel1FieldArray = preConvertFieldArray1 * float(tracerTools1.tracerDict[fieldToPlot].unitConvert)
+    if float(tracerTools1.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools1.tracerDict[fieldToPlot].units  = tracerTools1.tracerDict[fieldToPlot].newUnit
 
     modelFieldArray1 = newModel1FieldArray
     newModel1FieldArray = None
-    llIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
-    ulIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
+    llIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools1.tracerDict[fieldToPlot].lowLevel))
+    ulIndex1 = model1Object.findLevelFromArray(model1Object.lev, float(tracerTools1.tracerDict[fieldToPlot].highLevel))
     zmArray1 = mean(modelFieldArray1[llIndex1:ulIndex1+1, :, :], axis=2)
 
 
-    model2Object = GeosCtmPlotTools (modelFile2, 'lat','lon',
-                                     'lev','time', 'lat',
-                                     'lon', 'lev', 'time' )
 
     modelFilebs = os.path.basename(modelFile2)
     model2SimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
@@ -131,7 +133,6 @@ def main():
 
 
     if fieldToPlot not in model2Object.hdfData.variables.keys():
-        print ("NOT IN KEYS OBJECT2")
 
         if fieldToPlot.islower() == True:
             fieldToPlot2 = fieldToPlot.upper()
@@ -141,16 +142,16 @@ def main():
         fieldToPlot2 = fieldToPlot
 
     modelFieldArray2 = model2Object.returnField (fieldToPlot2, timeRecord)
-    preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray2,
+    preConvertFieldArray2 = tracerTools2.tracerDict[fieldToPlot].preConversion(modelFieldArray2,
                                                                               model2SimName)
-    newModel2FieldArray = preConvertFieldArray2 * float(tracerTools.tracerDict[fieldToPlot].unitConvert)
-    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+    newModel2FieldArray = preConvertFieldArray2 * float(tracerTools2.tracerDict[fieldToPlot].unitConvert)
+    if float(tracerTools2.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools2.tracerDict[fieldToPlot].units  = tracerTools2.tracerDict[fieldToPlot].newUnit
 
     modelFieldArray2 = newModel2FieldArray
     newModel2FieldArray = None
-    llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].lowLevel))
-    ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools.tracerDict[fieldToPlot].highLevel))
+    llIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools2.tracerDict[fieldToPlot].lowLevel))
+    ulIndex2 = model2Object.findLevelFromArray(model2Object.lev, float(tracerTools2.tracerDict[fieldToPlot].highLevel))
     zmArray2 = mean(modelFieldArray2[llIndex2:ulIndex2+1, :, :], axis=2)
 
     if zmArray1.shape != zmArray2.shape:
@@ -202,19 +203,17 @@ def main():
     if zmArray2.max() > maxValueBoth:
         maxValueBoth = zmArray2.max()
 
-    if tracerTools.tracerDict[fieldToPlot].zmContours == None:
+    if tracerTools1.tracerDict[fieldToPlot].zmContours == None:
 
-        print ("Calling createTracerContoursFromMinMax")
         step = (maxValueBoth - minValueBoth) / 10.
-        contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax(minValueBoth,
+        contours = tracerTools1.tracerDict[fieldToPlot].createTracerContoursFromMinMax(minValueBoth,
                                                                                       maxValueBoth,
                                                                                       step=float('{:0.2e}'.format(step)))
 
     else:
         contours = []
-        for contour in tracerTools.tracerDict[fieldToPlot].zmContours:
+        for contour in tracerTools1.tracerDict[fieldToPlot].zmContours:
             contours.append(float(contour))
-        print ("Received zm contours from input file")
 
     #-----------------------------------------------------#
     # Model  Plotting
@@ -225,7 +224,7 @@ def main():
     plotOpt = {}
 
     plotOpt['title'] = model1SimName + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
-    plotOpt['units'] = tracerTools.tracerDict[fieldToPlot].units
+    plotOpt['units'] = tracerTools1.tracerDict[fieldToPlot].units
 
     plotZM (zmArray1 ,modelObject.lat[:], modelObject.lev[llIndex1:ulIndex1+1],
             fig, 221, COLORMAP,
@@ -247,14 +246,12 @@ def main():
 
     print ("\nMin / max values of differences: ", zDiff.min(), zDiff.max())
 
-    if tracerTools.tracerDict[fieldToPlot].z_zm == None:
-        diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax\
+    if tracerTools1.tracerDict[fieldToPlot].z_zm == None:
+        diffContourLevels = tracerTools1.tracerDict[fieldToPlot].createDiffContoursFromMinMax\
             (zDiff.min(), zDiff.max())
     else:
-        diffContourLevels = tracerTools.tracerDict[fieldToPlot].z_zm
+        diffContourLevels = tracerTools1.tracerDict[fieldToPlot].z_zm
 
-
-    print ("diffContourLevels: ", diffContourLevels)
 
     plotOpt['title'] = analString + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
 
@@ -269,19 +266,16 @@ def main():
 
     zDiff = None
     zDiff = modelObject.createComparision2D(zmArray1, zmArray2, analType)
-    print ("zDiff min max for perc change", zDiff.min(), zDiff.max())
 
 
     if percChangeContours == "d":
         percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
     else:
         print ("Create percDiffContours!")
-        percDiffContours = tracerTools.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
+        percDiffContours = tracerTools1.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
             (zDiff.min(), zDiff.max())
 
     percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
-
-    print (percDiffContours)
 
     plotOpt['title'] = analString + "     " + fieldToPlot +  "    Zonal Mean " + dateYearMonth
     plotOpt['units'] = "%"

@@ -50,20 +50,10 @@ class GenericTracer:
     slices = None
     yAxisType = 'log'
 
-    PRECONVERT_SIMS = ['TR_GOCART', 'cycling', 'bench']
-    
-    
 
     def roundup(self, x):
         return int(math.ceil(x / 10.0)) * 10
 
-    def testForPreConvert(self, string):
-
-        for sim in self.PRECONVERT_SIMS:
-            if sim in string:
-                return True
-
-        return False  
 
 
     #---------------------------------------------------------------------------  
