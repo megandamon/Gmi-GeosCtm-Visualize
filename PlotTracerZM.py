@@ -22,11 +22,6 @@ import matplotlib.pyplot as plt
 from GeosCtmPlotTools import GeosCtmPlotTools
 from TracerPlotTools import TracerPlotTools
 
-# *********************
-COLORMAP = "rainbow"
-NUM_ARGS = 5
-SUB_PLOT_NUM = 111
-# *********************
 
 def usage():
     print("")
@@ -41,6 +36,11 @@ def usage():
 
 
 def main():
+    # *********************
+    COLORMAP = "rainbow"
+    NUM_ARGS = 5
+    SUB_PLOT_NUM = 111
+    # *********************
 
     optList, argList = getopt.getopt(sys.argv[1:], 'g:r:d:k:f:')
     if len(optList) != NUM_ARGS:
@@ -75,34 +75,29 @@ def main():
 
     tracerTools = TracerPlotTools(modelObject, keyFile, timeRecord, "ZM")
 
-
     modelFilebs = os.path.basename(modelFile)
     modelSimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
 
-    
     # read bare field
-    modelFieldArray = modelObject.returnField(fieldToPlot, timeRecord)  
+    modelFieldArray = modelObject.returnField(fieldToPlot, timeRecord)
     preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion \
         (modelFieldArray, modelSimName)  # pre-convert
     # key convert
     newModelFieldArray = preConvertFieldArray * \
                          float(tracerTools.tracerDict[fieldToPlot].unitConvert)
 
-
     if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units = tracerTools.tracerDict\
+        tracerTools.tracerDict[fieldToPlot].units = tracerTools.tracerDict \
             [fieldToPlot].newUnit
 
-    
     modelFieldArray = newModelFieldArray
-    newModelFieldArray = None
 
     llIndex = modelObject.findLevelFromArray(modelObject.lev,
-                                             float(tracerTools.tracerDict\
-                                                   [fieldToPlot].lowLevel))
+                                             float(tracerTools.tracerDict \
+                                                       [fieldToPlot].lowLevel))
     ulIndex = modelObject.findLevelFromArray(modelObject.lev,
-                                             float(tracerTools.tracerDict\
-                                                   [fieldToPlot].highLevel))
+                                             float(tracerTools.tracerDict \
+                                                       [fieldToPlot].highLevel))
 
     zmArray = mean(modelFieldArray[llIndex:ulIndex + 1, :, :], axis=2)
 
@@ -111,18 +106,13 @@ def main():
 
     fig = plt.figure(figsize=(18, 20))
 
-    plotOpt = {}
+    plotOpt = {'title': modelSimName + "    " + fieldToPlot + " Zonal Mean " + \
+                        " (" + tracerTools.tracerDict[fieldToPlot].long_name + \
+                        ") " + str(dateYearMonth), 'units': tracerTools.tracerDict[fieldToPlot].units}
 
-    plotOpt['title'] = modelSimName + "    " + fieldToPlot + " Zonal Mean " + \
-                       " (" + tracerTools.tracerDict[fieldToPlot].long_name + \
-                       ") " + str(dateYearMonth)
-    plotOpt['units'] = tracerTools.tracerDict[fieldToPlot].units
-
-    ax1 = fig.add_subplot(SUB_PLOT_NUM)
-
-    if tracerTools.tracerDict[fieldToPlot].zmContours == None:
+    if tracerTools.tracerDict[fieldToPlot].zmContours is None:
         contours = tracerTools.tracerDict[fieldToPlot].createTracerContours \
-            (zmArray,step=(zmArray.max() - zmArray.min()) / 10.)
+            (zmArray, step=(zmArray.max() - zmArray.min()) / 10.)
     else:
         contours = []
         for contour in tracerTools.tracerDict[fieldToPlot].zmContours:
