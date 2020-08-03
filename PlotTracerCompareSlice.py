@@ -30,7 +30,7 @@ NUM_ARGS = 9
 
 def usage ():
     print("")
-    print("usage: PlotTracerCompareSlice.py [-c] [-g] [-l] [-r] [-d] [-n] [-k] [-f] [-p]")
+    print("usage: PlotTracerCompareSlice.py [-c] [-g] [-l] [-r] [-d] [-n] [-k] [-p] [-f]")
     print("-g Model file 1")
     print("-c Model file 2")
     print("-l vertical level (hPa)")
@@ -38,8 +38,8 @@ def usage ():
     print("-d date (YYYYMM)")
     print("-n long name of tracer")
     print("-k Key file for tracers")
-    print("-f tracer to plot")
     print("-p percentage change contours (d-default-+-100, a-algorithmic")
+    print("-f tracer to plot")
     print("")
     sys.exit (0)
 
@@ -122,15 +122,10 @@ def main():
 
     model1FieldArray = model1Object.returnField (fieldToPlot, timeRecord)
 
-    print (model1FieldArray.shape)
 
     model1FieldArraySlice = model1Object.return2DSliceFromRefPressure (model1FieldArray, fileLevel)
 
-    print ("2: ", model1FieldArraySlice.shape)
-
     preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(model1FieldArraySlice, model1SimName)
-
-    print ("3: ", preConvertFieldArray1.shape)
 
     newModel1FieldArray = preConvertFieldArray1 * \
         float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
@@ -161,7 +156,7 @@ def main():
 
     if model1FieldArray.shape != model2FieldArray.shape:
 
-        print("")
+        print("\n")
         print("Field arrays are not the same, interpolation required!")
         print("")
 
@@ -211,8 +206,6 @@ def main():
 
     print("")
     print("min/max value of both models: ", minValueBoth, maxValueBoth)
-    print("Global sum 1 of ", fieldToPlot, " : ", sum(model1FieldArray))
-    print("Global sum 2 of ", fieldToPlot, " : ", sum(model2FieldArray))
     print("")
 
     if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
@@ -251,7 +244,6 @@ def main():
     fig = plt.figure(figsize=(20,20))
     modelObject.createPlotObjects()
 
-    print (model1FieldArray.shape)
 
     plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
         + " hPa  " + dateYearMonth
@@ -282,9 +274,6 @@ def main():
     analString = "diff"
     z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray, analType)
 
-    print (z_Model.min(), z_Model.max())
-    print (tracerTools.tracerDict[fieldToPlot].slices)
-    print (tracerTools.tracerDict[fieldToPlot].diffSlices)
 
     if tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel] == None:
 
@@ -293,10 +282,6 @@ def main():
     else:
 
         diffContourLevels = tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel]
-
-    print ("")
-    print ("Diff contours: ", diffContourLevels)
-    print ("")
 
 
     plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
@@ -322,7 +307,7 @@ def main():
         percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
 
     else:
-        print ("Create percDiffContours!")
+        print ("\nCreating percent difference contours")
         percDiffContours = tracerTools.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
             (z_Model.min(), z_Model.max())
     #    if percDiffContours [0] < -100.0:
@@ -330,7 +315,6 @@ def main():
 
     percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
 
-    print (percDiffContours)
 
     plotTitle4 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
          + " hPa " + dateYearMonth
@@ -357,9 +341,7 @@ def main():
 
     plt.clf()
 
-    print("")
-    print("Plotted slice for : ", fieldToPlot, " to plots/ directory")
-    print("")
+    print("\nPlotted slice for : ", fieldToPlot, " to plots/ directory")
 
 
 if __name__ == "__main__":

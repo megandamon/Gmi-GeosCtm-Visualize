@@ -18,6 +18,7 @@ import random
 import datetime
 import calendar
 import numpy
+import json
 from numpy import *
 from netCDF4 import Dataset
 
@@ -48,10 +49,21 @@ class GenericTracer:
     zmContours = None
     slices = None
     yAxisType = 'log'
+
+    PRECONVERT_SIMS = ['TR_GOCART', 'cycling', 'bench']
+    
     
 
     def roundup(self, x):
         return int(math.ceil(x / 10.0)) * 10
+
+    def testForPreConvert(self, string):
+
+        for sim in self.PRECONVERT_SIMS:
+            if sim in string:
+                return True
+
+        return False  
 
 
     #---------------------------------------------------------------------------  
@@ -60,157 +72,44 @@ class GenericTracer:
     # DESCRIPTION: 
     # Constructor routine.
     #---------------------------------------------------------------------------  
-    def __init__(self, tracerName, modelObject, keyFile, timeRecord, fileLevel):
+    def __init__(self, tracerName, modelObject, parser, timeRecord, fileLevel):
 
-        keyLines = GenericModelPlotTools.readFileAndReturnFileLines(GenericModelPlotTools, keyFile)
-
-#        print ("key file lines: ", len(keyLines) -1)
-#        print ("tracer name: ", tracerName)
-
-        foundzZm = False
-
-
-        lineCount = 0
-
-        while lineCount < len(keyLines)-1:
-
-            tracerMetData = keyLines[lineCount].split(':') # split this line into metdata tokens
-#            print ("Tracer met data: ", tracerMetData)
-
-            if tracerMetData[0] == tracerName:
-
-                self.name = tracerMetData[self.NAME_INDEX]
-                self.long_name = tracerMetData[self.LONGNAME_INDEX]
-                self.lowLevel = tracerMetData[self.LOWLEVEL_INDEX]
-                self.highLevel = tracerMetData[self.HIGHLEVEL_INDEX]
-                self.unitConvert = tracerMetData[self.UNITCONVERT_INDEX]
-                self.newUnit = tracerMetData[self.NEWUNIT_INDEX]
-                self.zmContours = None
+        self.name = tracerName
+        self.long_name = parser.get(tracerName, 'long_name')
+        self.lowLevel = parser.get(tracerName, 'zmlowlevel')
+        self.highLevel = parser.get(tracerName, 'zmhighlevel')
+        self.unitConvert = parser.get(tracerName, 'unitconversion')
+        self.newUnit = parser.get(tracerName, 'unitname')
+        self.zmContours = json.loads(parser.get(tracerName, "zmcontours"))
+        self.z_zm = json.loads(parser.get(tracerName, "zmdiffcontours"))
 
 
-                if self.unitConvert == 1:
-                    self.units = modelObject.hdfData.variables[tracerName].getncattr('units')
-                else:
-                    self.units = self.newUnit
+        if self.unitConvert == 1:
+            self.units = modelObject.hdfData.variables[tracerName].getncattr('units')
+        else:
+            self.units = self.newUnit
 
-                if len(tracerMetData) > 6: # this tracer provide its own contour levels for zm
-
-                    contourLevels = tracerMetData[self.ZMCONTOUR_INDEX].split(',')
-                    levCount = 0
-                    self.zmContours = []
-                    for level in range(len(contourLevels)):
-                        self.zmContours.append(contourLevels[levCount])
-                        levCount = levCount + 1
+        # there is an undetermined number of slices for each tracer
+        # so we must loop over them to discover what the slices are
         
-                self.slices = {} # create new dict for the slices for this tracer
-                
-                nextTracer = False
-                while nextTracer == False and lineCount < len(keyLines)-1:
+        self.slices = {} 
+        self.diffSlices = {}
 
-                    lineCount = lineCount + 1
-                    sliceLine = keyLines[lineCount].split(':') # split this line into "slice", numSlice, contours (maybe)
-
- #                   print ("")
- #                   print (sliceLine)
- #                   print (sliceLine[0])
- #                   print ("")
-
-                    if "slice" in sliceLine[0] and "z_slice" not in sliceLine[0]:
-
-  #                      print ("")
-  #                      print ("Found regular slice")
-  #                      print ("")
-
-                        slice = float(sliceLine[1])
-
-                        self.slices[slice] = None
-                        if len(sliceLine) > 2: 
-
-                            contourLevels = sliceLine[2].split(",")
-                            levCount = 0
-                            self.slices[slice] = []
-                            for level in range (len(contourLevels)):
-                                self.slices[slice].append(float(contourLevels[levCount]))
-                                levCount = levCount + 1
-
-                    elif "z_slice" in sliceLine[0]:
-   #                     print ("")
-   #                     print ("foudn first z_slice, breaking")
-   #                     print ("")
-                        break
-
-   #             print ("")
-   #             print ("creating diffSlices")
-   #             print ("")
-
-                lineCount = lineCount - 1 # need to back up and let the next loop read the zslices
-
-                self.diffSlices = {} # create new dict for the difference contours for each slice 
-                nextTracer = False
-
-
-                while nextTracer == False and lineCount < len(keyLines)-1:
-
-                    lineCount = lineCount + 1
-                    sliceLine = keyLines[lineCount].split(':') # split this line into "z_slice", numSlice, contours (maybe)
-
-
-                    if "z_slice" in sliceLine[0]: 
-
-#                         print ("")
-#                         print ("Found z_slice")
-#                         print ("")
-
-                        slice = float(sliceLine[1])
-
-#                        print ("")
-#                        print ("zslice: ", slice)
-#                        print ("")
-
-                        self.diffSlices[slice] = None
-                        if len(sliceLine) > 2: 
-
-                            contourLevels = sliceLine[2].split(",")
-                            levCount = 0
-                            self.diffSlices[slice] = []
-                            for level in range (len(contourLevels)):
-                                self.diffSlices[slice].append(float(contourLevels[levCount]))
-                                levCount = levCount + 1
-
-                    elif "z_zm" in sliceLine[0]:
-#                        print ("")
-#                        print ("foudn z_zm, breaking")
-#                        print ("")
-                        break
-
-                                
-#                print (sliceLine, "length of sliceLine: ", len(sliceLine))
-                self.z_zm = []
-                if len(sliceLine) > 1: 
-
-                    contourLevels = sliceLine[1].split(",")
-#                    print (contourLevels, 'length of contourLevels: ', len(contourLevels))
-                    levCount = 0
-                    if len(contourLevels) > 1:
-                        for level in range (len(contourLevels)):
-                            self.z_zm.append(float(contourLevels[levCount]))
-                            levCount = levCount + 1
-                    else:
-                        self.z_zm = None
-                    
- #               print ("Before return: ", self.z_zm)
-                return 
-
-            lineCount = lineCount + 1
+        for entry in dict(parser.items(tracerName)):
+            if "slice" in entry:                
+                slicehPa = entry.split("_")[1]                
+                if "diffslice" not in entry:
+                    self.slices[float(slicehPa)] = json.loads \
+                        (parser.get(tracerName, entry))
+                else:
+                    self.diffSlices[float(slicehPa)] = json.loads \
+                        (parser.get(tracerName, entry))
 
 
 
     def returnContoursFromMinMax (self, minVal, maxVal, step):
       minString = str(minVal)
       maxString = str(maxVal)
-
-      print ("Original min/max values: ", minString, maxString)
-
 
       if "e" in minString:
 
@@ -264,15 +163,9 @@ class GenericTracer:
             maxContour = maxContour + .01
             maxContour = round(maxContour, 2)
          
-      print ("New min/max values: ", minContour, maxContour, step)
-
 
 
       contours = arange(minContour,maxContour, step) 
-
-      print ("contours: ", contours)
-      print ("len contours: ", len(contours))
-
 
 
       returnContours = []
@@ -303,7 +196,6 @@ class GenericTracer:
             newMinVal = -absMaxVal
 
 
-        print ("new max: ", newMaxVal)
 
         if newMaxVal > 1.:
             roundNewMaxVal = round(newMaxVal)
@@ -314,15 +206,9 @@ class GenericTracer:
 
             
 
-        print ("old: ", minVal, maxVal)
-        print ("new: ", newMinVal, newMaxVal)
-        print ("round: ", -roundNewMaxVal, roundNewMaxVal)
-
-
         
         
         range = 2.*roundNewMaxVal
-        print ("range: ", range)
         
         if range > 2:
             step = int(ceil(range / 12))
@@ -333,18 +219,13 @@ class GenericTracer:
         if step > 10: step = self.roundup(step)
         elif step > 1:  step = round(step)
 
-        print ("step: ", step)
         
         diffContoursLeft = arange(roundNewMinVal,0, step)
         diffContoursRight = -diffContoursLeft
         diffContoursRightRev = diffContoursRight[::-1]
 
-        print (diffContoursLeft)
-        print (diffContoursRightRev)
 
         diffContours = numpy.concatenate([diffContoursLeft, diffContoursRightRev])
-        print (diffContours)
-
 
 
         if 0 in diffContours:
@@ -378,15 +259,12 @@ class GenericTracer:
 
 
         #convert from sci notation to float
-        print ("oth element diffContours: ", str(diffContours[0]))
         if "e" in str(diffContours[0]):
             print ("found e")
 
         newDiffContours = []
         for lev in diffContours:
             newDiffContours.append(round(lev,3))
-
-        print (newDiffContours)
 
         # remove double zeros 
         newNewDiffContours = []
@@ -410,14 +288,12 @@ class GenericTracer:
 
     def createDiffContoursFromMinMax (self, minVal, maxVal):
         
-#        print ("received: ", minVal, maxVal)
 
         if maxVal - minVal == 0:
             return [-1, -.5, -.25, 0, .25, .5, 1]
 
         avg = (abs(minVal) + abs(maxVal))/2.
 
-#        print ("avg: ", avg)
 
         if "e" in str(avg): 
             return (self.returnContoursFromMinMax(-avg,avg,(avg*2)/12.))
@@ -429,7 +305,6 @@ class GenericTracer:
             step = int(ceil(range / 12))
 
         else:
-#            print ("avg < 1")
             print (minVal, maxVal)
 
             if abs(minVal) > abs(maxVal):
@@ -441,30 +316,23 @@ class GenericTracer:
 
 
             range = maxValAvg + abs(minValAvg)
-#            print ("range: ", range)
             step = range / 12.
 
-        print (minValAvg, maxValAvg, range)
 
         if step > 10: step = self.roundup(step)
         elif step > 1:  step = round(step)
 
-#        print ("step: ", step)
 
         diffContoursLeft = arange(minValAvg,0., step)
         diffContoursRight = -diffContoursLeft
         diffContoursRightRev = diffContoursRight[::-1]
 
-#        print (diffContoursLeft)
-#        print (diffContoursRightRev)
 
         diffContours = numpy.concatenate([diffContoursLeft, diffContoursRightRev])
-#        print (diffContours)
 
         if 0 in diffContours:
             newContours = diffContours
         else:
-#            print ("No zero")
             negative = False
             newContours = []
             for lev in diffContours:
@@ -495,19 +363,14 @@ class GenericTracer:
         
 
     def createTracerContoursFromMinMax (self, minVal, maxVal, step=.5):
-
         return self.returnContoursFromMinMax (minVal, maxVal, step)
 
 
-    def createTracerContours (self, array, step=.5):
-
-       
+    def createTracerContours (self, array, step=.5):       
         return self.returnContoursFromMinMax (array.min(), array.max(), step)
 
 
     def preConversion (self, array, simName, convFac = None, newUnits = None):
-#        print ("\nGeneric tracers do not perform pre-conversions!")
-
         return array
 
 

@@ -37,7 +37,9 @@ class AoaBlTracer(GenericTracer):
     # DESCRIPTION: 
     # Constructor routine.
     #---------------------------------------------------------------------------  
-    def __init__(self, tracerName, modelObject, keyFile, yAxisType,timeRecord, fileLevel):
+    def __init__(self, tracerName, modelObject, parser, yAxisType,timeRecord, \
+                 fileLevel):
 
-        GenericTracer.__init__(self, tracerName, modelObject, keyFile, timeRecord, fileLevel)
+        GenericTracer.__init__(self, tracerName, modelObject, parser, \
+                               timeRecord, fileLevel)
         self.yAxisType = yAxisType

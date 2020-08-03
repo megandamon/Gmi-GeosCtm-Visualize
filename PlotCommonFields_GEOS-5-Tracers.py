@@ -48,7 +48,6 @@ def usage ():
 
 
 def main():
-    print("Start plotting field differences")
 
     NUM_ARGS = 8
 
@@ -119,13 +118,11 @@ def main():
         if field[0:4] != "Var_":
             fieldsToCompare.append(field)
 
-    print("Fields to compare: ", fieldsToCompare[:])
-    print("GEOS eta levels: ", geosObject1.lev[:])
 
     cwd = os.getcwd()
 
     numTracers = len(tracerTools.tracerDict)
-    print("Num tracers: ", numTracers)
+
 
     commands = []
     for field in fieldsToCompare[:]:

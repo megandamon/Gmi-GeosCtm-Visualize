@@ -38,7 +38,6 @@ def usage ():
     sys.exit (0)
 
 def main():
-    print("Start plotting field slice.")
 
     optList, argList = getopt.getopt(sys.argv[1:],'c:l:r:d:n:k:f:')
     if len (optList) != NUM_ARGS:
@@ -87,16 +86,10 @@ def main():
     modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord) # read bare field
     modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
 
-    print ("min max of array: ", modelFieldArraySlice.min(), modelFieldArraySlice.max())
-
     preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArraySlice, modelSimName)
-
-    print ("min max of array after pre-conv: ", preConvertFieldArray.min(), preConvertFieldArray.max())
 
     newModelFieldArray = preConvertFieldArray * \
         float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
-
-    print ("min max of array after conv: ", newModelFieldArray.min(), newModelFieldArray.max())
 
     if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
         tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
@@ -115,23 +108,17 @@ def main():
         + " hPa (" + longName + ") " + dateString
 
 
-
     if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:
-        print ("Calling createTracerContours")
-        print ((modelFieldArray.max() - modelFieldArray.min())/10)
-    #    contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray, step=.5)
         contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(modelFieldArray,
                                                         step=(modelFieldArray.max() - modelFieldArray.min())/10)
-        print (contours)
     else:
         contours = []
         for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
             contours.append(float(contour))
-        print ("Received contours from input file")
 
 
-    print ( "model min/max values: ",  modelFieldArray.min(),modelFieldArray.max())
-    print ( "(max-min)/100: ",  (modelFieldArray.max() - modelFieldArray.min())/10)
+
+    print ("\nmodel min/max values: ",  modelFieldArray.min(),modelFieldArray.max())
 
     modelObject.create2dSliceContours (fig, modelObject.baseMap, modelObject.X_grid,
                                            modelObject.Y_grid, modelFieldArray,

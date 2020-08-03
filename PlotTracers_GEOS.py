@@ -49,7 +49,6 @@ def usage ():
 
 def main():
 
-    print("Start plotting field differences")
 
     NUM_ARGS = 7
 
@@ -113,7 +112,6 @@ def main():
 
     cwd = os.getcwd()
     commands = list()
-    print ('\n', fieldsToCompare, '\n')
 
     for field in fieldsToCompare[:]:
 
