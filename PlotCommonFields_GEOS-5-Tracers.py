@@ -22,15 +22,17 @@ from GeosCtmPlotTools import GeosCtmPlotTools
 from TracerPlotTools import TracerPlotTools
 
 def subproc(cmd):
-    print(" -> processing: ",cmd)
+    name = multiprocessing.current_process().name
+    print(f'Starting {name} ')
     cmds = shlex.split(cmd)
     p = subprocess.Popen(cmds,
               stdout=subprocess.PIPE,
               stderr=subprocess.PIPE,
               universal_newlines=True)
-
     output, errors = p.communicate()
+    print(f'Exiting {name}')
     return output
+
 
 def usage ():
     print("")
@@ -107,17 +109,13 @@ def main():
         if field[0:4] != "Var_":
             fieldsToCompare.append(field)
 
-    print("Fields to compare: ", fieldsToCompare[:])
-    print("GEOS eta levels: ", geosObject1.lev[:])
-
     cwd = os.getcwd()
+    commands = list()
 
-    numTracers = len(tracerTools.tracerDict)
-    print("Num tracers: ", numTracers)
-
-    commands = []
+    print("Setting up : ")
     for field in fieldsToCompare[:]:
 
+        print (field, end=" ")
 
         isFieldThere = field in tracerTools.tracerDict
         if isFieldThere == False:
@@ -127,11 +125,11 @@ def main():
             continue
 
         sliceCommands = []
-        for slice in tracerTools.tracerDict[field].slices:
+        for s in tracerTools.tracerDict[field].slices:
 
             sliceCommands.append("PlotTracerCompareSlice.py -g " +  geosFile1 \
                                      + " -c " + geosFile2 \
-                                     + " -l "  + str(int(slice)) \
+                                     + " -l "  + str(s) \
                                      + " -r " + str(timeRecord) + " -d " + dateYearMonth \
                                      + " -l \"" + tracerTools.tracerDict[field].long_name + "\" " \
                                      + " -k " + keyFile + " -p " + percChangeContours)
@@ -145,12 +143,12 @@ def main():
         for _ in tracerTools.tracerDict[field].slices:
             sysCommand = "python " + cwd + "/" + sliceCommands[sCount] + " -f " + str(field)
             commands.append(sysCommand)
-            sCount = sCount + 1
+            sCount += 1
 
         sysCommandZM =  "python " + cwd + "/" + pythonCommandZM + " -f " + str(field)
         commands.append(sysCommandZM)
 
-    print("Process jobs, please wait...")
+    print("\n\nProcessing jobs...")
     jobs = list()
     for cmd in range(len(commands)):
         p = multiprocessing.Process(target=subproc, args=(commands[cmd],))

@@ -8,11 +8,10 @@
 # DESCRIPTION:
 # This class represents a generic model file and related tools for processing.
 # ------------------------------------------------------------------------------
-import numpy
-from numpy import *
-from netCDF4 import Dataset
-
 import matplotlib
+import numpy as np
+from netCDF4 import Dataset
+import sys
 
 matplotlib.use('pdf')
 
@@ -32,7 +31,7 @@ class GenericModelPlotTools:
     zzmHighLevel = None
 
     def find_nearest(self, array, value):
-        idx = (numpy.abs(array - value)).argmin()
+        idx = (np.abs(array - value)).argmin()
         return array[idx]
 
     def findLevelFromArray(self, array, value):
@@ -42,10 +41,10 @@ class GenericModelPlotTools:
         levCount = 0
         for item in array[:]:
             if item == theValue:
-                returnLev = levCount
-            levCount = levCount + 1
+                break
+            levCount += 1
 
-        return returnLev
+        return levCount
 
     # ---------------------------------------------------------------------------
     # AUTHORS: Megan Damon NASA GSFC
@@ -123,13 +122,13 @@ class GenericModelPlotTools:
 
     def __del__(self):
         self.hdfData.close()
-        pass
 
     # ---------------------------------------------------------------------------
     # AUTHORS: Megan Damon NASA GSFC / SSAI
     #
     # DESCRIPTION:
     # This routine returns pressure levels and inverts them.
+    # CC: NOT USED
     # ---------------------------------------------------------------------------
     def return2DSliceAndConvert(self, field, timeRecord, fileLevel, unitConvert):
 
@@ -146,6 +145,7 @@ class GenericModelPlotTools:
     #
     # DESCRIPTION:
     # This routine returns pressure levels and inverts them.
+    # CC: NOT USED
     # ---------------------------------------------------------------------------
 
     def returnPressureLevels(self):
@@ -168,7 +168,7 @@ class GenericModelPlotTools:
             #          print ("Vertical dimension, lev, is in hPa!")
             #          print ()
 
-            levs1 = zeros(len(self.lev))
+            levs1 = np.zeros(len(self.lev))
 
             count = 0
             for modelLev in self.lev[:]:
@@ -231,7 +231,7 @@ class GenericModelPlotTools:
             #          print("Creating Percent Differences")
             #          print("")
 
-            z_Diff = numpy.zeros((dim1, dim2), numpy.float32)
+            z_Diff = np.zeros((dim1, dim2), np.float32)
 
             for dim1It in range(0, dim1):
                 for dim2It in range(0, dim2):
@@ -295,10 +295,10 @@ class GenericModelPlotTools:
             print("Creating Percent Differences")
             print("")
 
-            z_Diff = numpy.zeros((size(self.lat), size(self.long)), numpy.float32)
+            z_Diff = np.zeros((np.size(self.lat), np.size(self.long)), np.float32)
 
-            for lat in range(0, size(self.lat)):
-                for lon in range(0, size(self.long)):
+            for lat in range(0, np.size(self.lat)):
+                for lon in range(0, np.size(self.long)):
                     absVal = abs(array1[lat, lon] - array2[lat, lon])
                     denVal = (array1[lat, lon] + array2[lat, lon]) / 2.0
                     z_Diff[lat, lon] = (absVal / denVal) * 100.
@@ -315,7 +315,7 @@ class GenericModelPlotTools:
 
             z_Diff = z_Diff * 100.
 
-            # z_Diff = numpy.zeros((size(self.lat),size(self.long)), numpy.float32)
+            # z_Diff = np.zeros((size(self.lat),size(self.long)), np.float32)
 
             # for lat in range(0,size(self.lat)):
             #    for lon in range(0,size(self.long)):
@@ -349,8 +349,8 @@ class GenericModelPlotTools:
 
             print(type(z_Diff))
 
-            for lat in range(0, size(self.lat)):
-                for lon in range(0, size(self.long)):
+            for lat in range(0, np.size(self.lat)):
+                for lon in range(0, np.size(self.long)):
 
                     if array1[lat, lon] == 0.0 and array2[lat, lon] == 0.0:
                         z_Diff[lat, lon] = 1.0
@@ -377,7 +377,7 @@ class GenericModelPlotTools:
         plt.subplot(subplotNum)
 
         print("")
-        print("Shape of field to plot: ", shape(z))
+        print("Shape of field to plot: ", np.shape(z))
         print("")
 
         imSlice = self.baseMap.pcolor(self.X_grid, self.Y_grid, z, \
@@ -392,11 +392,11 @@ class GenericModelPlotTools:
         plt.title(plotTitle)
         plt.axis([self.X_grid.min(), self.X_grid.max(), self.Y_grid.min(), self.Y_grid.max()])
 
-        #      baseMap.drawparallels(numpy.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0])
-        self.baseMap.drawparallels(numpy.arange(self.minLat, self.maxLat, 40), labels=[1, 0, 0, 0])
+        #      baseMap.drawparallels(np.arange(minMaxLat[0],minMaxLat[1],40),labels=[1,0,0,0])
+        self.baseMap.drawparallels(np.arange(self.minLat, self.maxLat, 40), labels=[1, 0, 0, 0])
 
-        #      baseMap.drawmeridians(numpy.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1])
-        self.baseMap.drawmeridians(numpy.arange(self.minLong, self.maxLong, 80), labels=[0, 1, 0, 1])
+        #      baseMap.drawmeridians(np.arange(minMaxLong[0],minMaxLong[1],80),labels=[0,1,0,1])
+        self.baseMap.drawmeridians(np.arange(self.minLong, self.maxLong, 80), labels=[0, 1, 0, 1])
 
         self.baseMap.drawcoastlines()
         self.baseMap.drawstates()
@@ -420,7 +420,7 @@ class GenericModelPlotTools:
         else:
 
             print("Need to create contour levels")
-            clevs = linspace(minVal, maxVal, 10)
+            clevs = np.linspace(minVal, maxVal, 10)
 
         plotTool = PlotTools()
 
@@ -509,8 +509,8 @@ class GenericModelPlotTools:
         plt.title(plotTitle)
         plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])
 
-        baseMap.drawparallels(numpy.arange(minMaxLat[0], minMaxLat[1], 40), labels=[1, 0, 0, 0])
-        baseMap.drawmeridians(numpy.arange(minMaxLong[0], minMaxLong[1], 80), labels=[0, 1, 0, 1])
+        baseMap.drawparallels(np.arange(minMaxLat[0], minMaxLat[1], 40), labels=[1, 0, 0, 0])
+        baseMap.drawmeridians(np.arange(minMaxLong[0], minMaxLong[1], 80), labels=[0, 1, 0, 1])
         baseMap.drawcoastlines()
         baseMap.drawstates()
 
@@ -600,6 +600,7 @@ class GenericModelPlotTools:
 
         return fieldsToCompare
 
+    # CC: NOT USED
     def printMe(self):
 
         print("")
@@ -632,19 +633,19 @@ class GenericModelPlotTools:
             print("")
             print("WARNING!!! Field 1 is 2D")
             print("")
-            slice = fieldArray[:, :]
+            s = fieldArray[:, :]
 
         elif len(fieldArray.shape) == 3:
             modelLev = self.findLevelFromArray(self.lev[:], refPressure)
-            slice = fieldArray[modelLev, :, :]
+            s = fieldArray[modelLev, :, :]
 
         else:
             print("")
             print("Unexpected rank of data!")
             print("")
-            slice = None
+            s = None
 
-        return slice
+        return s
 
     def interpMaskedFieldZM(self, maskedField1, maskedField2, latPoints1, timeRecord, replaceValue=None):
 
@@ -655,10 +656,10 @@ class GenericModelPlotTools:
         maskedField2 = None
         maskedField2 = newMaskedField2
 
-        maskedArray2 = numpy.ma.masked_where(maskedField1.mask == True, maskedField2)
+        maskedArray2 = np.ma.masked_where(maskedField1.mask == True, maskedField2)
 
         maskedField2 = None
-        maskedField2 = numpy.ma.masked_where(maskedArray2 >= realMax, maskedArray2)
+        maskedField2 = np.ma.masked_where(maskedArray2 >= realMax, maskedArray2)
 
         return maskedField2
 
@@ -671,9 +672,9 @@ class GenericModelPlotTools:
         #       print ("")
 
         levCount = 0
-        levPoints = size(fieldArray, 0)
+        levPoints = np.size(fieldArray, 0)
 
-        newFieldArray = numpy.zeros((levPoints, len(latPoints)), numpy.float32)
+        newFieldArray = np.zeros((levPoints, len(latPoints)), np.float32)
 
         for lev in range(0, levPoints):
 
@@ -685,7 +686,7 @@ class GenericModelPlotTools:
 
             #         print("LR min/max: ", latRecords.min(), latRecords.max(), levCount)
 
-            yinterp = numpy.interp(latPoints[:], self.lat[:], latRecords)
+            yinterp = np.interp(latPoints[:], self.lat[:], latRecords)
 
             #         print("yinterp min/max: ", yinterp.min(), yinterp.max(), levCount)
 
@@ -710,10 +711,10 @@ class GenericModelPlotTools:
         maskedField2 = None
         maskedField2 = newMaskedField2
 
-        maskedArray2 = numpy.ma.masked_where(maskedField1.mask == True, maskedField2)
+        maskedArray2 = np.ma.masked_where(maskedField1.mask == True, maskedField2)
 
         maskedField2 = None
-        maskedField2 = numpy.ma.masked_where(maskedArray2 >= realMax, maskedArray2)
+        maskedField2 = np.ma.masked_where(maskedArray2 >= realMax, maskedArray2)
 
         return maskedField2
 
@@ -722,8 +723,8 @@ class GenericModelPlotTools:
         if replaceValue is not None:
             print("Received replace value! = ", replaceValue)
 
-        newFieldArray = numpy.zeros((self.latSize, len(longPoints)), numpy.float32)
-        longRecords = numpy.zeros((self.longSize), numpy.float32)
+        newFieldArray = np.zeros((self.latSize, len(longPoints)), np.float32)
+        longRecords = np.zeros(self.longSize, np.float32)
 
         latCount = 0
         for lat in self.lat[:]:
@@ -736,7 +737,7 @@ class GenericModelPlotTools:
 
             #         print("LR min/max: ", longRecords.min(), longRecords.max(), latCount)
 
-            yinterp = numpy.interp(longPoints[:], self.long[:], longRecords)
+            yinterp = np.interp(longPoints[:], self.long[:], longRecords)
 
             #         print("yinterp min/max: ", yinterp.min(), yinterp.max(), latCount)
 
@@ -744,8 +745,8 @@ class GenericModelPlotTools:
 
             latCount = latCount + 1
 
-        newFieldArrayBoth = numpy.zeros((len(latPoints), len(longPoints)), numpy.float32)
-        latRecords = numpy.zeros(self.latSize, numpy.float32)
+        newFieldArrayBoth = np.zeros((len(latPoints), len(longPoints)), np.float32)
+        latRecords = np.zeros(self.latSize, np.float32)
 
         longCount = 0
         for lon in longPoints[:]:
@@ -756,7 +757,7 @@ class GenericModelPlotTools:
             if replaceValue is not None:
                 latRecords[latRecords >= replaceValue] = 0.0
 
-            yinterp = numpy.interp(latPoints[:], self.lat[:], latRecords)
+            yinterp = np.interp(latPoints[:], self.lat[:], latRecords)
 
             newFieldArrayBoth[:, longCount] = yinterp[:]
 
@@ -768,6 +769,7 @@ class GenericModelPlotTools:
 
         return newFieldArrayBoth
 
+    # CC: NOT USED
     def convertLatLonAltToGMI(self, convertLat, convertLong):
 
         self.lat = self.g_lat * convertLatnnn

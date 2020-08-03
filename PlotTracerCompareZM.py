@@ -200,8 +200,6 @@ def main():
     minValueBoth = zmArray1.min()
     maxValueBoth = zmArray1.max()
 
-    print ("\nMin / max values of both arrays: ", minValueBoth, maxValueBoth)
-
     if zmArray2.min() < minValueBoth:
         minValueBoth = zmArray2.min()
     if zmArray2.max() > maxValueBoth:

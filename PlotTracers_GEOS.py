@@ -22,14 +22,15 @@ from GeosCtmPlotTools import GeosCtmPlotTools
 from TracerPlotTools import TracerPlotTools
 
 def subproc(cmd):
-    print(" -> processing: ",cmd)
+    name = multiprocessing.current_process().name
+    print(f'Starting {name} ')
     cmds = shlex.split(cmd)
     p = subprocess.Popen(cmds,
               stdout=subprocess.PIPE,
               stderr=subprocess.PIPE,
               universal_newlines=True)
-
     output, errors = p.communicate()
+    print(f'Exiting {name}')
     return output
 
 
@@ -99,24 +100,23 @@ def main():
 
     cwd = os.getcwd()
     commands = list()
-    print ('\n', fieldsToCompare, '\n')
 
+    print("Setting up : ")
     for field in fieldsToCompare[:]:
 
-        print ("Setting up : ", field)
+        print (field, end=" ")
 
         if not field in tracerTools.tracerDict:
             continue
 
-        for slice in tracerTools.tracerDict[field].slices:
+        for s in tracerTools.tracerDict[field].slices:
             pythonCommand = "PlotTracerSlice.py -c  " + geosFile \
-                + " -l " + str(int(slice)) \
+                + " -l " + str(s) \
                 + " -r " + str(timeRecord) + " -d " + dateYearMonth \
                 + " -n \"" + tracerTools.tracerDict[field].long_name + "\" " \
                 + " -k " + keyFile
 
             sysCommand = "python " + cwd + "/" + pythonCommand + " -f " + str(field)
-
             commands.append(sysCommand)
 
         pythonCommandZM = "PlotTracerZM.py -g " + geosFile \
@@ -126,7 +126,7 @@ def main():
         sysCommandZM = "python " + cwd + "/" + pythonCommandZM + " -f " + str(field)
         commands.append(sysCommandZM)
             
-    print("Process jobs, please wait...")
+    print("\n\nProcessing jobs...")
     jobs = list()
     for cmd in range(len(commands)):
         p = multiprocessing.Process(target=subproc, args=(commands[cmd],))

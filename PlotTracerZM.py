@@ -11,10 +11,11 @@
 import os
 import sys
 import getopt
-from viz_functions import plotZM
 from numpy import mean
+from viz_functions import plotZM
 
 import matplotlib
+
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
@@ -40,7 +41,6 @@ def usage():
 
 
 def main():
-    print("Start plotting field ZM")
 
     optList, argList = getopt.getopt(sys.argv[1:], 'g:r:d:k:f:')
     if len(optList) != NUM_ARGS:
@@ -75,25 +75,34 @@ def main():
 
     tracerTools = TracerPlotTools(modelObject, keyFile, timeRecord, "ZM")
 
+
     modelFilebs = os.path.basename(modelFile)
     modelSimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
 
-    modelFieldArray = modelObject.returnField(fieldToPlot, timeRecord)  # read bare field
-    preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion(modelFieldArray,
-                                                                             modelSimName)  # pre-convert
+    
+    # read bare field
+    modelFieldArray = modelObject.returnField(fieldToPlot, timeRecord)  
+    preConvertFieldArray = tracerTools.tracerDict[fieldToPlot].preConversion \
+        (modelFieldArray, modelSimName)  # pre-convert
+    # key convert
     newModelFieldArray = preConvertFieldArray * \
-                         float(tracerTools.tracerDict[fieldToPlot].unitConvert)  # key convert
+                         float(tracerTools.tracerDict[fieldToPlot].unitConvert)
+
 
     if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units = tracerTools.tracerDict[fieldToPlot].newUnit
+        tracerTools.tracerDict[fieldToPlot].units = tracerTools.tracerDict\
+            [fieldToPlot].newUnit
 
+    
     modelFieldArray = newModelFieldArray
     newModelFieldArray = None
 
     llIndex = modelObject.findLevelFromArray(modelObject.lev,
-                                             float(tracerTools.tracerDict[fieldToPlot].lowLevel))
+                                             float(tracerTools.tracerDict\
+                                                   [fieldToPlot].lowLevel))
     ulIndex = modelObject.findLevelFromArray(modelObject.lev,
-                                             float(tracerTools.tracerDict[fieldToPlot].highLevel))
+                                             float(tracerTools.tracerDict\
+                                                   [fieldToPlot].highLevel))
 
     zmArray = mean(modelFieldArray[llIndex:ulIndex + 1, :, :], axis=2)
 
@@ -105,20 +114,19 @@ def main():
     plotOpt = {}
 
     plotOpt['title'] = modelSimName + "    " + fieldToPlot + " Zonal Mean " + \
-                       " (" + tracerTools.tracerDict[fieldToPlot].long_name + ") " + str(dateYearMonth)
+                       " (" + tracerTools.tracerDict[fieldToPlot].long_name + \
+                       ") " + str(dateYearMonth)
     plotOpt['units'] = tracerTools.tracerDict[fieldToPlot].units
 
     ax1 = fig.add_subplot(SUB_PLOT_NUM)
 
     if tracerTools.tracerDict[fieldToPlot].zmContours == None:
-        print("Calling createTracerContours")
-        contours = tracerTools.tracerDict[fieldToPlot].createTracerContours(zmArray,
-                    step=(zmArray.max() - zmArray.min()) / 10.)
+        contours = tracerTools.tracerDict[fieldToPlot].createTracerContours \
+            (zmArray,step=(zmArray.max() - zmArray.min()) / 10.)
     else:
         contours = []
         for contour in tracerTools.tracerDict[fieldToPlot].zmContours:
             contours.append(float(contour))
-        print("Received contours from input file")
 
     plotZM(zmArray, modelObject.lat[:], modelObject.lev[llIndex:ulIndex + 1],
            fig, SUB_PLOT_NUM, COLORMAP,
@@ -135,8 +143,6 @@ def main():
     print("")
     print("Plotted zonal mean for: ", fieldToPlot, " to plots/ directory")
     print("")
-
-    print(tracerTools.tracerDict[fieldToPlot].yAxisType)
 
 
 if __name__ == "__main__":
