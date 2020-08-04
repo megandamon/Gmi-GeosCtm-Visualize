@@ -21,6 +21,15 @@ class RadionuclideTracer(GenericTracer):
 
     molWeight = None  # g/mol, float
 
+    preConvert = False
+
+    def testForPreConvert(self, tracerName, modelObject):
+
+        if tracerName in modelObject.hdfData.variables:
+            return (modelObject.hdfData[tracerName].units == "kg kg-1")
+        else:
+            return False
+
     # ---------------------------------------------------------------------------
     # AUTHORS: Megan Damon NASA GSFC 
     #
@@ -36,13 +45,22 @@ class RadionuclideTracer(GenericTracer):
         GenericTracer.__init__(self, tracerName, modelObject, parser,
                                timeRecord, fileLevel)
 
-        if GenericTracer.testForPreConvert(self, modelObject.fileName):
+        if self.testForPreConvert (tracerName, modelObject):
 
-            specificHumidity = modelObject.returnField("QV", timeRecord)
+            print ("\nConverting ", \
+                   tracerName, " from ", modelObject.fileName, " to mol/mol")
+            
+            self.preConvert = True
+
+            if "QV" not in modelObject.hdfData.variables:
+                print ("\nERROR: Specific Humidity (QV) is required for conversions on: ", tracerName)
+                sys.exit(-1)
+            else:
+                specificHumidity = modelObject.returnField ("QV", timeRecord)
 
             if fileLevel == "ZM":
 
-                self.specificHumidity = specificHumidity
+                self.specificHumidity = specificHumidity 
 
             else:
 
@@ -53,14 +71,14 @@ class RadionuclideTracer(GenericTracer):
 
     def preConversion(self, arr, simName, convFac=None, newUnits=None):
 
-        if GenericTracer.testForPreConvert(self, simName):
+        if self.preConvert:
 
             print("")
             print("Converting ", self.tracerName, "  to mol/mol")
             print("")
 
-            convertArray = (arr / (1. - self.specificHumidity)) * \
-                           (self.MOL_WEIGHT_DRY_AIR / self.molWeight)
+            convertArray = (arr/(1.-self.specificHumidity)) * \
+                ((self.MOL_WEIGHT_DRY_AIR)/(self.molWeight))
             self.units = "mol mol-1"
 
         else:

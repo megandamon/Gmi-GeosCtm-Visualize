@@ -1,76 +1,87 @@
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # NASA/GSFC
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # AUTHORS:      Megan Damon
 # AFFILIATION:  NASA GSFC / SSAI
 # DATE:         October 22 2019
 #
 # DESCRIPTION:
 # This class provides functionality for tracer-related operations.
-# ------------------------------------------------------------------------------
-from configparser import ConfigParser
+#------------------------------------------------------------------------------
 
-from AoaBlTracer import AoaBlTracer
+from GenericModelPlotTools import GenericModelPlotTools
 from GenericTracer import GenericTracer
 from RadionuclideTracer import RadionuclideTracer
+from AoaBlTracer import AoaBlTracer
 
+from configparser import ConfigParser
+import json
+import sys
 
 class TracerPlotTools:
 
-    # ---------------------------------------------------------------------------
-    # AUTHORS: Megan Damon NASA GSFC
-    #
-    # DESCRIPTION:
-    # Constructor routine.
-    # ---------------------------------------------------------------------------
 
-    def __init__(self, modelObject, keyFile, timeRecord, fileLevel):
+   #---------------------------------------------------------------------------  
+   # AUTHORS: Megan Damon NASA GSFC 
+   #
+   # DESCRIPTION: 
+   # Constructor routine.
+   #---------------------------------------------------------------------------  
 
-        self.init = True
-        self.tracerDict = {}
-        self.timeRecord = timeRecord
-        self.fileLevel = fileLevel
+   def __init__(self, modelObject, keyFile, timeRecord, fileLevel):
+      
+      self.init = True 
+      self.tracerDict = {}
+      self.timeRecord = timeRecord
+      self.fileLevel = fileLevel
+      
+      if keyFile is not None:
+         self.createTracerDict \
+            (modelObject, keyFile, timeRecord, fileLevel)
 
-        if keyFile is not None:
-            self.createTracerDict \
-                (modelObject, keyFile, timeRecord, fileLevel)
-
-    def createTracerDict(self, modelObject, keyFile,
-                         timeRecord, fileLevel):
-
-        parser = ConfigParser()
-        parser.read(keyFile)
-
-        for tracer in parser.sections():
-
-            tracerName = tracer
-
-            if tracerName.lower() == "aoa_bl":
-
-                self.tracerDict[tracerName] = AoaBlTracer \
-                    (tracerName, modelObject, parser, 'linear', timeRecord, fileLevel)
+      else:
+         print("\nWARNING: keyFile is None. Tracer dict will not be created!")
 
 
-            elif tracerName.lower() == "be7" or tracerName.lower() == "be7s":
+   def createTracerDict (self, modelObject, keyFile, \
+                                           timeRecord, fileLevel):
 
-                self.tracerDict[tracerName] = RadionuclideTracer \
-                    (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 7.)
+      parser = ConfigParser()
+      parser.read(keyFile)
+      
+      for tracer in parser.sections():
 
-            elif tracerName.lower() == "be10" or tracerName.lower() == "be10s":
+         tracerName = tracer
 
-                self.tracerDict[tracerName] = RadionuclideTracer \
-                    (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 10.)
+         if tracerName.lower() == "aoa_bl":
 
-            elif tracerName.lower() == "pb210" or tracerName.lower() == "pb210s":
+            self.tracerDict[tracerName] = AoaBlTracer \
+               (tracerName, modelObject, parser, 'linear', timeRecord,fileLevel)
 
-                self.tracerDict[tracerName] = RadionuclideTracer \
-                    (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 210.)
 
-            elif tracerName.lower() == "rn222":
+         elif tracerName.lower() == "be7" or tracerName.lower() == "be7s":
 
-                self.tracerDict[tracerName] = RadionuclideTracer \
-                    (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 222.)
+            self.tracerDict[tracerName] = RadionuclideTracer \
+               (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 7.)
 
-            else:
-                self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject,
-                                                            parser, timeRecord, fileLevel)
+         elif tracerName.lower() == "be10" or tracerName.lower() == "be10s":
+
+            self.tracerDict[tracerName] = RadionuclideTracer \
+               (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 10.)
+
+         elif tracerName.lower() == "pb210" or tracerName.lower() == "pb210s":
+            
+            self.tracerDict[tracerName] = RadionuclideTracer \
+               (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 210.)
+
+         elif tracerName.lower() == "rn222":
+            
+            self.tracerDict[tracerName] = RadionuclideTracer \
+               (tracerName, modelObject, parser, 'log', timeRecord, fileLevel, 222.)
+
+         else:
+            self.tracerDict[tracerName] = GenericTracer(tracerName, modelObject, \
+                                                        parser, timeRecord,fileLevel)
+            
+
+

@@ -100,16 +100,22 @@ def main():
                                           'lev','time', 'lat',
                                           'lon', 'lev', 'time' )
 
+    model2Object = GeosCtmPlotTools (model2File, 'lat','lon',
+                                     'lev','time', 'lat',
+                                     'lon', 'lev', 'time' )
+
     modelFilebs = os.path.basename(model1File)
     model1SimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
     model1SimName2 = model1SimName.split("_")[0] + "_" + model1SimName.split("_")[1]
     model1SimName = model1SimName2
+    
     modelFilebs = os.path.basename(model2File)
     model2SimName = modelFilebs.split(".")[0] + "-" + modelFilebs.split(".")[1]
     model2SimName2 = model2SimName.split("_")[0] + "_" + model2SimName.split("_")[1]
     model2SimName = model2SimName2
 
-    tracerTools = TracerPlotTools (model1Object, keyFile, timeRecord, fileLevel)
+    tracerTools1 = TracerPlotTools (model1Object, keyFile, timeRecord, fileLevel)
+    tracerTools2 = TracerPlotTools (model2Object, keyFile, timeRecord, fileLevel)
 
     if fieldToPlot not in model1Object.hdfData.variables.keys():
 
@@ -122,39 +128,31 @@ def main():
 
     model1FieldArray = model1Object.returnField (fieldToPlot, timeRecord)
 
-    print (model1FieldArray.shape)
+    model1FieldArraySlice = model1Object.return2DSliceFromRefPressure (model1FieldArray,
+                                                                       fileLevel)
 
-    model1FieldArraySlice = model1Object.return2DSliceFromRefPressure (model1FieldArray, fileLevel)
-
-    print ("2: ", model1FieldArraySlice.shape)
-
-    preConvertFieldArray1 = tracerTools.tracerDict[fieldToPlot].preConversion(model1FieldArraySlice, model1SimName)
-
-    print ("3: ", preConvertFieldArray1.shape)
+    preConvertFieldArray1 = tracerTools1.tracerDict[fieldToPlot].preConversion(model1FieldArraySlice, model1SimName)
 
     newModel1FieldArray = preConvertFieldArray1 * \
-        float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
+        float(tracerTools1.tracerDict[fieldToPlot].unitConvert) # key convert
 
-    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+    if float(tracerTools1.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools1.tracerDict[fieldToPlot].units  = tracerTools1.tracerDict[fieldToPlot].newUnit
 
     model1FieldArray = newModel1FieldArray
     newModel1FieldArray = None
 
-    model2Object = GeosCtmPlotTools (model2File, 'lat','lon',
-                                          'lev','time', 'lat',
-                                          'lon', 'lev', 'time' )
-
     model2FieldArray = model2Object.returnField (fieldToPlot, timeRecord)
-    model2FieldArraySlice = model2Object.return2DSliceFromRefPressure (model2FieldArray, fileLevel)
+    model2FieldArraySlice = model2Object.return2DSliceFromRefPressure (model2FieldArray,
+                                                                       fileLevel)
 
-    preConvertFieldArray2 = tracerTools.tracerDict[fieldToPlot].preConversion(model2FieldArraySlice, model2SimName)
+    preConvertFieldArray2 = tracerTools2.tracerDict[fieldToPlot].preConversion(model2FieldArraySlice, model2SimName)
 
     newModel2DFieldArray = preConvertFieldArray2 * \
-        float(tracerTools.tracerDict[fieldToPlot].unitConvert) # key convert
+        float(tracerTools2.tracerDict[fieldToPlot].unitConvert) # key convert
 
-    if float(tracerTools.tracerDict[fieldToPlot].unitConvert) != 1.:
-        tracerTools.tracerDict[fieldToPlot].units  = tracerTools.tracerDict[fieldToPlot].newUnit
+    if float(tracerTools2.tracerDict[fieldToPlot].unitConvert) != 1.:
+        tracerTools2.tracerDict[fieldToPlot].units  = tracerTools2.tracerDict[fieldToPlot].newUnit
 
     model2FieldArray = newModel2DFieldArray
     newModel2FieldArray = None
@@ -211,26 +209,26 @@ def main():
 
     print("")
     print("min/max value of both models: ", minValueBoth, maxValueBoth)
-    print("Global sum 1 of ", fieldToPlot, " : ", sum(model1FieldArray))
-    print("Global sum 2 of ", fieldToPlot, " : ", sum(model2FieldArray))
     print("")
 
-    if tracerTools.tracerDict[fieldToPlot].units.find("days") != -1:
+    # by now, all the tracers should be in the same units for comparision
+    # so we can reference just tracerTools1 
+    if tracerTools1.tracerDict[fieldToPlot].units.find("days") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("years") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("years") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("kg-1") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("kg-1") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("ppt") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("ppt") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("ppb") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("ppb") != -1:
         analType = "r"
         analString = "ratio"
-    if tracerTools.tracerDict[fieldToPlot].units.find("mol-1") != -1:
+    if tracerTools1.tracerDict[fieldToPlot].units.find("mol-1") != -1:
         analType = "r"
         analString = "ratio"
 
@@ -238,20 +236,19 @@ def main():
     #-----------------------------------------------------#
     # Model  Plotting
 
-    if tracerTools.tracerDict[fieldToPlot].slices[int(fileLevel)] == None:
+    if tracerTools1.tracerDict[fieldToPlot].slices[int(fileLevel)] == None:
 
         step = (maxValueBoth - minValueBoth) / 10.
-        contours = tracerTools.tracerDict[fieldToPlot].createTracerContoursFromMinMax (minValueBoth, maxValueBoth,
-                                                                                       step=float('{:0.2e}'.format(step)))
+        contours = tracerTools1.tracerDict[fieldToPlot].createTracerContoursFromMinMax \
+            (minValueBoth, maxValueBoth, \
+             step=float('{:0.2e}'.format(step)))
     else:
         contours = []
-        for contour in tracerTools.tracerDict[fieldToPlot].slices[fileLevel]:
+        for contour in tracerTools1.tracerDict[fieldToPlot].slices[fileLevel]:
             contours.append(float(contour))
 
     fig = plt.figure(figsize=(20,20))
     modelObject.createPlotObjects()
-
-    print (model1FieldArray.shape)
 
     plotTitle1 = model1SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
         + " hPa  " + dateYearMonth
@@ -263,7 +260,7 @@ def main():
                                        "fuchsia", "darkred",
                                        221,
                                        plotTitle1,
-                                       COLORMAP, tracerTools.tracerDict[fieldToPlot].units,
+                                       COLORMAP, tracerTools1.tracerDict[fieldToPlot].units,
                                        contourLevels=contours)
 
     plotTitle2 = model2SimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
@@ -275,29 +272,20 @@ def main():
                                        [modelObject.long[:].min(), modelObject.long[:].max()],
                                            "fuchsia", "darkred",
                                        222,
-                                       plotTitle2, COLORMAP, tracerTools.tracerDict[fieldToPlot].units,
+                                       plotTitle2, COLORMAP, tracerTools2.tracerDict[fieldToPlot].units,
                                        contourLevels=contours)
 
     analType = "s"
     analString = "diff"
     z_Model = modelObject.createComparisionLatLon(model1FieldArray, model2FieldArray, analType)
 
-    print (z_Model.min(), z_Model.max())
-    print (tracerTools.tracerDict[fieldToPlot].slices)
-    print (tracerTools.tracerDict[fieldToPlot].diffSlices)
+    if tracerTools1.tracerDict[fieldToPlot].diffSlices[fileLevel] == None:
 
-    if tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel] == None:
-
-        diffContourLevels = tracerTools.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
+        diffContourLevels = tracerTools1.tracerDict[fieldToPlot].createDiffContoursFromMinMax(z_Model.min(), z_Model.max())
 
     else:
 
-        diffContourLevels = tracerTools.tracerDict[fieldToPlot].diffSlices[fileLevel]
-
-    print ("")
-    print ("Diff contours: ", diffContourLevels)
-    print ("")
-
+        diffContourLevels = tracerTools1.tracerDict[fieldToPlot].diffSlices[fileLevel]
 
     plotTitle3 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
          + " hPa " + dateYearMonth
@@ -308,7 +296,7 @@ def main():
                                        [modelObject.long[:].min(), modelObject.long[:].max()],
                                            "navy", "darkred",
                                        223,
-                                       plotTitle3, "coolwarm", units=tracerTools.tracerDict[fieldToPlot].units,
+                                       plotTitle3, "coolwarm", units=tracerTools1.tracerDict[fieldToPlot].units,
                                        labelContours=False,
                                        contourLevels=diffContourLevels)
 
@@ -322,15 +310,13 @@ def main():
         percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
 
     else:
-        print ("Create percDiffContours!")
-        percDiffContours = tracerTools.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
+        print ("\nCreating percent difference contours")
+        percDiffContours = tracerTools1.tracerDict[fieldToPlot].createPercChangeContoursFromMinMax\
             (z_Model.min(), z_Model.max())
     #    if percDiffContours [0] < -100.0:
     #        percDiffContours = DEFAULT_PERCHANGE_CONTOURS
 
     percDiffContours =  DEFAULT_PERCHANGE_CONTOURS
-
-    print (percDiffContours)
 
     plotTitle4 = analString + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
          + " hPa " + dateYearMonth
@@ -356,11 +342,6 @@ def main():
         plt.show()
 
     plt.clf()
-
-    print("")
-    print("Plotted slice for : ", fieldToPlot, " to plots/ directory")
-    print("")
-
 
 if __name__ == "__main__":
     main()

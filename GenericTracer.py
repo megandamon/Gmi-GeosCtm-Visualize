@@ -36,8 +36,6 @@ class GenericTracer:
     slices = None
     yAxisType = 'log'
 
-    PRECONVERT_SIMS = ['TR_GOCART', 'cycling', 'bench']
-
     def roundup(self, x):
         return int(np.ceil(x / 10.0)) * 10
 
@@ -88,70 +86,77 @@ class GenericTracer:
                     self.diffSlices[float(slicehPa)] = json.loads \
                         (parser.get(tracerName, entry))
 
-    def returnContoursFromMinMax(self, minVal, maxVal, step):
-        minString = str(minVal)
-        maxString = str(maxVal)
+    def returnContoursFromMinMax (self, minVal, maxVal, step):
+      minString = str(minVal)
+      maxString = str(maxVal)
 
-        if "e" in minString:
+      if "e" in minString:
 
-            minRound = '{:0.2e}'.format(minVal)  # use only two numbers after decimal point
+         minRound = '{:0.2e}'.format(minVal) # use only two numbers after decimal point
+         
+         minLHS = minRound.split('.')[0]
+         minRHS = minRound.split('.')[1]
+         minDec = minRHS.split('e')[0]
+         minExp = minRHS.split('e')[1]
 
-            minLHS = minRound.split('.')[0]
-            minRHS = minRound.split('.')[1]
-            minDec = minRHS.split('e')[0]
-            minExp = minRHS.split('e')[1]
+         decimalMinOrig = (str(minVal).split('.')[1].split('e')[0])
+         if int(minDec[0:2]) > int(decimalMinOrig[0:2]): # check the rounded version
+                                                         # make sure we didn't round up
+            newMinDec = int(minDec) - 1 # round down instead
+            newMin = minLHS + "." + str(newMinDec) + "e" + minExp
+            minContour = float(newMin)
 
-            decimalMinOrig = (str(minVal).split('.')[1].split('e')[0])
-            if int(minDec[0:2]) > int(decimalMinOrig[0:2]):  # check the rounded version
-                # make sure we didn't round up
-                newMinDec = int(minDec) - 1  # round down instead
-                newMin = minLHS + "." + str(newMinDec) + "e" + minExp
-                minContour = float(newMin)
+         else:
+            minContour = float(minRound)
 
-            else:
-                minContour = float(minRound)
+      else: 
+         minContour = floor(minVal*100)/100
+         minContour = round(minContour, 2)
 
-        else:
-            minContour = np.floor(minVal * 100) / 100
-            minContour = round(minContour, 2)
+         
+      if "e" in maxString:
+         
+         maxRound = '{:0.2e}'.format(maxVal) # use only two numbers after decimal point
+         
+         maxLHS = maxRound.split('.')[0]
+         maxRHS = maxRound.split('.')[1]
+         maxDec = maxRHS.split('e')[0]
+         maxExp = maxRHS.split('e')[1]
 
-        if "e" in maxString:
 
-            maxRound = '{:0.2e}'.format(maxVal)  # use only two numbers after decimal point
+         decimalMaxOrig = (str(maxVal).split('.')[1].split('e')[0])
+         floatMaxDec = float("0." + maxDec)
+         floatMaxDecOrig = float("0." + decimalMaxOrig)
 
-            maxLHS = maxRound.split('.')[0]
-            maxRHS = maxRound.split('.')[1]
-            maxDec = maxRHS.split('e')[0]
-            maxExp = maxRHS.split('e')[1]
+         if floatMaxDec < floatMaxDecOrig:
 
-            decimalMaxOrig = (str(maxVal).split('.')[1].split('e')[0])
-            floatMaxDec = float("0." + maxDec)
-            floatMaxDecOrig = float("0." + decimalMaxOrig)
+            floatMaxDec = floatMaxDec + .01
+            newMaxString = maxLHS + "." + str(floatMaxDec).split(".")[1] + "e" + maxExp
+            maxContour = float(newMaxString)
+         else:
+            maxContour =  float(maxRound)
+      
+      else:
+         maxContour = round(maxVal, 2)
+         if maxContour < maxVal:
+            maxContour = maxContour + .01
+            maxContour = round(maxContour, 2)
+         
 
-            if floatMaxDec < floatMaxDecOrig:
 
-                floatMaxDec = floatMaxDec + .01
-                newMaxString = maxLHS + "." + str(floatMaxDec).split(".")[1] + "e" + maxExp
-                maxContour = float(newMaxString)
-            else:
-                maxContour = float(maxRound)
+      contours = arange(minContour,maxContour, step) 
 
-        else:
-            maxContour = round(maxVal, 2)
-            if maxContour < maxVal:
-                maxContour = maxContour + .01
-                maxContour = round(maxContour, 2)
 
-        contours = np.arange(minContour, maxContour, step)
+      returnContours = []
+      for contour in contours:
+          returnContours.append(float('{:0.2e}'.format(contour)))
 
-        returnContours = []
-        for contour in contours:
-            returnContours.append(float('{:0.2e}'.format(contour)))
+      if maxContour > float(returnContours[-1]):
+         returnContours.append(maxContour)
 
-        if maxContour > float(returnContours[-1]):
-            returnContours.append(maxContour)
+      
+      return returnContours
 
-        return returnContours
 
     def createPercChangeContoursFromMinMax(self, minVal, maxVal):
 
