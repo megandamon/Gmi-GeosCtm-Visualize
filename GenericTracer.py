@@ -39,13 +39,6 @@ class GenericTracer:
     def roundup(self, x):
         return int(np.ceil(x / 10.0)) * 10
 
-    def testForPreConvert(self, string):
-
-        for sim in self.PRECONVERT_SIMS:
-            if sim in string:
-                return True
-
-        return False
 
         # ---------------------------------------------------------------------------
 
