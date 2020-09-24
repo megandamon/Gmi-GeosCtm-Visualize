@@ -75,7 +75,7 @@ if len (optList) != NUM_ARGS:
 geosCtmFile1 = optList[0][1]
 geosCtmFile2 = optList[1][1]
 timeRecord = int(optList[2][1])
-dateYearMonth = optList[3][1]
+modelDate = optList[3][1]
 fieldToCompare = optList[4][1]
 
 #---------------------------------------------------------------
@@ -99,9 +99,6 @@ if int(timeRecord) < 0:
     print("ERROR: time record needs to be positive!")
     sys.exit(0)
 
-if len(dateYearMonth) != 6:
-    print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
-    sys.exit(0)
 
 
 print("")
@@ -243,7 +240,7 @@ else:
 z_GeosCtm1 = geosCtmFieldArray1[:, :] 
 z_GeosCtm2 = geosCtmFieldArray2[:, :]
     
-z_Diff = z_GeosCtm1 / z_GeosCtm2
+z_Diff = z_GeosCtm1 - z_GeosCtm2
 
 
 minValueOfBoth = z_GeosCtm1.min()
@@ -263,13 +260,12 @@ print(shape(z_GeosCtm1))
 print(shape(z_GeosCtm2))
 print(shape(z_Diff))
 
+#for lat in range(0, size(geosCtmObject1.lat)):
+#    for int in range(0, size(geosCtmObject1.long)):
 
-for lat in range(0, size(geosCtmObject1.lat)):
-    for int in range(0, size(geosCtmObject1.long)):
-
-        if z_GeosCtm1[lat, int] == 0 and z_GeosCtm2[lat, int] == 0:
-            #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
-            z_Diff[lat, int] = 1.0
+#        if z_GeosCtm1[lat, int] == 0 and z_GeosCtm2[lat, int] == 0:
+#            #print "Setting 0/0 to 1 in difference array at: [", long, ",", lat,"]"
+#            z_Diff[lat, int] = 1.0
 
 
 
@@ -307,20 +303,21 @@ geosCtmObject2.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm2, 
     
 
 
-geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, \
-                                  #[z_Diff.min(), z_Diff.max()], \
-                                  [0, 1.5], \
-                                  [minGeosCtmLat,maxGeosCtmLat], \
-                                  [minGeosCtmLong, maxGeosCtmLong], 313, \
-                                  "Model ratio " + fieldToCompare, "nipy_spectral", \
-                                  normalize=True)
+geosCtmObject1.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Diff, [-2.,2], \
+                              #[z_Diff.min(), z_Diff.max()], \
+                              #[0, 1.5], \
+                              [minGeosCtmLat,maxGeosCtmLat], \
+                              [minGeosCtmLong, maxGeosCtmLong], 313, \
+                              "DIFF " + fieldToCompare, "BrBG", \
+                              #                              "Model ratio " + fieldToCompare, "nipy_spectral", \
+                              normalize=True)
     #-----------------------------------------------------#
 
 
 
 file = "f"
 if file == "f":
-    plt.savefig("plots/" + fieldToCompare + ".inter.GEOS-CTM."
+    plt.savefig("plots/" + fieldToCompare + ".GEOS-CF."
                 , bbox_inches='tight')
 elif file == "s":
     plt.show()

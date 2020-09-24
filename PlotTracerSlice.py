@@ -68,13 +68,16 @@ def main():
         print("ERROR: time record needs to be positive!")
         sys.exit(0)
 
-    if len(dateString) != 6 and len(dateString) != 4:
+    if len(dateString) != 6 and len(dateString) != 4 and len(dateString) != 8:
         print("ERROR date must be in the format YYYYMM. Received: ", dateString, len(dateString))
         sys.exit(0)
 
     if not os.path.exists (keyFile):
         print("The file you provided does not exist: ", keyFile)
         sys.exit(0)
+
+
+    checkFor2D = None
 
     modelObject = GeosCtmPlotTools (modelFile, 'lat','lon',
                                           'lev','time', 'lat',
@@ -85,7 +88,7 @@ def main():
 
     tracerTools = TracerPlotTools (modelObject, keyFile, timeRecord, fileLevel)
     modelFieldArray = modelObject.returnField (fieldToPlot, timeRecord) # read bare field
-    modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel)
+    modelFieldArraySlice = modelObject.return2DSliceFromRefPressure (modelFieldArray, fileLevel, checkFor2D)
 
     print ("min max of array: ", modelFieldArraySlice.min(), modelFieldArraySlice.max())
 
@@ -105,15 +108,21 @@ def main():
     newModelFieldArray = None
 
 
+    longName = tracerTools.tracerDict[fieldToPlot].long_name
+
     #-----------------------------------------------------#
     # Model  Plotting
 
     fig = plt.figure(figsize=(20,20))
 
     modelObject.createPlotObjects()
-    plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
-        + " hPa (" + longName + ") " + dateString
 
+    if checkFor2D == False: 
+        plotTitle = modelSimName + "     " + fieldToPlot + " @ " + str(int(fileLevel)) \
+            + " hPa (" + longName + ") " + dateString
+    else: 
+        plotTitle = modelSimName + "     " + fieldToPlot \
+            + " hPa (" + longName + ") " + dateString
 
 
     if tracerTools.tracerDict[fieldToPlot].slices[fileLevel] == None:

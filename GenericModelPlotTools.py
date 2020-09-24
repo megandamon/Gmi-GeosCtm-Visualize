@@ -306,36 +306,33 @@ class GenericModelPlotTools:
 
         elif analType == "c":
 
-            #          print("")
-            #          print("Creating percent change")
-            #          print("")
+            print("")
+            print("Creating percent change...")
+            print("")
 
             num = array1 - array2
             z_Diff = (num / array2)
-
             z_Diff = z_Diff * 100.
 
-            # z_Diff = np.zeros((size(self.lat),size(self.long)), np.float32)
+            for lat in range(0,len(self.lat)):
+                for lon in range(0,len(self.long)):
 
-            # for lat in range(0,size(self.lat)):
-            #    for lon in range(0,size(self.long)):
-
-            #       if array1[lat,lon] == 0. and array2[lat,lon] == 0.:
-            #          z_Diff[lat,lon] == 0.
-            #       else:
-            #          num = array1[lat,lon] - array2[lat,lon]
-            #          z_Diff[lat,lon] = (num / array2[lat,lon])
-            #          z_Diff[lat,lon] = z_Diff[lat,lon] * 100.
+                   if array1[lat,lon] == 0. and array2[lat,lon] == 0.:
+                       z_Diff[lat,lon] == 0.
 
 
 
         # User requested absolute difference
         elif analType == "s":
 
-            #          print("")
-            #          print("Creating Absolute Differences")
-            #          print("")
+            print("")
+            print("Creating Absolute Differences")
+            print("")
 
+            print ("\nMin max of array1: ", array1.min(), array1.max())
+            print ("Min max of array2: ", array2.min(), array2.max())
+
+            
             z_Diff = array1 - array2
 
 
@@ -627,17 +624,19 @@ class GenericModelPlotTools:
         print("***************************************")
         print("")
 
-    def return2DSliceFromRefPressure(self, fieldArray, refPressure):
+    def return2DSliceFromRefPressure(self, fieldArray, refPressure, checkFor2D=False):
 
         if len(fieldArray.shape) == 2:
             print("")
             print("WARNING!!! Field 1 is 2D")
             print("")
             s = fieldArray[:, :]
+            checkFor2D = True
 
         elif len(fieldArray.shape) == 3:
             modelLev = self.findLevelFromArray(self.lev[:], refPressure)
             s = fieldArray[modelLev, :, :]
+            checkFor2D = False
 
         else:
             print("")

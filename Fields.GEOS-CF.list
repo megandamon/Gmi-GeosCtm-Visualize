@@ -1,0 +1,164 @@
+[Q]
+long_name = Specific humidity
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1
+unitname = kg kg-1
+diffColorMap = BrBG
+diffMin = #341c02
+diffMax = #062e03
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [0.0001, 0.0003, 0.0005, 0.001, 0.0025, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+diffslice_36 = [-10e-2,-10e-3,-10e-4,-10e-5,-10e-6,10e-6,10e-5,10e-4,10e-3,10e-2]
+
+[T]
+long_name = Air temperature
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1
+unitname = K
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [210,225,235,245,255,270,280,290,295,300,305,310,315]
+diffslice_36 = [-5.0,-2.5,-1.25,-0.75,-0.5,-0.25,-0.1,0.1,0.25,0.5,0.75,1.25,2.5,5.0]
+
+
+[PM25_RH35_GCC]
+long_name = Particulate matter
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1.0
+unitname = ug m-3
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [0.2,0.4,0.6,0.8,1.0,2.0,4.0,6.0,8.0,10.0,50.0,100.0,250.0,500.0]
+diffslice_36 = [-100.0,-50.0,-10.0,-5.0,-1.0,-0.1,-0.01,0.01,0.1,1.0,5.0,10.0,50.0,100]
+slice_1 = [0.2,0.4,0.6,0.8,1.0,2.0,4.0,6.0,8.0,10.0,50.0,100.0,250.0,500.0]
+diffslice_1 = [-100.0,-50.0,-10.0,-5.0,-1.0,-0.1,-0.01,0.01,0.1,1.0,5.0,10.0,50.0,100.0]
+
+[SO2]
+long_name = Sulfur dioxide
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1000000000.0
+unitname = ppb
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [0.015,0.055,0.1,1.0,2.0,3.0,4.0,5.0,10.0,20.0,40.0]
+diffslice_36 = [-10.0,-8.0,-6.0,-4.0,-2.0,-1.0,-0.1,-0.01,0.01,0.1,1.0,2.0,4.0,6.0,8.0,10.0]
+
+[NO2]
+long_name = Nitrogen dioxide
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1000000000.0
+unitname = ppb
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [0.001,0.01,0.1,1.0,2.5,5.0,10.0,20.0,30.0,40.0,50.0]
+diffslice_36 = [-10.0,-5.0,-1.0,-0.00001,0.00001,1.0,5.0,10.0]
+
+
+[CO]
+long_name = Carbon monoxide
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1000000000.0
+unitname = ppb
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [50,52,54,56,58,60,65,70,80,90,100,110,150,200,300]
+diffslice_36 = [-90,-50,-25,-20,-15,-10,-5,-2,-1,1,2,5,10,15,20,25,50,90]
+
+
+[TOTCOL_O3]
+long_name = Ozone total column density
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1
+unitname = dobsons
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_1 = [180,220,240,260,280,300,320,340,360,380,400,420,440]
+diffslice_1 = [-20,-16,-12,-8,-4,4,8,12,16,20]
+
+
+[O3]
+long_name = Ozone
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 1000000000.0
+unitname = ppb
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_36 = [0.0,12.0,24.0,28.0,32.0,36.0,40.0,44.0,50.0,60.0,70.0,80.0,90.0,100.0]
+diffslice_36 = [-25,-20,-15,-10,-8,-6,-4,-3,-2,-1,1,2,3,4,6,8,10,15,20,25]
+slice_1 = [0.0,12.0,24.0,28.0,32.0,36.0,40.0,44.0,50.0,60.0,70.0,80.0,90.0,100.0]
+diffslice_1 = [-25,-20,-15,-10,-8,-6,-4,-3,-2,-1,1,2,3,4,6,8,10,15,20,25]
+
+
+[TROPPB]
+long_name = Tropopause pressure based on blended estimate
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = .01
+unitname = hPa
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_1000 = [80.0, 90.0, 100.0, 110.0, 120.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 400.0, 500.0, 600.0]
+diffslice_1000 = [-30.0,-20.0,-15.0,-10.0,-8.0,-4.0,-2.0,-1.0,1.0,2.0,4.0,8.0,10.0,15.0,20.0,30.0]
+
+[SLP]
+long_name = Sea level pressure
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = .01
+unitname = hPa
+diffColorMap = coolwarm
+diffMin = navy
+diffMax = darkred
+zmcontours = []
+zmdiffcontours = []
+slice_1000 = [950, 960, 970, 980, 1000, 1010, 1020, 1030, 1040]
+diffslice_1000 = [-3.5,-2.5,-1.5,-0.5,-0.25,0.25,0.5,1.5,2.5,3.5]
+
+
+[TPREC]
+long_name = Total Precipitation
+zmlowlevel = None
+zmhighlevel = None
+unitconversion = 86400
+unitname = kg m-2 d-1
+diffColorMap = BrBG
+diffMin = #341c02
+diffMax = #062e03
+zmcontours = []
+zmdiffcontours = []
+slice_1 = [0.0,0.1,1.0,5.0,10.0,50.0,100.0,150.0,200.0,300.0,400.0,500.0,600.0,700.0,800.0]
+diffslice_1 = [-400.0,-200.0,-100.0,-50.0,-10.0,-1.0,-0.5,-0.1,-0.001,0.001,0.1,0.5,1.0,10.0,50.0,100.0,200.0,400.0]
+

@@ -35,6 +35,9 @@ class GenericTracer:
     zmContours = None
     slices = None
     yAxisType = 'log'
+    diffColorMap = None
+    diffMin = None
+    diffMax = None
 
     def roundup(self, x):
         return int(np.ceil(x / 10.0)) * 10
@@ -55,6 +58,9 @@ class GenericTracer:
         self.highLevel = parser.get(tracerName, 'zmhighlevel')
         self.unitConvert = parser.get(tracerName, 'unitconversion')
         self.newUnit = parser.get(tracerName, 'unitname')
+        self.diffColorMap = parser.get(tracerName, 'diffColorMap')
+        self.diffMin = parser.get(tracerName, 'diffMin')
+        self.diffMax= parser.get(tracerName, 'diffMax')
         self.zmContours = json.loads(parser.get(tracerName, "zmcontours"))
         self.z_zm = json.loads(parser.get(tracerName, "zmdiffcontours"))
 

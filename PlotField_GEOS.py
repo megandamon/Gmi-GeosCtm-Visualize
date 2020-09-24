@@ -49,6 +49,7 @@ sys.path.append('/discover/nobackup/mrdamon/MERRA2')
 from GeosCtmPlotTools import GeosCtmPlotTools
 from GenericModelPlotTools import GenericModelPlotTools
 
+DATA_COLORMAP = "Oranges"
 
 NUM_ARGS = 5
 def usage ():
@@ -228,6 +229,9 @@ print("")
 geosFieldArray1 = geosObject1.returnField (fieldToCompare, timeRecord)
 geosFieldArray2 = geosObject2.returnField (fieldToCompare, timeRecord)
 
+units = geosObject1.hdfData.variables[fieldToCompare].getncattr('units')
+
+
 found2DArray = False
 for modelLev in modelLevsToPlot:
         
@@ -268,7 +272,7 @@ for modelLev in modelLevsToPlot:
 
 
 
-    z_Diff = z_Geos1 / z_Geos2
+    z_Diff = z_Geos1 - z_Geos2
 
     minValueOfBoth = z_Geos1.min()
     maxValueOfBoth = z_Geos1.max()
@@ -300,37 +304,43 @@ for modelLev in modelLevsToPlot:
     print("\nGEOS 1 min/max: ", z_Geos1.min(), " / ", z_Geos1.max())
 
     geosObject1.create2dSlice (baseMapGeos, X_Geos, Y_Geos, z_Geos1, \
-                                      #[z_Geos1.min(),z_Geos1.max()], \
-                                      [minValueOfBoth,maxValueOfBoth], \
-                                      [minGeosLat,maxGeosLat], \
-                                      [minGeosLong, maxGeosLong], 311, \
-                                      "GEOS " + geosSimName1 + " " + \
-                                      fieldToCompare + " @ " + str(modelLev) + \
-                                      "lev " + geosObject1.DATE, "jet")
+                               #[z_Geos1.min(),z_Geos1.max()], \
+                               #[minValueOfBoth,maxValueOfBoth], \
+                               [minValueOfBoth,50.], \
+                               [minGeosLat,maxGeosLat], \
+                               [minGeosLong, maxGeosLong], 311, \
+                               "GEOS " + geosSimName1 + " " + \
+                               fieldToCompare + " @ " + str(modelLev) + \
+                               "lev " + geosObject1.DATE + " " + units, \
+                               DATA_COLORMAP)
 
     print("\nGEOS 2: min/max", z_Geos2.min(), " / ", z_Geos2.max())
 
     geosObject2.create2dSlice (baseMapGeos, X_Geos, Y_Geos, z_Geos2, \
-                                      #[z_Geos2.min(),z_Geos2.max()], \
-                                      [minValueOfBoth,maxValueOfBoth], \
-                                      [minGeosLat,maxGeosLat], \
-                                      [minGeosLong, maxGeosLong], 312, \
-                                      "GEOS " + geosSimName2 + " " + \
-                                      fieldToCompare + " @ " + str(modelLev) + \
-                                      "lev " + geosObject2.DATE, "jet")
+                               #[z_Geos2.min(),z_Geos2.max()], \
+                               #[minValueOfBoth,maxValueOfBoth], \
+                               [minValueOfBoth,50.], \
+                               [minGeosLat,maxGeosLat], \
+                               [minGeosLong, maxGeosLong], 312, \
+                               "GEOS " + geosSimName2 + " " + \
+                               fieldToCompare + " @ " + str(modelLev) + \
+                               "lev " + geosObject2.DATE + " " + units, \
+                               DATA_COLORMAP) 
     
 
     print("\ndiff min/max", z_Diff.min(), " / ", z_Diff.max())
 
     geosObject1.create2dSlice (baseMapGeos, X_Geos, Y_Geos, z_Diff, \
-                                      #[z_Diff.min(), z_Diff.max()], \
-                                      [0, 1.5], \
-                                      [minGeosLat,maxGeosLat], \
-                                      [minGeosLong, maxGeosLong], 313, \
-                                      "Model ratio " + fieldToCompare + " @ " + str(modelLev) + \
-                                      " lev ", \
-                                      "nipy_spectral", \
-                                      normalize=True)
+                               #[z_Diff.min(), z_Diff.max()], \
+                               #[0, 1.5], \
+                               [-50,50], \
+                               [minGeosLat,maxGeosLat], \
+                               [minGeosLong, maxGeosLong], 313, \
+                               "DIFF " + fieldToCompare + " @ " + str(modelLev) + \
+                               " lev ", \
+                               "bwr", \
+                               #"nipy_spectral", \
+                               normalize=True)
     #-----------------------------------------------------#
 
 

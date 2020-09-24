@@ -224,7 +224,7 @@ procCount = 0
 nodeCount = 0
 
 #geosCtmFile1, geosCtmFile2, timeRecord, dateYearMonth
-pythonCommand = "PlotField_GEOS-CTM.py -c  " + geosCtmFile1 \
+pythonCommand = "PlotField_GEOS.py -c  " + geosCtmFile1 \
     + " -g " + geosCtmFile2 + " -r " + str(timeRecord) + " -d " + dateYearMonth + " -f "
 
 for field in fieldsToCompare[:]:
@@ -268,6 +268,7 @@ print("")
 for command in commands[:]:
     print(command)
 print("")
+
 
 
 pool = multiprocessing.Pool(processes=len(commands))
