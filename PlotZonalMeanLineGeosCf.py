@@ -249,7 +249,7 @@ def main():
     if file == "f":
         plt.savefig("plots/" + readField + "-" + \
                     expName1 + "_" + expName2 + \
-                    "_" + fileName + ".", \
+                    "_" + fileName + ".2D.", \
                     bbox_inches='tight')
     elif file == "s":
         plt.show()

@@ -57,48 +57,52 @@ class GenericModelPlotTools:
                  latVar, lonVar, levVar, timeVar):
 
         self.fileName = fileName
-        self.hdfData = Dataset(self.fileName, "r", format="NETCDF4")
 
-        self.dateTime = None
+        with Dataset(self.fileName, "r", format="NETCDF4") as self.hdfData:
 
-        self.latSize = len(self.hdfData.dimensions[latDim])
-        self.longSize = len(self.hdfData.dimensions[lonDim])
-        self.levelSize = len(self.hdfData.dimensions[levDim])
+            self.dateTime = None
 
-        ncDims = [dim for dim in self.hdfData.dimensions]  # list of nc dimensions
-        if timeDim in ncDims[:]:
-            self.timeLength = len(self.hdfData.dimensions[timeDim])
-            self.time = self.hdfData.variables[timeVar]
-            self.timeVarName = timeVar
-        else:
-            self.timeLength = 1
-            self.time = None
-            self.timeVarName = None
+            self.latSize = len(self.hdfData.dimensions[latDim])
+            self.longSize = len(self.hdfData.dimensions[lonDim])
+            self.levelSize = len(self.hdfData.dimensions[levDim])
 
-        self.lat = self.hdfData.variables[latVar]
-        self.long = self.hdfData.variables[lonVar]
-        self.lev = self.hdfData.variables[levVar]
+            ncDims = [dim for dim in self.hdfData.dimensions]  # list of nc dimensions
+            if timeDim in ncDims[:]:
+                self.timeLength = len(self.hdfData.dimensions[timeDim])
+                self.time = self.hdfData.variables[timeVar][:]
+                self.timeVarName = timeVar
+            else:
+                self.timeLength = 1
+                self.time = None
+                self.timeVarName = None
 
-        self.latVarName = latVar
-        self.longVarName = lonVar
-        self.levVarName = levVar
+            self.lat = self.hdfData.variables[latVar][:]
+            self.long = self.hdfData.variables[lonVar][:]
+            self.lev = self.hdfData.variables[levVar][:]
 
-        self.minLat = self.lat[:].min()
-        self.maxLat = self.lat[:].max()
-        self.minLong = self.long[:].min()
-        self.maxLong = self.long[:].max()
+            self.latVarName = latVar
+            self.longVarName = lonVar
+            self.levVarName = levVar
 
-        self.cenLat = (self.minLat + self.maxLat) / 2.
-        self.cenLong = (self.minLong + self.maxLong) / 2.
+            self.minLat = self.lat[:].min()
+            self.maxLat = self.lat[:].max()
+            self.minLong = self.long[:].min()
+            self.maxLong = self.long[:].max()
 
-        # User must call "createPlotObjects" to create these
-        self.baseMap = None
-        self.gridLons = None
-        self.gridLats = None
-        self.X_grid = None
-        self.Y_grid = None
+            self.cenLat = (self.minLat + self.maxLat) / 2.
+            self.cenLong = (self.minLong + self.maxLong) / 2.
 
-        self.populateFieldList()
+            # User must call "createPlotObjects" to create these
+            self.baseMap = None
+            self.gridLons = None
+            self.gridLats = None
+            self.X_grid = None
+            self.Y_grid = None
+
+            self.populateFieldList()
+
+
+            
 
     def createPlotObjects(self):
 
@@ -121,7 +125,8 @@ class GenericModelPlotTools:
     # ---------------------------------------------------------------------------
 
     def __del__(self):
-        self.hdfData.close()
+        print ("GenericModelPlotTols __del__ called")
+        pass
 
     # ---------------------------------------------------------------------------
     # AUTHORS: Megan Damon NASA GSFC / SSAI
@@ -421,27 +426,34 @@ class GenericModelPlotTools:
 
         plotTool = PlotTools()
 
-        print(clevs)
+        # clean up clevs, newClevs should be in int/float (numerical)
         newClevs = plotTool.returnFormattedContours(clevs)
-
         clevs = None
         clevs = newClevs
-        print("clevs after formatting: ", clevs)
+        
 
         # map contour values to colors
         norm = colors.BoundaryNorm(clevs, ncolors=256, clip=False)
 
         contourFormat = plotTool.returnContourFormatFromLevels(clevs)
+
+        print ("\ncontourFormat needed: ", contourFormat)
+        
         cLabelSize = plotTool.returnContourLabelFromSubPlotNum(subplotNum)
 
         extendValue = "both"
         if clevs[0] == 0:
-            #         print ("first contour is 0")
             extendValue = "max"
+
+
+        # converts clevs to strings, some to sci notation
+        # depending on criteria in routine
+        # returns dictionary (clabel will accept this format)
+        fmtDict = plotTool.returnContourLabelDictFromLevels(clevs)
 
         CS = plt.contour(X_model, Y_model, z, levels=clevs, cmap=colorMap, extend=extendValue, norm=norm)
         if labelContours:
-            plt.clabel(CS, inline=1, colors="black", fmt=contourFormat, fontsize=cLabelSize)
+            plt.clabel(CS, inline=1, colors="black", fmt=fmtDict, fontsize=cLabelSize)
 
         CF = plt.contourf(X_model, Y_model, z, levels=clevs, norm=norm, cmap=colorMap, extend=extendValue)
 
@@ -458,6 +470,11 @@ class GenericModelPlotTools:
         cbar = fig.colorbar(CF, ax=axPlot, orientation=orientation, pad=pad, fraction=fraction, \
                             format=contourFormat, ticks=clevs)
 
+        # fmtDict has the labels as strings, with the optimized formatting
+        # to conserve space
+        plotTool.reviseTickLabelsFromFormats(cbar,fmtDict)
+
+
         if units is not None:
             cbar.set_label(label=units, size=16)
 
@@ -466,8 +483,6 @@ class GenericModelPlotTools:
 
         for t in cbar.ax.get_xticklabels():
             t.set_fontsize(fontSize)
-
-        plotTool.reviseTickLabels(cbar)
 
         plt.title(plotTitle, fontsize=titleFontSize)
         plt.axis([X_model.min(), X_model.max(), Y_model.min(), Y_model.max()])

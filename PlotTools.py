@@ -12,8 +12,15 @@
 # tools. 
 #------------------------------------------------------------------------------
 import decimal
+from decimal import Decimal
 import matplotlib
 matplotlib.use('pdf')
+import math
+
+import sys
+
+import random
+
 
 
 class PlotTools:
@@ -37,6 +44,26 @@ class PlotTools:
    #---------------------------------------------------------------------------    
    def __del__(self):
       pass
+
+
+   def reviseTickLabelsFromFormats (self, cbar, fmtDict):
+
+
+      count = 0
+      labels = [item.get_text() for item in cbar.ax.get_xticklabels()]
+
+
+      for key in fmtDict:
+
+         value = fmtDict[key]
+         label = labels[count]
+         strLabel = str(label)
+
+         labels[count] = value
+         count = count + 1
+         
+                
+      cbar.ax.set_xticklabels(labels)
 
 
    def reviseTickLabels (self, cbar):
@@ -149,6 +176,26 @@ class PlotTools:
 
 
 
+   def formatNumber (self, num):
+      try:
+         dec = decimal.Decimal(num)
+      except:
+         return 'bad'
+      tup = dec.as_tuple()
+      delta = len(tup.digits) + tup.exponent
+      digits = ''.join(str(d) for d in tup.digits)
+      if delta <= 0:
+         zeros = abs(tup.exponent) - len(tup.digits)
+         val = '0.' + ('0'*zeros) + digits
+      else:
+         val = digits[:delta] + ('0'*tup.exponent) + '.' + digits[delta:]
+      val = val.rstrip('0')
+      if val[-1] == '.':
+         val = val[:-1]
+      if tup.sign:
+         return '-' + val
+      return val
+
 
    #---------------------------------------------------------------------------  
    # AUTHORS: Megan Damon NASA GSFC 
@@ -165,18 +212,28 @@ class PlotTools:
 
          if "." in strLev:
             rhs = strLev.split(".")[1]
+
+
             
             if "e" in rhs or "E" in rhs: 
+               newLev = lev
                newClevs.append(lev)
 
             elif int(rhs) == 0:
-                newClevs.append(int(float(strLev)))
+               newLev = int(float(strLev))
+               newClevs.append(newLev)
+
 
             else:
+               newLev = lev
                newClevs.append(lev)
 
+
+
          else:
+            newLev = lev
             newClevs.append(lev)
+
 
       return newClevs
 
@@ -331,6 +388,46 @@ class PlotTools:
 
       return newClevs
 
+   def returnContourLabelDictFromLevels (self, levels):
+
+      fmtDict = {}
+
+      for lev in levels:
+
+         if isinstance(lev, int):
+            fmtDict [lev] = str(lev)
+
+         elif isinstance(lev, float):
+
+            
+            # determine order
+            # if conditions are met, will
+            # change to sci notation
+            oLev = math.floor(math.log10(abs(lev)))
+            
+            if oLev < -2 or oLev > 4:
+               
+               print ("\nChange level ", lev, " to sci notation")
+
+               tempVar = "{:e}".format(lev)
+               splitString = tempVar.split("e")
+               numString = splitString[0].strip("0")
+               expString = splitString[1].strip("0")
+               expString2 = str(int(expString))
+               
+               newLev = numString + "e" + expString2
+               
+               fmtDict [lev] = newLev
+            else:
+               fmtDict [lev] = str(lev)
+
+                      
+         else:
+            print ("\nERROR: label: ", lev, " is of unsupported type!")
+
+      return fmtDict
+
+
    def returnContourFormatFromLevels (self, levels):
 
       digitsList = []
@@ -347,12 +444,18 @@ class PlotTools:
 
             numSciFormat = numSciFormat + 1
 
-            #print ("found e number")
+            print ("found e number")
 
             if "e" in clevsString or "E" in clevsString:
-               pres = abs(int(clevsString.split('e')[1]))
-               if "E" in str(pres):
-                  pres = abs(int(clevsString.split('E')[1]))
+
+               splitClevString = clevsString.split('e')
+
+               if len(splitClevString) == 1:
+                      splitClevString = clevsString.split('E')
+                      
+               #print (splitClevString, len(splitClevString))                      
+               
+               pres = abs(int(splitClevString[1]))
 
                #print ('pres: ', pres)
 
@@ -401,6 +504,7 @@ class PlotTools:
       else:
          contourFormat = "%1.1e"
 
-      #print ("contourFormat: ", contourFormat)
+      print ("contourFormat: ", contourFormat)
 
+      
       return contourFormat

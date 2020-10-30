@@ -36,12 +36,14 @@ class BasicTools:
       
         return nodesToReturn
 
-    def returnBaseArray (self, array, lev):
+    def returnBaseArray (self, array, lev=None):
         
 
         shapeArray = array.shape
 
         print ("\nIncoming array shape: ", shapeArray)
+        print ("\nlev = ", lev)
+
 
 
         # look for and collection
@@ -75,7 +77,7 @@ class BasicTools:
             array = None
             array= returnArray
 
-        if len(shapeArray) == 3:
+        if len(shapeArray) == 3 and lev != None:
             returnArray = array[lev-1,:,:]
             array = None
             array = returnArray

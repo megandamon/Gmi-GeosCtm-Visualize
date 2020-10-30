@@ -4,6 +4,8 @@
 # Load modules
 # -------------
 
+import sys
+
 import matplotlib
 import matplotlib.pyplot as plt  # pyplot module import
 from matplotlib import colors
@@ -14,20 +16,26 @@ from numpy import linspace, ceil
 from PlotTools import PlotTools
 
 
+"""Create a zonal mean contour plot of one variable
+plotOpt is a dictionary with plotting options:
+'scale_factor': multiply values with this factor before plotting
+'units': a units label for the colorbar
+'levels': use list of values as contour intervals
+'title': a title for the plot
+"""
+
 def plotZM(data, x, y, fig, subplotNum, colorMap, dataMin, dataMax,
-           cmapUnder, cmapOver, yScale='log', plotOpt=None, contourLevels=None):
-    """Create a zonal mean contour plot of one variable
-    plotOpt is a dictionary with plotting options:
-    'scale_factor': multiply values with this factor before plotting
-    'units': a units label for the colorbar
-    'levels': use list of values as contour intervals
-    'title': a title for the plot
-    """
+           cmapUnder, cmapOver, yScale='log', plotOpt=None, contourLevels=None,
+           cLabels=True):
+    
     if plotOpt is None: plotOpt = {}
 
     ax1 = fig.add_subplot(subplotNum)
 
     plotTool = PlotTools()
+
+    # these routines look at the subplot arrangment (subplotNum)
+    # and determine optimal font sizes 
     cLabelFontsize = plotTool.returnContourLabelFromSubPlotNum(subplotNum)
     cTickFontSize = plotTool.returncTickSizeFromSubPlotNum(subplotNum)
     titleFontSize = plotTool.returnTitleFontSizeFromSubPlotNum(subplotNum)
@@ -40,18 +48,28 @@ def plotZM(data, x, y, fig, subplotNum, colorMap, dataMin, dataMax,
     scale_factor = plotOpt.get('scale_factor', 1.0)
     pdata = data * scale_factor
 
-    if not contourLevels:
-        # determine contour levels to be used; linear spacing, 20 levels
-        clevs = plotOpt.get('levels', linspace(dataMin, dataMax, 10))
 
+    # if contourLevels aren't provided, make something up
+    if not contourLevels:
+        # determine contour levels to be used; linear spacing
+        clevs = plotOpt.get('levels', linspace(dataMin, dataMax, 10))
     else:
         clevs = contourLevels
 
+    
+    # clean up clevs, newClevs should be in int/float (numerical)
     newClevs = plotTool.returnFormattedContours(clevs)
-
+    clevs = None
     clevs = newClevs
+
+    # contourFormat gives us an idea of the scale of the idea
+    # should return the format for the amount of decimal points
+    # that is needed to represent the entire colormap values
     contourFormat = plotTool.returnContourFormatFromLevels(clevs)
 
+    print ("\ncontourFormat needed: ", contourFormat)
+
+    # full global map assumed
     ax1.set_xticks([-90, -60, -30, 0, 30, 60, 90])
     ax1.set_xticklabels(["90S", "60S", "30S", "EQ", "30N", "60N", "90N"])
 
@@ -60,11 +78,20 @@ def plotZM(data, x, y, fig, subplotNum, colorMap, dataMin, dataMax,
         extendValue = "max"
 
     # map contour values to colors
-    norm = colors.BoundaryNorm(clevs, ncolors=256, clip=False)
+    norm = colors.BoundaryNorm (clevs, ncolors=256, clip=False)
 
-    # draw the contours with contour labels
-    CS = ax1.contour(x, y, pdata, levels=clevs, cmap=colorMap, extend=extendValue, norm=norm)
-    ax1.clabel(CS, inline=1, fontsize=cLabelFontsize, colors="black", fmt=contourFormat)
+
+    # converts clevs to strings, some to sci notation
+    # depending on criteria in routine
+    # returns dictionary (clabel will accept this format)
+    fmtDict = plotTool.returnContourLabelDictFromLevels(clevs)
+    
+    if cLabels == True:
+        # draw the contours with contour labels
+        CS = ax1.contour(x, y, pdata, levels=clevs, cmap=colorMap, \
+                         extend=extendValue, norm=norm)
+
+        ax1.clabel(CS, inline=1, fontsize=cLabelFontsize, colors="black", fmt=fmtDict)
 
     # draw the (filled) contours
     contour = ax1.contourf(x, y, pdata, levels=clevs, norm=norm, cmap=colorMap,
@@ -76,9 +103,12 @@ def plotZM(data, x, y, fig, subplotNum, colorMap, dataMin, dataMax,
 
     # add a title
     title = plotOpt.get('title', 'Zonal Mean')
-    ax1.set_title(title, fontsize=titleFontSize)  # optional keyword: fontsize="small"
+    ax1.set_title(title, fontsize=titleFontSize)  
 
-    cbar = fig.colorbar(contour, ax=ax1, orientation='horizontal', pad=pad, ticks=clevs, format=contourFormat)
+    # pass contourFormat so that all numbers
+    # in cbar have the decimal representation that is needed
+    cbar = fig.colorbar(contour, ax=ax1, orientation='horizontal', \
+                        pad=pad, ticks=clevs, format=contourFormat)
 
     cbar.set_label(plotOpt.get('units', ''), size=cBarFontSize)
 
@@ -87,7 +117,9 @@ def plotZM(data, x, y, fig, subplotNum, colorMap, dataMin, dataMax,
     for t in cbar.ax.get_xticklabels():
         t.set_fontsize(cTickFontSize)
 
-    plotTool.reviseTickLabels(cbar)
+    # fmtDict has the labels as strings, with the optimized formatting
+    # to conserve space
+    plotTool.reviseTickLabelsFromFormats(cbar,fmtDict)
 
     # change font size of y labels
     ylabels = ax1.get_yticklabels()
@@ -101,11 +133,16 @@ def plotZM(data, x, y, fig, subplotNum, colorMap, dataMin, dataMax,
 
     ax1.tick_params(width=3, length=6)
 
+    yMin = y.min()
+    yMax = y.max()
+    
+    
     # zonal means are latitude versus pressure
     ax1.set_ylabel("Pressure (hPa)", size=18)
     # ax1.set_xlabel ("Latitude", size=16)
 
-    # all tracers are assumed to at least go to 100
+    # all data are assumed to at least go to 100 hPa
+    # and start at 1000 hPa
     yRanges = [1000, 700, 500, 300, 200, 100]
 
     if y.min() <= 10.0:
