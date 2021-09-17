@@ -200,10 +200,6 @@ if len(dateYearMonth) != 6:
     print("ERROR date must be in the format YYYYMM. Received: ", dateYearMonth)
     sys.exit(0)
 
-if analType != "r" and analType != "d" and analType != "s":
-    print("ERROR: analysis type must be r (ratios) or d (percent differences)")
-    sys.exit(0)
-
 print(geos5File)
 print(file2)
 
@@ -478,13 +474,13 @@ if file2FieldArray.shape != geos5FieldArray.shape:
 
         latCount = 0
         for lat in file2Object.lat[:]:
-        
+
             # pull long records out of model 2
-            longRecords[:] = remappedFile2Array[modelLevIndex, latCount, :]
+            longRecords[:] = remappedFile2Array[int(modelLevIndex), latCount, :]
 
             yinterp = numpy.interp(geos5Object.long[:], file2Object.long[:], longRecords)
             
-            newModel2Array [modelLevIndex, latCount, :] = yinterp[:]
+            newModel2Array [int(modelLevIndex), latCount, :] = yinterp[:]
       
             latCount = latCount + 1
 
@@ -499,14 +495,14 @@ if file2FieldArray.shape != geos5FieldArray.shape:
 
 
         longCount = 0
-        for int in geos5Object.long[:]:
+        for long in geos5Object.long[:]:
 
             # pull lat records our of model 2
-            latRecords[:] = newModel2Array[modelLevIndex,:,longCount]
+            latRecords[:] = newModel2Array[int(modelLevIndex),:,longCount]
 
             yinterp = numpy.interp(geos5Object.lat[:], file2Object.lat[:], latRecords)
 
-            newModel2ArrayBoth [modelLevIndex, :, longCount] = yinterp[:]
+            newModel2ArrayBoth [int(modelLevIndex), :, longCount] = yinterp[:]
 
             longCount = longCount + 1
 
@@ -723,7 +719,7 @@ elif analType == "r":
     plotZM (zmDiff, geos5Object.lat[:], \
                 useLevels[:], fig, ax3, \
                 "PuOr", \
-                -5, 1.5, \
+                .5, 1.5, \
 #                zmDiff.min(), zmDiff.max(), \
                 "Model ratios", plotOpt)
 

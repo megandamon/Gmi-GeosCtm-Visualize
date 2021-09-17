@@ -223,13 +223,13 @@ print("")
 lenGmiLong = len(gmiObject.long[:])
 
 print("remapping: ", remappedGmiArray.shape, " to " , gmiFieldArray.shape)
-
+print(lenGmiLong/2, lenGmiLong)
         
-remappedGmiArray [:,0:lenGmiLong/2] = gmiFieldArray[:,lenGmiLong/2:lenGmiLong]
-remappedGmiArray [:,lenGmiLong/2:lenGmiLong] = gmiFieldArray[:,0:lenGmiLong/2]
+remappedGmiArray [:,0:int(lenGmiLong/2)] = gmiFieldArray[:,int(lenGmiLong/2):lenGmiLong]
+remappedGmiArray [:,int(lenGmiLong/2):lenGmiLong] = gmiFieldArray[:,0:int(lenGmiLong/2)]
 remappedLong = numpy.zeros(lenGmiLong, float32)
-remappedLong [0:lenGmiLong/2] = gmiObject.long[lenGmiLong/2:lenGmiLong] - 360.0
-remappedLong [lenGmiLong/2:lenGmiLong] = gmiObject.long[0:lenGmiLong/2]
+remappedLong [0:int(lenGmiLong/2)] = gmiObject.long[int(lenGmiLong/2):lenGmiLong] - 360.0
+remappedLong [int(lenGmiLong/2):lenGmiLong] = gmiObject.long[0:int(lenGmiLong/2)]
         
 
 remappedLongPlus180 = numpy.zeros(lenGmiLong, float32)
@@ -264,8 +264,14 @@ else:
 #z_GeosCtm = geosCtmFieldArray[:, :] * 2678400
 
 z_GeosCtm = geosCtmFieldArray[:, :] 
-z_Gmi = newGmiArray[:, :] 
+z_Gmi = newGmiArray[:, :]
+
+print("WARNING!~~ Converting GMI to kg/m2s (assuming 31 days): ")
+z_Gmi=z_Gmi/2678400.
+print ("")
+
 z_Diff = z_GeosCtm / z_Gmi
+
 
 
 minValueOfBoth = z_GeosCtm.min()
@@ -299,8 +305,8 @@ print("GEOS-CTM: ", z_GeosCtm.min(), " / ", z_GeosCtm.max())
 
 
 geosCtmObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
-                                 #[minValueOfBoth,maxValueOfBoth], \
-                                 [z_GeosCtm.min(), z_GeosCtm.max()], \
+                                 [minValueOfBoth,maxValueOfBoth], \
+                                 #[z_GeosCtm.min(), z_GeosCtm.max()], \
                                  [minGeosCtmLat,maxGeosCtmLat], \
                                  [minGeosCtmLong, maxGeosCtmLong], 311, \
                                  "GEOS-CTM " + geosCtmSimName + " " + \
@@ -309,12 +315,12 @@ geosCtmObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_GeosCtm, \
 
 
 print("GMI: ", z_Gmi.min(), " / ", z_Gmi.max())
-print("") 
+print("")
 
 # GMI lev0 is surface
 gmiObject.create2dSlice (baseMapGeosCtm, X_GeosCtm, Y_GeosCtm, z_Gmi, \
-                             #[minValueOfBoth,maxValueOfBoth], \
-                             [z_Gmi.min(), z_Gmi.max()], \
+                             [minValueOfBoth,maxValueOfBoth], \
+                             #[z_Gmi.min(), z_Gmi.max()], \
                              [minGeosCtmLat,maxGeosCtmLat], \
                              [minGeosCtmLong, maxGeosCtmLong], 312, \
                              "GMI " + gmiSimName + " " + \

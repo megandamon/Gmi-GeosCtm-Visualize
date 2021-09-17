@@ -74,7 +74,8 @@ class GeosCtmPlotTools(GenericModelPlotTools):
             else:
                 fieldName = fieldName.lower()
 
-        fieldAllTime = self.hdfData.variables[fieldName]
+        
+        fieldAllTime = self.hdfData.variables[fieldName.upper()]
 
         if fieldAllTime.shape[0] - 1 < timeRecord:
             print("")

@@ -36,6 +36,24 @@ class GeosCfMultiFile(MultiHdfFile_Class):
                                     dateTimeStep, archiveStyle)
 
 
+    def setCurrentTimeComponents(self, currentDateObject):
+
+        MultiHdfFile_Class.setCurrentTimeComponents(self, currentDateObject)
+
+        print ("In GeosCfMultiFile")
+
+
+        self.currentDatePath = self.basePath + "/Y" + self.currentYear + \
+            "/M" + self.currentMonth + "/D" + self.currentDay
+
+        self.currentFile = self.currentDatePath + "/*." + self.collectionName + \
+            "*." + self.currentYear + self.currentMonth + \
+            self.currentDay + "_" + self.currentHour + self.currentMinute + "z.nc4"
+
+        self.currentDateObject = currentDateObject
+
+
+
     def createFileNamePressLevs (self, pressureLevels, newPath=None):
 
         numPressureLevels = len(pressureLevels)

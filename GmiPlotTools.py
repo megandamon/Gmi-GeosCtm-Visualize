@@ -45,6 +45,7 @@ class GmiPlotTools (GenericModelPlotTools):
                                      latVar, lonVar, levVar, timeVar)
       
 
+
       self.gmiConstString = constString
 
       if self.gmiConstString == None:
@@ -146,6 +147,22 @@ class GmiPlotTools (GenericModelPlotTools):
       res = int("".join(s)) 
       
       return(res) 
+
+
+   def return1DArray (self, fieldName):
+      
+      print(fieldName)
+      print(fieldName.lower())
+
+      print("")
+      print("Extracting field from GMI: ", fieldName)
+      print("")
+               
+      fieldArray = self.hdfData.variables[fieldName]   
+
+      returnArray = fieldArray[:]
+
+      return returnArray
 
 
 

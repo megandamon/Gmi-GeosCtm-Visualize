@@ -58,48 +58,50 @@ class GenericModelPlotTools:
 
         self.fileName = fileName
 
-        with Dataset(self.fileName, "r", format="NETCDF4") as self.hdfData:
+        self.hdfData = Dataset (self.fileName, "r", format="NETCDF4")
 
-            self.dateTime = None
+        self.dateTime = None
 
-            self.latSize = len(self.hdfData.dimensions[latDim])
-            self.longSize = len(self.hdfData.dimensions[lonDim])
-            self.levelSize = len(self.hdfData.dimensions[levDim])
+        self.latSize = len(self.hdfData.dimensions[latDim])
+        self.longSize = len(self.hdfData.dimensions[lonDim])
+        self.levelSize = len(self.hdfData.dimensions[levDim])
 
-            ncDims = [dim for dim in self.hdfData.dimensions]  # list of nc dimensions
-            if timeDim in ncDims[:]:
-                self.timeLength = len(self.hdfData.dimensions[timeDim])
-                self.time = self.hdfData.variables[timeVar][:]
-                self.timeVarName = timeVar
-            else:
-                self.timeLength = 1
-                self.time = None
-                self.timeVarName = None
+        ncDims = [dim for dim in self.hdfData.dimensions]  # list of nc dimensions
 
-            self.lat = self.hdfData.variables[latVar][:]
-            self.long = self.hdfData.variables[lonVar][:]
-            self.lev = self.hdfData.variables[levVar][:]
 
-            self.latVarName = latVar
-            self.longVarName = lonVar
-            self.levVarName = levVar
+        if timeDim in ncDims[:]:
+            self.timeLength = len(self.hdfData.dimensions[timeDim])
+            self.time = self.hdfData.variables[timeVar][:]
+            self.timeVarName = timeVar
+        else:
+            self.timeLength = 1
+            self.time = None
+            self.timeVarName = None
 
-            self.minLat = self.lat[:].min()
-            self.maxLat = self.lat[:].max()
-            self.minLong = self.long[:].min()
-            self.maxLong = self.long[:].max()
+        self.lat = self.hdfData.variables[latVar][:]
+        self.long = self.hdfData.variables[lonVar][:]
+        self.lev = self.hdfData.variables[levVar][:]
 
-            self.cenLat = (self.minLat + self.maxLat) / 2.
-            self.cenLong = (self.minLong + self.maxLong) / 2.
+        self.latVarName = latVar
+        self.longVarName = lonVar
+        self.levVarName = levVar
 
-            # User must call "createPlotObjects" to create these
-            self.baseMap = None
-            self.gridLons = None
-            self.gridLats = None
-            self.X_grid = None
-            self.Y_grid = None
+        self.minLat = self.lat[:].min()
+        self.maxLat = self.lat[:].max()
+        self.minLong = self.long[:].min()
+        self.maxLong = self.long[:].max()
 
-            self.populateFieldList()
+        self.cenLat = (self.minLat + self.maxLat) / 2.
+        self.cenLong = (self.minLong + self.maxLong) / 2.
+
+        # User must call "createPlotObjects" to create these
+        self.baseMap = None
+        self.gridLons = None
+        self.gridLats = None
+        self.X_grid = None
+        self.Y_grid = None
+
+        self.populateFieldList()
 
 
             

@@ -146,14 +146,14 @@ class MultiHdfFile_Class:
          self.currentMinute = str(currentDateObject.minute)
 
 
-      self.currentDatePath = self.basePath + "/Y" + self.currentYear + \
-         "/M" + self.currentMonth + "/D" + self.currentDay
+      # self.currentDatePath = self.basePath + "/Y" + self.currentYear + \
+      #    "/M" + self.currentMonth + "/D" + self.currentDay
 
-      self.currentFile = self.currentDatePath + "/*." + self.collectionName + \
-         "*." + self.currentYear + self.currentMonth + \
-         self.currentDay + "_" + self.currentHour + self.currentMinute + "z.nc4"
+      # self.currentFile = self.currentDatePath + "/*." + self.collectionName + \
+      #    "*." + self.currentYear + self.currentMonth + \
+      #    self.currentDay + "_" + self.currentHour + self.currentMinute + "z.nc4"
 
-      self.currentDateObject = currentDateObject
+      # self.currentDateObject = currentDateObject
 
 
 
@@ -174,7 +174,35 @@ class MultiHdfFile_Class:
 
 
 
+   def compressData (self, dataPath, fileVersion):
+      print ("\nCompressing data for file version: ", fileVersion)
 
+      # This routine loops through all possible
+      # date/time (i.e. files)
+      self.currentDateObject = self.startDateObject
+      self.startDateActual = self.currentDateObject
+
+
+      if self.startDateObject == self.endDateObject:
+         print ("\nWARNING: Start and end dates are the same!")
+
+
+      while self.currentDateObject <= self.endDateObject:
+
+
+         self.setCurrentTimeComponents (self.currentDateObject)
+         print ("\ncurrentFile: ", self.currentFile)
+         globFiles = glob.glob(self.currentFile)
+         numFiles = len(globFiles)
+
+         self.endDateActual = self.currentDateObject 
+         self.currentDateObject += self.dateTimeStep
+
+
+
+
+
+   
    def cleanData (self, dataPath, fileVersion):
       print ("\nCleaning data for file version: ", fileVersion)
 
@@ -187,6 +215,24 @@ class MultiHdfFile_Class:
       if self.startDateObject == self.endDateObject:
          print ("\nWARNING: Start and end dates are the same!")
 
+         print ("\ncurrentFile: ", self.currentFile)
+         globFiles = glob.glob(self.currentFile)
+         numFiles = len(globFiles)
+
+         print ("num files: ", numFiles)
+
+         if numFiles >= 1:
+            print ("\nFound file(s) for this record!")
+            sys.exit(0)
+            for globFile in globFiles:
+               
+               if fileVersion in globFile:
+                  print ("Need to compress: ", globFile)
+                  sys.exit(0)
+         
+
+
+
 
       numRemoves = 0
       while self.currentDateObject <= self.endDateObject:
@@ -198,7 +244,7 @@ class MultiHdfFile_Class:
          print ("\ncurrentFile: ", self.currentFile)
          globFiles = glob.glob(self.currentFile)
          numFiles = len(globFiles)
-
+         
 
          if numFiles > 1:
             print ("\nFound multiple files for this record!")
